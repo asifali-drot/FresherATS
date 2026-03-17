@@ -1,15 +1,13 @@
 'use client';
 
+import React, { useMemo, useRef } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 const AntigravityInner = ({
   count = 300,
   magnetRadius = 10,
-  ringRadius = 10,
   waveSpeed = 0.4,
-  waveAmplitude = 1,
   particleSize = 1.5,
   lerpSpeed = 0.1,
   color = '#FF9FFC',
@@ -18,8 +16,7 @@ const AntigravityInner = ({
   rotationSpeed = 0,
   depthFactor = 1,
   pulseSpeed = 3,
-  particleShape = 'capsule',
-  fieldStrength = 10
+  particleShape = 'capsule'
 }) => {
   const meshRef = useRef(null);
   const { viewport } = useThree();
@@ -30,6 +27,7 @@ const AntigravityInner = ({
   const virtualMouse = useRef({ x: 0, y: 0 });
 
   const particles = useMemo(() => {
+    /* eslint-disable react-hooks/purity */
     const temp = [];
     const width = viewport.width || 100;
     const height = viewport.height || 100;
@@ -46,8 +44,6 @@ const AntigravityInner = ({
       const y = (Math.random() - 0.5) * height;
       const z = (Math.random() - 0.5) * 20;
 
-      const randomRadiusOffset = (Math.random() - 0.5) * 2;
-
       temp.push({
         t,
         factor,
@@ -63,8 +59,7 @@ const AntigravityInner = ({
         cz: z,
         vx: 0,
         vy: 0,
-        vz: 0,
-        randomRadiusOffset
+        vz: 0
       });
     }
     return temp;
@@ -102,7 +97,7 @@ const AntigravityInner = ({
     const globalRotation = state.clock.getElapsedTime() * rotationSpeed;
 
     particles.forEach((particle, i) => {
-      let { t, speed, mx, my, mz, cz, randomRadiusOffset } = particle;
+      let { t, speed, mx, my, mz, cz } = particle;
 
       t = particle.t += speed / 2;
 
@@ -173,6 +168,14 @@ const AntigravityInner = ({
 };
 
 const Antigravity = props => {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return <div className="w-full h-full bg-transparent" />;
+
   return (
     <Canvas camera={{ position: [0, 0, 50], fov: 35 }}>
       <AntigravityInner {...props} />

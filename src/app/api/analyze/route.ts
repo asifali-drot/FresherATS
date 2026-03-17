@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { parsePdf } from "@/lib/resume/parsePdf";
 import { parseDocx } from "@/lib/resume/parseDocx";
 import { createClient } from "@/lib/supabase/server";
+import fs from "fs";
+import path from "path";
 
 export async function POST(req: NextRequest) {
   try {
@@ -80,6 +82,7 @@ export async function POST(req: NextRequest) {
   "score": <number 0-100>,
   "summary": "<2-3 sentence overall assessment>",
   "suggestions": ["<improvement 1>", "<improvement 2>", ...],
+  "missingKeywords": ["<keyword 1>", "<keyword 2>", ...],
   "optimizedResume": "<the full optimized resume text incorporating the suggestions>"
 }`,
             },
@@ -104,20 +107,24 @@ export async function POST(req: NextRequest) {
     }
 
     const rawContent = data?.choices?.[0]?.message?.content?.trim() || "";
-    let suggestions: { score?: number; summary?: string; suggestions?: string[]; optimizedResume?: string } =
-      {};
+    let suggestions: { 
+      score?: number; 
+      summary?: string; 
+      suggestions?: string[]; 
+      missingKeywords?: string[];
+      optimizedResume?: string 
+    } = {};
 
     console.log("AI raw response (first 500 chars):", rawContent.substring(0, 500));
 
     if (rawContent) {
       try {
-        const parsed = JSON.parse(rawContent) as typeof suggestions;
-        if (typeof parsed.score === "number") suggestions.score = parsed.score;
-        if (typeof parsed.summary === "string") suggestions.summary = parsed.summary;
-        if (Array.isArray(parsed.suggestions)) suggestions.suggestions = parsed.suggestions;
-        if (typeof parsed.optimizedResume === "string" && parsed.optimizedResume.trim().length > 0) {
-          suggestions.optimizedResume = parsed.optimizedResume;
-        }
+        const parsed = JSON.parse(rawContent);
+        suggestions.score = typeof parsed.score === "number" ? parsed.score : (typeof parsed.ATSScore === "number" ? parsed.ATSScore : undefined);
+        suggestions.summary = parsed.summary || parsed.assessment || "";
+        suggestions.suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions : (Array.isArray(parsed.improvements) ? parsed.improvements : []);
+        suggestions.missingKeywords = Array.isArray(parsed.missingKeywords) ? parsed.missingKeywords : (Array.isArray(parsed.keywords) ? parsed.keywords : []);
+        suggestions.optimizedResume = parsed.optimizedResume || parsed.optimized_resume || "";
       } catch {
         console.error("Failed to parse AI response as JSON:", rawContent);
         suggestions = { summary: rawContent };
@@ -129,31 +136,55 @@ export async function POST(req: NextRequest) {
     console.log("Final optimizedResume length:", finalOptimizedResume?.length || 0);
 
     // --- Supabase Integration ---
+    let analysisId: string | null = null;
     try {
-      const supabase = await createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const logFile = path.join(process.cwd(), "debug_db.log");
+      const log = (msg: string) => {
+        const entry = `[${new Date().toISOString()}] ${msg}\n`;
+        fs.appendFileSync(logFile, entry);
+        console.log(msg);
+      };
 
-      if (user) {
-        const { error: dbError } = await supabase.from("analyses").insert({
-          user_id: user.id,
+      log("[DB] Starting Supabase integration...");
+      const supabase = await createClient();
+
+      log("[DB] Calling getUser()...");
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      log(`[DB] getUser result — user: ${authData?.user?.id ?? "null"} | authError: ${authError?.message ?? "none"}`);
+
+      log("[DB] Inserting analysis...");
+      
+      // Merge missing keywords into suggestions for storage since column is missing
+      const suggestionsToSave = [...(suggestions.suggestions ?? [])];
+      if (suggestions.missingKeywords && suggestions.missingKeywords.length > 0) {
+        suggestionsToSave.push(`Missing Keywords: ${suggestions.missingKeywords.join(", ")}`);
+      }
+
+      const { data: insertedRow, error: dbError } = await supabase
+        .from("analyses")
+        .insert({
+          user_id: authData?.user?.id ?? null, // Use null for guests
           resume_text: resumeText,
           job_description: jobDescription || null,
-          score: suggestions.score || null,
-          summary: suggestions.summary || null,
-          suggestions: suggestions.suggestions || [],
+          score: suggestions.score ?? null,
+          summary: suggestions.summary ?? null,
+          suggestions: suggestionsToSave,
           optimized_resume: finalOptimizedResume,
-        });
+        })
+        .select("id")
+        .single();
 
-        if (dbError) {
-          console.error("Supabase insert error:", dbError);
-        } else {
-          console.log("Analysis saved to Supabase for user:", user.id);
-        }
+      if (dbError) {
+        log(`[DB] Insert error — code: ${dbError.code} | message: ${dbError.message} | details: ${dbError.details} | hint: ${dbError.hint}`);
+      } else {
+        log(`[DB] Insert success — row id: ${insertedRow?.id}`);
+      analysisId = insertedRow?.id ?? null;
       }
-    } catch (dbCatchError) {
-      console.error("Supabase integration error:", dbCatchError);
+    } catch (dbCatchError: unknown) {
+      const logFile = path.join(process.cwd(), "debug_db.log");
+      const errorMessage = dbCatchError instanceof Error ? dbCatchError.message : String(dbCatchError);
+      fs.appendFileSync(logFile, `[${new Date().toISOString()}] [DB] Unexpected Supabase error: ${errorMessage}\n`);
+      console.error("[DB] Unexpected Supabase error:", dbCatchError);
     }
     // --- End Supabase Integration ---
 
@@ -163,7 +194,9 @@ export async function POST(req: NextRequest) {
       score: suggestions.score,
       summary: suggestions.summary,
       suggestions: suggestions.suggestions ?? [],
+      missingKeywords: suggestions.missingKeywords ?? [],
       optimized_resume: finalOptimizedResume,
+      analysis_id: analysisId,
       extractedLength: resumeText.length,
       resumeText,
     });

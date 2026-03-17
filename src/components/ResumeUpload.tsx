@@ -43,8 +43,10 @@ export default function ResumeUpload() {
         score: data.score,
         summary: data.summary,
         suggestions: data.suggestions,
+        missingKeywords: data.missingKeywords,
         result: data.result,
-        optimizedResume: data.optimizedResume,
+        optimizedResume: data.optimized_resume, // API returns optimized_resume
+        analysis_id: data.analysis_id ?? null,  // store DB row ID for download
       };
 
       if (typeof window !== "undefined") {

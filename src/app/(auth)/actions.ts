@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { SupabaseClient } from '@supabase/supabase-js'
 
 export async function login(formData: FormData) {
     const supabase = await createClient()
@@ -98,16 +99,59 @@ export async function updatePasswordAction(formData: FormData) {
     return null
 }
 
+async function claimAnalysis(supabase: SupabaseClient, userId: string, claimId: string) {
+    if (!claimId) return
+    console.log(`Claiming analysis ${claimId} for user ${userId}`)
+    const { error } = await supabase
+        .from('analyses')
+        .update({ user_id: userId })
+        .eq('id', claimId)
+        .is('user_id', null)
+    
+    if (error) {
+        console.error('Error claiming analysis:', error.message)
+    }
+}
+
 export async function loginAction(formData: FormData) {
+    const claimId = formData.get('claim_id') as string
+    const redirectPath = formData.get('redirect') as string
+    
     const error = await login(formData)
     if (error) return { error }
-    redirect('/')
+
+    // If login was successful, claim the analysis if needed
+    if (claimId) {
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+            await claimAnalysis(supabase, user.id, claimId)
+        }
+    }
+
+    let target = redirectPath || '/'
+    if (claimId && target.includes('/analyze/result')) {
+        const separator = target.includes('?') ? '&' : '?'
+        target = `${target}${separator}download=auto`
+    }
+
+    redirect(target)
 }
 
 export async function signupAction(formData: FormData) {
+    const claimId = formData.get('claim_id') as string
+    const redirectPath = formData.get('redirect') as string
+
     const error = await signup(formData)
     if (error) return { error }
-    redirect('/login?message=Check your email to confirm your account')
+    
+    // For signup, if we are redirecting to login anyway, we should pass the claim_id along
+    const params = new URLSearchParams()
+    if (claimId) params.set('claim_id', claimId)
+    if (redirectPath) params.set('redirect', redirectPath)
+    params.set('message', 'Check your email to confirm your account')
+    
+    redirect(`/login?${params.toString()}`)
 }
 
 export async function logoutAction() {

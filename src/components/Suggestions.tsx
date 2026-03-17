@@ -1,12 +1,16 @@
 "use client";
 
+import React from "react";
+
 export interface AnalysisResult {
   success?: boolean;
   score?: number;
   summary?: string;
   suggestions?: string[];
+  missingKeywords?: string[];
   result?: string;
   optimizedResume?: string;
+  analysis_id?: string | null;  // Supabase row ID for DB-backed PDF download
 }
 
 interface SuggestionsProps {
@@ -16,54 +20,75 @@ interface SuggestionsProps {
 export default function Suggestions({ data }: SuggestionsProps) {
   if (!data) return null;
 
-  const score = data.score;
-  const summary = data.summary;
   const suggestions = data.suggestions ?? [];
+  const missingKeywords = data.missingKeywords ?? []; 
 
   return (
-    <div className="mt-4 space-y-4 rounded-lg border border-gray-200 bg-gray-50/80 p-4">
-      <h4 className="font-semibold text-gray-900">AI Analysis</h4>
-
-      {typeof score === "number" && (
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">ATS-style score:</span>
-          <span
-            className={`inline-flex rounded-full px-3 py-0.5 text-sm font-medium ${
-              score >= 70
-                ? "bg-green-100 text-green-800"
-                : score >= 50
-                  ? "bg-amber-100 text-amber-800"
-                  : "bg-red-100 text-red-800"
-            }`}
-          >
-            {score}/100
-          </span>
+    <div className="flex flex-col gap-10">
+      {/* Missing Keywords */}
+      <div className="flex flex-col gap-4">
+        <h3 className="text-xl font-bold text-zinc-900">Missing Keywords:</h3>
+        <div className="flex flex-wrap gap-2">
+          {missingKeywords.length > 0 ? (
+            missingKeywords.map((keyword, i) => (
+              <span
+                key={i}
+                className="rounded-lg bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-200 transition-colors cursor-default"
+              >
+                {keyword}
+              </span>
+            ))
+          ) : (
+            <p className="text-sm text-zinc-500 italic">No missing keywords identified.</p>
+          )}
+          <button className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 hover:bg-zinc-50 transition-colors">
+            <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
         </div>
-      )}
+      </div>
 
-      {summary && (
-        <div>
-          <p className="text-sm font-medium text-gray-700">Summary</p>
-          <p className="mt-1 text-sm text-gray-600">{summary}</p>
+      {/* Suggestions List */}
+      <div className="flex flex-col gap-4">
+        <h3 className="text-xl font-bold text-zinc-900">Suggestions</h3>
+        <div className="flex flex-col gap-3">
+          {suggestions.length > 0 ? (
+            suggestions.map((item, i) => (
+              <div
+                key={i}
+                className="group flex items-center justify-between rounded-2xl border border-zinc-100 bg-white p-5 shadow-sm hover:border-zinc-200 transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 text-white">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <span className="font-semibold text-zinc-700">{item}</span>
+                </div>
+                <svg className="h-5 w-5 text-zinc-400 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            ))
+          ) : (
+            <div className="group flex items-center justify-between rounded-2xl border border-zinc-100 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 text-white">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <span className="font-semibold text-zinc-700">Add technical skills like Python, Excel.</span>
+                </div>
+                <svg className="h-5 w-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+            </div>
+          )}
         </div>
-      )}
-
-      {suggestions.length > 0 && (
-        <div>
-          <p className="text-sm font-medium text-gray-700">Suggestions</p>
-          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-gray-600">
-            {suggestions.map((item, i) => (
-              <li key={i}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {!summary && !suggestions.length && data.result && (
-        <pre className="whitespace-pre-wrap rounded bg-white p-3 text-sm text-gray-700">
-          {data.result}
-        </pre>
-      )}
+      </div>
     </div>
   );
 }

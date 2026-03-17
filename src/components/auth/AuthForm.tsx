@@ -2,13 +2,18 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 interface AuthFormProps {
     type: 'login' | 'signup' | 'forgot-password' | 'reset-password'
-    onSubmit: (formData: FormData) => Promise<any>
+    onSubmit: (formData: FormData) => Promise<{ error?: string; success?: string } | void>
 }
 
 export default function AuthForm({ type, onSubmit }: AuthFormProps) {
+    const searchParams = useSearchParams()
+    const claimId = searchParams.get('claim_id') || ''
+    const redirectPath = searchParams.get('redirect') || ''
+
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
@@ -27,10 +32,11 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                 setSuccess(result.success)
                 setLoading(false)
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const error = err as { message?: string; digest?: string };
             // Next.js redirect throws an error that we shouldn't catch as a visible error
-            if (err.message !== 'NEXT_REDIRECT' && !err.digest?.startsWith('NEXT_REDIRECT')) {
-                setError(err.message || 'An error occurred')
+            if (error.message !== 'NEXT_REDIRECT' && !error.digest?.startsWith('NEXT_REDIRECT')) {
+                setError(error.message || 'An error occurred')
                 setLoading(false)
             }
         }
@@ -67,6 +73,8 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
             ) : (
                 <>
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        <input type="hidden" name="claim_id" value={claimId} />
+                        <input type="hidden" name="redirect" value={redirectPath} />
                         {type === 'signup' && (
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
