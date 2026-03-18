@@ -62,16 +62,17 @@ export async function POST(req: NextRequest) {
     }
 
     const authHeader = `Bearer ${apiKey}`;
-    const headersObj = {
-      Authorization: authHeader,
-      "Content-Type": "application/json",
-    };
 
-    const aiResponse = await fetch(
+    // --- AI Stage 1: Resume Analysis ---
+    console.log("Stage 1: Analyzing Resume...");
+    const stage1Response = await fetch(
       "https://openrouter.ai/api/v1/chat/completions",
       {
         method: "POST",
-        headers: headersObj,
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           model: "openai/gpt-4o-mini",
           messages: [
@@ -82,8 +83,7 @@ export async function POST(req: NextRequest) {
   "score": <number 0-100>,
   "summary": "<2-3 sentence overall assessment>",
   "suggestions": ["<improvement 1>", "<improvement 2>", ...],
-  "missingKeywords": ["<keyword 1>", "<keyword 2>", ...],
-  "optimizedResume": "<the full optimized resume text incorporating the suggestions>"
+  "missingKeywords": ["<keyword 1>", "<keyword 2>", ...]
 }`,
             },
             {
@@ -95,45 +95,121 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    const data = await aiResponse.json();
-
-    if (!aiResponse.ok) {
-      const message =
-        data?.error?.message || data?.error?.code || "OpenRouter request failed";
+    if (!stage1Response.ok) {
+      const errorData = await stage1Response.json();
       return NextResponse.json(
-        { error: `AI service error: ${message}` },
-        { status: aiResponse.status >= 500 ? 502 : 400 }
+        { error: `Stage 1 AI Error: ${errorData?.error?.message || "Failed"}` },
+        { status: 502 }
       );
     }
 
-    const rawContent = data?.choices?.[0]?.message?.content?.trim() || "";
-    let suggestions: { 
+    const stage1Data = await stage1Response.json();
+    const stage1Raw = stage1Data?.choices?.[0]?.message?.content?.trim() || "";
+    
+    let analysis: { 
       score?: number; 
       summary?: string; 
       suggestions?: string[]; 
       missingKeywords?: string[];
-      optimizedResume?: string 
     } = {};
 
-    console.log("AI raw response (first 500 chars):", rawContent.substring(0, 500));
-
-    if (rawContent) {
-      try {
-        const parsed = JSON.parse(rawContent);
-        suggestions.score = typeof parsed.score === "number" ? parsed.score : (typeof parsed.ATSScore === "number" ? parsed.ATSScore : undefined);
-        suggestions.summary = parsed.summary || parsed.assessment || "";
-        suggestions.suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions : (Array.isArray(parsed.improvements) ? parsed.improvements : []);
-        suggestions.missingKeywords = Array.isArray(parsed.missingKeywords) ? parsed.missingKeywords : (Array.isArray(parsed.keywords) ? parsed.keywords : []);
-        suggestions.optimizedResume = parsed.optimizedResume || parsed.optimized_resume || "";
-      } catch {
-        console.error("Failed to parse AI response as JSON:", rawContent);
-        suggestions = { summary: rawContent };
-      }
+    try {
+      const parsed = JSON.parse(stage1Raw);
+      analysis = {
+        score: parsed.score || 0,
+        summary: parsed.summary || "",
+        suggestions: parsed.suggestions || [],
+        missingKeywords: parsed.missingKeywords || []
+      };
+    } catch (e) {
+      console.error("Failed to parse Stage 1 JSON:", stage1Raw);
+      return NextResponse.json({ error: "Failed to parse resume analysis." }, { status: 500 });
     }
 
-    // Fallback: If no optimizedResume from AI, use original resume text
-    const finalOptimizedResume = suggestions.optimizedResume || resumeText;
+    // --- AI Stage 2: Content Optimization ---
+    console.log("Stage 2: Optimizing Content...");
+    const stage2Response = await fetch(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: `You are a professional resume editor. Improve the following resume using the analysis results and job description.
+Rules:
+1. Rewrite weak bullet points using strong action verbs.
+2. Include relevant keywords from the job description naturally.
+3. Keep bullet points concise and impactful.
+4. Do not invent experience or lie.
+5. Use ATS-friendly language.
+Output the optimized content text only, maintaining a logical structure.`
+            },
+            {
+              role: "user",
+              content: `Original Resume:\n${resumeText.slice(0, 8000)}\n\nJob Description:\n${jobDescription || "(Not provided)"}\n\nAnalysis Suggestions:\n${analysis.suggestions?.join("\n")}\n\nMissing Keywords:\n${analysis.missingKeywords?.join(", ")}`
+            }
+          ]
+        })
+      }
+    );
+
+    if (!stage2Response.ok) {
+      console.error("Stage 2 failed, using original text as fallback.");
+    }
+
+    const stage2Data = await stage2Response.json();
+    const optimizedText = stage2Data?.choices?.[0]?.message?.content?.trim() || resumeText;
+
+    // --- AI Stage 3: Final Resume Generation ---
+    console.log("Stage 3: Final Formatting...");
+    const stage3Response = await fetch(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: `Generate a final ATS-friendly resume using the optimized content provided.
+Rules:
+1. Use clear section headings in ALL CAPS.
+2. Use bullet points for experience and projects.
+3. Avoid tables, graphics, or complex formatting.
+4. Keep formatting simple for ATS systems.
+5. Structure:
+SUMMARY
+SKILLS (comma separated or simple list)
+PROJECTS
+EXPERIENCE
+EDUCATION`
+            },
+            {
+              role: "user",
+              content: `Optimized Content:\n${optimizedText}`
+            }
+          ]
+        })
+      }
+    );
+
+    const stage3Data = await stage3Response.json();
+    const finalOptimizedResume = stage3Data?.choices?.[0]?.message?.content?.trim() || optimizedText;
+    
     console.log("Final optimizedResume length:", finalOptimizedResume?.length || 0);
+    
+    // Rename variable to match downstream usage if needed, or update usage
+    const suggestions = analysis;
 
     // --- Supabase Integration ---
     let analysisId: string | null = null;
@@ -190,7 +266,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      result: rawContent,
+      result: stage1Raw,
       score: suggestions.score,
       summary: suggestions.summary,
       suggestions: suggestions.suggestions ?? [],

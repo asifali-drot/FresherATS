@@ -96,7 +96,7 @@ export async function updatePasswordAction(formData: FormData) {
         return { error: error.message }
     }
 
-    return null
+    return { success: "Your password has been updated successfully." }
 }
 
 async function claimAnalysis(supabase: SupabaseClient, userId: string, claimId: string) {
