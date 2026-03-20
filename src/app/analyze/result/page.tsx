@@ -91,8 +91,17 @@ function AnalyzeResultContent() {
       if (contentType && contentType.includes("application/json")) {
         const { url } = await response.json();
         if (url) {
-          // Direct download via window.location for signed URLs with download header
-          window.location.href = url;
+          // Fetch the signed URL to get the blob and force download
+          const pdfRes = await fetch(url);
+          const blob = await pdfRes.blob();
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = 'optimized-resume.pdf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(downloadUrl);
           return;
         }
       }
@@ -165,8 +174,18 @@ function AnalyzeResultContent() {
                         </svg>
                         Generating...
                       </>
-                   ) : user ? "Download Optimized PDF" : "Login to Download Optimized Resume"}
+                   ) : user ? "Download Resume" : "Login to Download Resume"}
                  </button>
+                 
+                 <Link
+                   href="/analyze/editor"
+                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-8 py-4 text-sm font-bold text-zinc-900 hover:bg-zinc-50 transition-all active:scale-95 shadow-sm"
+                 >
+                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                   </svg>
+                   Preview & Edit Resume
+                 </Link>
                  {downloadError && (
                    <p className="text-xs font-medium text-red-600 bg-red-50 px-4 py-2 rounded-full">
                      {downloadError}
@@ -211,7 +230,7 @@ function AnalyzeResultContent() {
                     disabled={isDownloading}
                     className="group relative flex items-center gap-3 rounded-2xl bg-zinc-900 px-10 py-5 text-base font-bold text-white hover:bg-zinc-800 transition-all active:scale-95 shadow-xl shadow-zinc-200"
                   >
-                    <span>Download Premium PDF</span>
+                    <span>Download Resume</span>
                     <svg className="h-5 w-5 transition-transform group-hover:translate-y-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                     </svg>

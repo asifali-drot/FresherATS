@@ -110,13 +110,32 @@ export function generateResumeHtml(nameLines: string[], sections: ParsedSection[
   const sectionHtml = sections.map(section => `
     <section class="resume-section">
       <h2 class="resume-section-title">${section.title}</h2>
-      <div class="resume-section-content">
         ${section.content.map(line => {
-          if (line.startsWith('*') || line.startsWith('•') || line.startsWith('-')) {
-            const pureLine = line.replace(/^[\*•\-]\s*/, '');
+          // Handle bold text (markdown style)
+          let processedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                  .replace(/==(.*?)==/g, '<mark>$1</mark>');
+          
+          // Refined skills rendering if in SKILLS section
+          if (section.title === 'SKILLS') {
+            // Remove common labels and specific words (including AI-tools)
+            let cleanLine = processedLine.replace(/^(frontend|backend|skills|technical skills|tools|languages|ai-tools|ai tools):\s*/i, '')
+                                         .replace(/(frontend|backend|pipeline|ai-tools|ai tools|\|)/gi, '');
+            
+            // If it still has a label-like structure (text followed by colon), remove it
+            if (cleanLine.includes(':')) {
+              cleanLine = cleanLine.split(':').slice(1).join(':').trim();
+            }
+
+            // Split by comma or any existing pipes, trim, and wrap in <u>
+            const skills = cleanLine.split(/[,,|]/).map(s => s.trim()).filter(Boolean);
+            processedLine = skills.map(skill => `<u>${skill}</u>`).join('&nbsp;&nbsp;&nbsp;&nbsp;');
+          }
+          
+          if (processedLine.startsWith('*') || processedLine.startsWith('•') || processedLine.startsWith('-')) {
+            const pureLine = processedLine.replace(/^[\*•\-]\s*/, '');
             return `<div class="resume-bullet-item"><span class="bullet"></span><span class="text">${pureLine}</span></div>`;
           }
-          return `<p class="resume-paragraph">${line}</p>`;
+          return `<p class="resume-paragraph">${processedLine}</p>`;
         }).join('')}
       </div>
     </section>
@@ -129,7 +148,7 @@ export function generateResumeHtml(nameLines: string[], sections: ParsedSection[
       <meta charset="UTF-8">
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
+ 
         :root {
           --primary-color: #0f172a;
           --secondary-color: #475569;
@@ -138,13 +157,14 @@ export function generateResumeHtml(nameLines: string[], sections: ParsedSection[
           --text-color: #1e293b;
           --line-height: 1.5;
           --base-font-size: 10.5pt;
+          --highlight-color: #fef9c3;
         }
-
+ 
         * {
           box-sizing: border-box;
           -webkit-print-color-adjust: exact;
         }
-
+ 
         body {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
           line-height: var(--line-height);
@@ -153,6 +173,13 @@ export function generateResumeHtml(nameLines: string[], sections: ParsedSection[
           padding: 40px 50px;
           background: #fff;
           font-size: var(--base-font-size);
+        }
+
+        mark {
+          background-color: var(--highlight-color);
+          color: inherit;
+          padding: 0 2px;
+          border-radius: 2px;
         }
 
         .resume-header {

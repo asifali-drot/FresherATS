@@ -30,19 +30,13 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row items-center gap-5 pt-6 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300">
                     <Link
                         href="/analyze"
-                        className="group relative px-10 py-4.5 bg-zinc-900 text-white font-bold rounded-2xl hover:bg-zinc-800 transition-all active:scale-95 shadow-xl shadow-zinc-200"
+                        className="group relative px-10 py-4.5 bg-zinc-900 text-white font-bold rounded-2xl hover:bg-zinc-800 transition-all active:scale-95 shadow-xl shadow-zinc-200 text-center w-full sm:w-auto"
                     >
                         Analyze My Resume
                         <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-500 opacity-40"></span>
                             <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-purple-600"></span>
                         </span>
-                    </Link>
-                    <Link
-                        href="/signup"
-                        className="px-10 py-4.5 bg-white text-zinc-900 font-bold rounded-2xl border border-zinc-200 hover:bg-zinc-50 hover:border-zinc-300 transition-all active:scale-95 shadow-sm"
-                    >
-                        Start for Free
                     </Link>
                 </div>
 

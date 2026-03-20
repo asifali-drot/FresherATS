@@ -78,6 +78,38 @@ interface ResumePdfDocumentProps {
   sections: ParsedSection[];
 }
 
+const renderRichText = (text: string, style: any) => {
+  const parts = text.split(/(\*\*.*?\*\*|__.*?__|==.*?==)/g);
+  return (
+    <Text style={style}>
+      {parts.map((part, index) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return (
+            <Text key={index} style={{ fontFamily: 'Helvetica-Bold' }}>
+              {part.slice(2, -2)}
+            </Text>
+          );
+        }
+        if (part.startsWith('__') && part.endsWith('__')) {
+          return (
+            <Text key={index} style={{ textDecoration: 'underline' }}>
+              {part.slice(2, -2)}
+            </Text>
+          );
+        }
+        if (part.startsWith('==') && part.endsWith('==')) {
+          return (
+            <Text key={index} style={{ backgroundColor: '#fef9c3' }}>
+              {part.slice(2, -2)}
+            </Text>
+          );
+        }
+        return part;
+      })}
+    </Text>
+  );
+};
+
 export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({ nameLines, sections }) => {
   return (
     <Document>
@@ -103,16 +135,36 @@ export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({ nameLines,
             <Text style={styles.sectionTitle}>{section.title}</Text>
             <View>
               {section.content.map((line, lIndex) => {
-                if (line.startsWith('*') || line.startsWith('•') || line.startsWith('-')) {
-                  const pureLine = line.replace(/^[\*•\-]\s*/, '');
+                let processedLine = line;
+                if (section.title === 'SKILLS') {
+                  // Remove common labels and specific words (including AI-tools)
+                  let cleanLine = line.replace(/^(frontend|backend|skills|technical skills|tools|languages|ai-tools|ai tools):\s*/i, '')
+                                       .replace(/(frontend|backend|pipeline|ai-tools|ai tools|\|)/gi, '');
+                  
+                  // If it still has a label-like structure (text followed by colon), remove it
+                  if (cleanLine.includes(':')) {
+                    cleanLine = cleanLine.split(':').slice(1).join(':').trim();
+                  }
+
+                  // Split by comma or any existing pipes, trim, and wrap in __ for PDF underline
+                  const skills = cleanLine.split(/[,,|]/).map(s => s.trim()).filter(Boolean);
+                  processedLine = skills.map(skill => `__${skill}__`).join('    ');
+                }
+
+                if (processedLine.startsWith('*') || processedLine.startsWith('•') || processedLine.startsWith('-')) {
+                  const pureLine = processedLine.replace(/^[\*•\-]\s*/, '');
                   return (
                     <View key={lIndex} style={styles.bulletContainer}>
                       <Text style={styles.bullet}>•</Text>
-                      <Text style={styles.bulletText}>{pureLine}</Text>
+                      {renderRichText(pureLine, styles.bulletText)}
                     </View>
                   );
                 }
-                return <Text key={lIndex} style={styles.paragraph}>{line}</Text>;
+                return (
+                  <React.Fragment key={lIndex}>
+                    {renderRichText(processedLine, styles.paragraph)}
+                  </React.Fragment>
+                );
               })}
             </View>
           </View>
