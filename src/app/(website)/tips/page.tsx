@@ -1,43 +1,60 @@
 import Link from "next/link";
+import { client } from "../../../sanity/client";
 
-export default function TipsPage() {
-  const tips = [
-    {
-      id: "01",
-      title: "Use Standard, ATS-Friendly Fonts",
-      description: "Applicant Tracking Systems are essentially text parsers. They struggle with complex, ornate, or non-standard fonts that aren't built into their databases. Stick to the 'Safe Six' for maximum compatibility.",
-      details: ["Arial", "Calibri", "Helvetica", "Georgia", "Tahoma", "Verdana"],
-      color: "bg-purple-50 text-purple-600 group-hover:bg-purple-600"
-    },
-    {
-      id: "02",
-      title: "Mirror Job Description Keywords",
-      description: "ATS algorithms look for specific matches between your resume and the job posting. Don't just list your skills—use the exact terminology found in the 'Requirements' and 'Responsibilities' sections.",
-      details: ["Scan for hard skills (e.g., 'Python', 'CRM')", "Look for industry certifications", "Include specific software names"],
-      color: "bg-blue-50 text-blue-600 group-hover:bg-blue-600"
-    },
-    {
-      id: "03",
-      title: "Avoid Complex Formatting",
-      description: "While a beautiful graphic resume might look great to a human, it often becomes a scrambled mess in an ATS. Keep your structure linear and predictable.",
-      details: ["Avoid multiple columns", "Don't put vital info in Headers/Footers", "Remove images, icons, and charts"],
-      color: "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600"
-    },
-    {
-      id: "04",
-      title: "The Right File Format Matters",
-      description: "Most modern ATS can read PDFs, but some older systems still prefer .docx files. Always check the application instructions, but generally, a standard PDF is the best way to preserve formatting.",
-      details: ["Standard PDF for modern systems", ".docx for older portals", "Never upload a JPG/PNG of your resume"],
-      color: "bg-pink-50 text-pink-600 group-hover:bg-pink-600"
-    },
-    {
-      id: "05",
-      title: "Use Reverse-Chronological Order",
-      description: "ATS systems are programmed to look for your most recent experience first. Using a functional or creative layout can confuse the parser and lead to your experience being dated incorrectly.",
-      details: ["Recent experience at the top", "Clear 'Start' and 'End' dates", "Standard Section headings (Experience, Education)"],
-      color: "bg-orange-50 text-orange-600 group-hover:bg-orange-600"
+interface Tip {
+  _id: string;
+  title: string;
+  content: string;
+  category: string;
+  details?: string[];
+}
+
+export default async function TipsPage() {
+  let tips: any[] = [];
+  try {
+    const data = await client.fetch(`*[_type == "tip"]`);
+    if (data && data.length > 0) {
+      tips = data.map((t: Tip, index: number) => ({
+        id: (index + 1).toString().padStart(2, '0'),
+        title: t.title,
+        description: t.content,
+        details: t.details || [],
+        color: t.category === 'resume' ? "bg-purple-50 text-purple-600 group-hover:bg-purple-600" :
+               t.category === 'interview' ? "bg-blue-50 text-blue-600 group-hover:bg-blue-600" :
+               t.category === 'linkedin' ? "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600" :
+               "bg-orange-50 text-orange-600 group-hover:bg-orange-600"
+      }));
     }
-  ];
+  } catch (error) {
+    console.error("Failed to fetch tips:", error);
+  }
+
+  // Fallback data if no tips found in Sanity
+  if (tips.length === 0) {
+    tips = [
+      {
+        id: "01",
+        title: "Use Standard, ATS-Friendly Fonts",
+        description: "Applicant Tracking Systems are essentially text parsers. They struggle with complex, ornate, or non-standard fonts that aren't built into their databases. Stick to the 'Safe Six' for maximum compatibility.",
+        details: ["Arial", "Calibri", "Helvetica", "Georgia", "Tahoma", "Verdana"],
+        color: "bg-purple-50 text-purple-600 group-hover:bg-purple-600"
+      },
+      {
+        id: "02",
+        title: "Mirror Job Description Keywords",
+        description: "ATS algorithms look for specific matches between your resume and the job posting. Don't just list your skills—use the exact terminology found in the 'Requirements' and 'Responsibilities' sections.",
+        details: ["Scan for hard skills (e.g., 'Python', 'CRM')", "Look for industry certifications", "Include specific software names"],
+        color: "bg-blue-50 text-blue-600 group-hover:bg-blue-600"
+      },
+      {
+        id: "03",
+        title: "Avoid Complex Formatting",
+        description: "While a beautiful graphic resume might look great to a human, it often becomes a scrambled mess in an ATS. Keep your structure linear and predictable.",
+        details: ["Avoid multiple columns", "Don't put vital info in Headers/Footers", "Remove images, icons, and charts"],
+        color: "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600"
+      }
+    ];
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -71,7 +88,7 @@ export default function TipsPage() {
                     {tip.description}
                   </p>
                   <ul className="space-y-2">
-                    {tip.details.map((detail, idx) => (
+                    {tip.details.map((detail: string, idx: number) => (
                       <li key={idx} className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
                         <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
                         {detail}
