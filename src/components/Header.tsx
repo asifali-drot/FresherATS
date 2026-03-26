@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { useState, useEffect } from "react";
-import { Menu, X, Zap, History, FileText, Info, Mail, Rss } from "lucide-react";
+import { Menu, X, Zap, History, FileText, Info, Mail, Rss, LogIn, Sparkles } from "lucide-react";
 
 export default function Header({ user, logoutAction }: { user: User | null, logoutAction: () => void }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -117,9 +117,8 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
 
       {/* Mobile Navigation Drawer */}
       <div
-        className={`fixed right-0 top-[73px] bottom-0 z-999 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-l border-zinc-100 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed right-0 top-[73px] bottom-0 z-999 w-[50vw] sm:w-1/2 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-l border-zinc-100 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
-        style={{ width: 'min(320px, 85vw)' }}
       >
         <div className="flex flex-col h-full bg-white overflow-y-auto">
           <div className="flex flex-col gap-1 p-6">
@@ -157,18 +156,19 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
               <Link
                 onClick={closeMenu}
                 href="/login"
-                className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-zinc-200 text-zinc-700 font-bold hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm"
+                className="group flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-zinc-200/60 bg-white/80 p-4 text-sm font-bold text-zinc-700 shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
               >
-                <span className="text-sm">Login</span>
+                {/* <LogIn className="h-5 w-5 text-zinc-400 group-hover:text-blue-500 transition-colors" /> */}
+                <span>Login</span>
               </Link>
             )}
             <Link
               onClick={closeMenu}
               href="/analyze"
-              className="flex items-center justify-center gap-3 w-full rounded-2xl bg-blue-600 px-6 py-4 text-base font-black text-white hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-blue-200"
+              className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 p-4 text-sm font-black text-white shadow-xl shadow-blue-600/20 transition-all hover:scale-[1.02] hover:shadow-blue-600/30 active:scale-[0.98]"
             >
-              <FileText className="h-5 w-5" />
-              Analyze Resume
+              <Sparkles className="h-5 w-5 animate-pulse text-blue-200" />
+              <span>Analyze Resume</span>
             </Link>
           </div>
         </div>

@@ -24,3 +24,33 @@ export async function getGuides() {
     body
   }`);
 }
+
+// Added functions to fetch Blog Posts
+export async function getPosts() {
+  return await client.fetch(`*[_type == "post"] | order(publishedAt desc) {
+    _id,
+    title,
+    "slug": slug.current,
+    excerpt,
+    mainImage,
+    publishedAt,
+    author
+  }`);
+}
+
+export async function getPost(slug: string) {
+  return await client.fetch(`*[_type == "post" && slug.current == $slug][0]{
+    _id,
+    title,
+    "slug": slug.current,
+    metaTitle,
+    metaDescription,
+    keywords,
+    mainImage,
+    excerpt,
+    body,
+    publishedAt,
+    author
+  }`, { slug });
+}
+
