@@ -10,19 +10,19 @@ export default function Footer() {
   const downloadPDF = async () => {
     const stored = window.sessionStorage.getItem("fresherAtsResult");
     if (!stored) return;
-    
+
     try {
       const data = JSON.parse(stored);
       const analysisId = data.analysis_id;
       const resumeText = data.optimizedResume || data.optimized_resume;
-      
+
       if (!resumeText) {
         alert("No optimized resume content found. Please try analyzing your resume again.");
         return;
       }
 
       let response: Response;
-      
+
       // If we have an analysisId, try the storage-based download
       if (analysisId) {
         response = await fetch('/api/download-resume', {
@@ -72,22 +72,6 @@ export default function Footer() {
   return (
     <footer className="relative mt-20 bg-[#f8f9fb] border-t border-zinc-100 pb-10 pt-20">
       {/* Floating Action Card */}
-      {isResultPage && (
-        <div className="absolute -top-16 right-4 md:right-[10%] lg:right-[15%] z-20">
-          <div className="flex flex-col items-center gap-4 rounded-2xl bg-[#1c212e] p-6 text-center text-white shadow-2xl md:w-80">
-            <h3 className="text-lg font-bold leading-tight">
-              Unlock Full Resume Fixes <br />
-              <span className="text-blue-400">$5 one-time</span>
-            </h3>
-            <button 
-              onClick={downloadPDF}
-              className="w-full rounded-lg bg-blue-600 py-3 text-sm font-bold transition-all hover:bg-blue-700 active:scale-95"
-            >
-              Download ATS-Optimized Resume
-            </button>
-          </div>
-        </div>
-      )}
 
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid grid-cols-2 gap-12 md:grid-cols-4 lg:grid-cols-5">
@@ -117,14 +101,31 @@ export default function Footer() {
               <Link href="/guides" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">Resume Guides</Link>
             </nav>
           </div>
+
+          {/* Download CTA (Result Page Only) */}
+          {isResultPage && (
+            <div className="flex flex-col gap-6 md:col-span-2 lg:col-span-2 lg:col-start-4 lg:items-end">
+              <div className="flex flex-col gap-4 rounded-3xl bg-[#1c212e] p-6 text-center text-white shadow-xl w-full max-w-[300px]">
+                <button
+                  onClick={downloadPDF}
+                  className="w-full rounded-xl bg-blue-600 py-3 text-sm font-bold transition-all hover:bg-blue-700 active:scale-95 flex flex-col items-center justify-center leading-tight shadow-lg shadow-blue-500/20"
+                >
+                  <span className="text-white">Download Resume</span>
+                  <span className="text-[10px] text-white font-medium uppercase tracking-widest mt-1 opacity-90">
+                    FREE - Limited Time
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="mt-20 flex flex-col items-center justify-between border-t border-zinc-200 pt-8 md:flex-row">
+        <div className="mt-20 flex flex-col items-center justify-center border-t border-zinc-200 pt-8 md:flex-row">
           <p className="text-sm text-zinc-500">
             © {new Date().getFullYear()} FresherATS. All rights reserved.
           </p>
           <div className="mt-4 flex gap-6 md:mt-0">
-             {/* Social links removed as per user request */}
+            {/* Social links removed as per user request */}
           </div>
         </div>
       </div>
