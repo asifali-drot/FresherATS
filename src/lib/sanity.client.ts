@@ -34,8 +34,25 @@ export async function getPosts() {
     excerpt,
     mainImage,
     publishedAt,
-    author
+    author,
+    "readingTime": round(length(pt::text(body)) / 5 / 200)
   }`);
+}
+
+export async function getLatestPosts(limit: number = 5, excludeSlug?: string) {
+  const query = excludeSlug 
+    ? `*[_type == "post" && slug.current != $excludeSlug] | order(publishedAt desc)[0...$limit] {`
+    : `*[_type == "post"] | order(publishedAt desc)[0...$limit] {`;
+    
+  return await client.fetch(`${query}
+    _id,
+    title,
+    "slug": slug.current,
+    mainImage,
+    publishedAt,
+    author,
+    "readingTime": round(length(pt::text(body)) / 5 / 200)
+  }`, { limit, excludeSlug });
 }
 
 export async function getPost(slug: string) {
@@ -50,7 +67,8 @@ export async function getPost(slug: string) {
     excerpt,
     body,
     publishedAt,
-    author
+    author,
+    "readingTime": round(length(pt::text(body)) / 5 / 200)
   }`, { slug });
 }
 

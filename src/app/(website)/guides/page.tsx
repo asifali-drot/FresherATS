@@ -14,6 +14,7 @@ import {
   Sparkles,
   CheckCircle2
 } from "lucide-react";
+import SanityImage from "@/components/SanityImage";
 
 interface Guide {
   _id: string;
@@ -251,7 +252,11 @@ function GuideCard({ image, category, title, duration, slug }: { image: string, 
   return (
     <Link href={slug ? `/guides/${slug}` : "#"} className="group flex flex-col md:flex-row gap-6 p-4 rounded-3xl border border-zinc-100 bg-white hover:border-blue-100 hover:shadow-lg transition-all">
       <div className="w-full md:w-48 h-48 rounded-2xl overflow-hidden shrink-0">
-        <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        <SanityImage 
+          image={image} 
+          alt={title} 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+        />
       </div>
       <div className="flex flex-col justify-center py-4">
         <div className="flex items-center gap-2 mb-3">

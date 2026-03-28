@@ -12,6 +12,7 @@ import {
   CalendarDays,
   User
 } from "lucide-react";
+import SanityImage from "@/components/SanityImage";
 
 interface Post {
   _id: string;
@@ -21,6 +22,7 @@ interface Post {
   mainImage?: any;
   publishedAt?: string;
   author?: string;
+  readingTime?: number;
 }
 
 export default function BlogPage() {
@@ -97,6 +99,7 @@ export default function BlogPage() {
                      slug={post.slug}
                      publishedAt={post.publishedAt}
                      author={post.author}
+                     readingTime={post.readingTime}
                    />
                  ))
                ) : (
@@ -114,13 +117,17 @@ export default function BlogPage() {
   );
 }
 
-function BlogCard({ image, title, excerpt, slug, publishedAt, author }: { image: string, title: string, excerpt: string, slug?: string, publishedAt?: string, author?: string }) {
+function BlogCard({ image, title, excerpt, slug, publishedAt, author, readingTime }: { image: string, title: string, excerpt: string, slug?: string, publishedAt?: string, author?: string, readingTime?: number }) {
   const formattedDate = publishedAt ? new Date(publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
   
   return (
     <Link href={slug ? `/blog/${slug}` : "#"} className="group flex flex-col md:flex-row gap-6 p-4 rounded-3xl border border-zinc-100 bg-white hover:border-blue-100 hover:shadow-lg transition-all">
       <div className="w-full md:w-48 h-48 rounded-2xl overflow-hidden shrink-0">
-        <img src={image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+        <SanityImage 
+          image={image} 
+          alt={title} 
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+        />
       </div>
       <div className="flex flex-col justify-center py-4">
         <div className="flex items-center gap-3 mb-3 text-xs text-zinc-500 font-medium whitespace-nowrap overflow-hidden">
@@ -137,6 +144,13 @@ function BlogCard({ image, title, excerpt, slug, publishedAt, author }: { image:
               {formattedDate}
             </span>
           )}
+          {(formattedDate || author) && readingTime && readingTime > 0 && <span className="text-zinc-300">•</span>}
+          {readingTime && readingTime > 0 && (
+             <span className="flex items-center gap-1.5 shrink-0">
+              <BookOpen className="h-3.5 w-3.5" />
+              {readingTime} min read
+            </span>
+          )}
         </div>
         <h4 className="text-xl font-bold text-zinc-900 mb-2 group-hover:text-blue-600 transition-colors leading-tight line-clamp-2">{title}</h4>
         {excerpt && <p className="text-sm text-zinc-600 mb-4 line-clamp-2">{excerpt}</p>}
@@ -147,4 +161,3 @@ function BlogCard({ image, title, excerpt, slug, publishedAt, author }: { image:
     </Link>
   );
 }
-

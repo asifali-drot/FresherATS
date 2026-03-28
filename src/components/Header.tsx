@@ -64,13 +64,13 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             <div className="hidden lg:flex items-center gap-6">
               {user ? (
                 <div className="flex items-center gap-6">
-                  <Link
+                  {/* <Link
                     href="/history"
                     className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors flex items-center gap-2"
                   >
                     <History className="h-4 w-4" />
                     History
-                  </Link>
+                  </Link> */}
                   <form action={logoutAction}>
                     <button
                       type="submit"

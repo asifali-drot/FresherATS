@@ -82,7 +82,7 @@ function AnalyzeResultContent() {
         try {
           const errData = await response.json();
           if (errData?.error) errorMsg = errData.error;
-        } catch {}
+        } catch { }
         throw new Error(errorMsg);
       }
 
@@ -157,91 +157,61 @@ function AnalyzeResultContent() {
         {/* Main Content */}
         <div className="lg:col-span-2 flex flex-col gap-10">
           <div className="flex flex-col gap-8 rounded-3xl border border-zinc-100 bg-white p-8 shadow-sm">
-             <div className="flex flex-col items-center justify-center gap-10">
-               <ATSScore score={data.score ?? 72} />
-               
-               <div className="flex flex-col items-center gap-2">
-                 <button
-                   onClick={downloadPDF}
-                   disabled={isDownloading}
-                   className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-sm font-bold text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-600 transition-all active:scale-95 shadow-lg shadow-zinc-200"
-                 >
-                   {isDownloading ? (
-                      <>
-                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Generating...
-                      </>
-                   ) : user ? "Download Resume" : "Login to Download Resume"}
-                 </button>
-                 
-                 <Link
-                   href="/analyze/editor"
-                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-8 py-4 text-sm font-bold text-zinc-900 hover:bg-zinc-50 transition-all active:scale-95 shadow-sm"
-                 >
-                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                   </svg>
-                   Preview & Edit Resume
-                 </Link>
-                 {downloadError && (
-                   <p className="text-xs font-medium text-red-600 bg-red-50 px-4 py-2 rounded-full">
-                     {downloadError}
-                   </p>
-                 )}
-               </div>
-             </div>
-             
-             <div className="h-px bg-zinc-100 w-full" />
+            <div className="flex flex-col items-center justify-center gap-10">
+              <ATSScore score={data.score ?? 72} />
 
-              <Suggestions data={data} />
+              <div className="flex flex-col items-center gap-2">
+                <button
+                  onClick={downloadPDF}
+                  disabled={isDownloading}
+                  className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-sm font-bold text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-600 transition-all active:scale-95 shadow-lg shadow-zinc-200"
+                >
+                  {isDownloading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Generating...
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center leading-tight">
+                      <span>Download Resume</span>
+                      {!user && (
+                        <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest mt-0.5">
+                          FREE - Limited Time
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </button>
 
-              {/* Optimized Resume Preview */}
-              <div className="flex flex-col gap-6 mt-4">
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-xl font-bold text-zinc-900">Optimized Resume Preview</h3>
-                  <p className="text-sm text-zinc-500">This is a preview of your professionally styled, ATS-optimized resume.</p>
-                </div>
-                
-                <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all hover:shadow-md">
-                   <div 
-                     className="w-full"
-                     style={{ backgroundColor: '#f9fafb', height: '800px' }}
-                   >
-                     <iframe
-                        title="Resume Preview"
-                        className="w-full h-full border-none"
-                        srcDoc={generateResumeHtml(
-                          parseResumeText(data.optimizedResume || "").nameLines,
-                          parseResumeText(data.optimizedResume || "").sections
-                        )}
-                     />
-                   </div>
-                   
-                   {/* Gradient Overlay for longer previews */}
-                   <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-zinc-50/50 to-transparent pointer-events-none" />
-                </div>
-                
-                <div className="flex justify-center">
-                  <button
-                    onClick={downloadPDF}
-                    disabled={isDownloading}
-                    className="group relative flex items-center gap-3 rounded-2xl bg-zinc-900 px-10 py-5 text-base font-bold text-white hover:bg-zinc-800 transition-all active:scale-95 shadow-xl shadow-zinc-200"
-                  >
-                    <span>Download Resume</span>
-                    <svg className="h-5 w-5 transition-transform group-hover:translate-y-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                  </button>
-                </div>
+                <Link
+                  href="/analyze/editor"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-8 py-4 text-sm font-bold text-zinc-900 hover:bg-zinc-50 transition-all active:scale-95 shadow-sm"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Preview & Edit Resume
+                </Link>
+                {downloadError && (
+                  <p className="text-xs font-medium text-red-600 bg-red-50 px-4 py-2 rounded-full">
+                    {downloadError}
+                  </p>
+                )}
               </div>
+            </div>
+
+            <div className="h-px bg-zinc-100 w-full" />
+
+            <Suggestions data={data} />
+
           </div>
 
           <div className="flex items-center justify-between px-2">
             <Link href="/analyze" className="text-sm font-semibold text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-2">
-               <span>←</span> Analyze another resume
+              <span>←</span> Analyze another resume
             </Link>
           </div>
         </div>
@@ -251,7 +221,8 @@ function AnalyzeResultContent() {
           {/* About Us Card */}
           <div className="rounded-3xl border border-zinc-100 bg-white p-8 shadow-sm">
             <h3 className="text-2xl font-bold text-zinc-900 flex items-center gap-2">
-              <span className="text-blue-600">F</span> About Us
+              {/* <span className="text-blue-600"></span>About Us */}
+              About Us
             </h3>
             <div className="mt-6 space-y-4">
               <h4 className="font-bold text-zinc-800">Helping Fresh Graduates Get Hired</h4>
@@ -263,36 +234,36 @@ function AnalyzeResultContent() {
 
           {/* Blog Card */}
           <div className="rounded-3xl border border-zinc-100 bg-white p-8 shadow-sm">
-             <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
-               <h3 className="font-bold text-zinc-900">FresherATS Blog</h3>
-             </div>
-             <div className="mt-6 flex flex-col gap-8">
-               <h4 className="text-lg font-bold text-zinc-800">Tips & Advice for Landing Your First Job</h4>
-               
-               <div className="flex flex-col gap-6">
-                 {/* Blog post item 1 */}
-                 <div className="flex gap-4">
-                    <div className="h-20 w-24 shrink-0 rounded-xl bg-zinc-100 overflow-hidden relative">
-                       <Image src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=200" alt="post" fill className="object-cover" />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <h5 className="text-sm font-bold text-zinc-900 leading-snug">Top 5 ATS Resume Mistakes to Avoid</h5>
-                      <Link href="/blog/mistakes" className="text-xs font-bold text-blue-600 hover:underline">Read More</Link>
-                    </div>
-                 </div>
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
+              <h3 className="font-bold text-zinc-900">FresherATS Blog</h3>
+            </div>
+            <div className="mt-6 flex flex-col gap-8">
+              <h4 className="text-lg font-bold text-zinc-800">Tips & Advice for Landing Your First Job</h4>
 
-                 {/* Blog post item 2 */}
-                 <div className="flex gap-4">
-                    <div className="h-20 w-24 shrink-0 rounded-xl bg-zinc-100 overflow-hidden relative">
-                       <Image src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=200" alt="post" fill className="object-cover" />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <h5 className="text-sm font-bold text-zinc-900 leading-snug">How to Tailor Your Resume for Any Job</h5>
-                      <Link href="/blog/tailor" className="text-xs font-bold text-blue-600 hover:underline">Read More</Link>
-                    </div>
-                 </div>
-               </div>
-             </div>
+              <div className="flex flex-col gap-6">
+                {/* Blog post item 1 */}
+                <div className="flex gap-4">
+                  <div className="h-20 w-24 shrink-0 rounded-xl bg-zinc-100 overflow-hidden relative">
+                    <Image src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=200" alt="post" fill className="object-cover" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <h5 className="text-sm font-bold text-zinc-900 leading-snug">Top 5 ATS Resume Mistakes to Avoid</h5>
+                    <Link href="/blog/mistakes" className="text-xs font-bold text-blue-600 hover:underline">Read More</Link>
+                  </div>
+                </div>
+
+                {/* Blog post item 2 */}
+                <div className="flex gap-4">
+                  <div className="h-20 w-24 shrink-0 rounded-xl bg-zinc-100 overflow-hidden relative">
+                    <Image src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=200" alt="post" fill className="object-cover" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <h5 className="text-sm font-bold text-zinc-900 leading-snug">How to Tailor Your Resume for Any Job</h5>
+                    <Link href="/blog/tailor" className="text-xs font-bold text-blue-600 hover:underline">Read More</Link>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
