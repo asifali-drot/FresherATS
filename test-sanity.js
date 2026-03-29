@@ -14,8 +14,8 @@ async function testConnection() {
       projectId: client.config().projectId,
       dataset: client.config().dataset
     });
-    const data = await client.fetch('*[_type == "guide"]{_id, title}');
-    console.log('Success! Found guides:', data.length);
+    const data = await client.fetch('*[_type == "post"]{_id, title}');
+    console.log('Success! Found posts:', data.length);
     console.log(data);
   } catch (error) {
     console.error('Sanity connection error:', error.message);

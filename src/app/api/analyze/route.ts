@@ -4,8 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { parsePdf } from "@/lib/resume/parsePdf";
 import { parseDocx } from "@/lib/resume/parseDocx";
 import { createClient } from "@/lib/supabase/server";
-import fs from "fs";
-import path from "path";
+
 
 export async function POST(req: NextRequest) {
   try {
@@ -159,12 +158,17 @@ Output the optimized content text only, maintaining a logical structure.`
       }
     );
 
-    if (!stage2Response.ok) {
-      console.error("Stage 2 failed, using original text as fallback.");
+    let optimizedText = resumeText;
+    if (stage2Response.ok) {
+      try {
+        const stage2Data = await stage2Response.json();
+        optimizedText = stage2Data?.choices?.[0]?.message?.content?.trim() || resumeText;
+      } catch (e) {
+        console.error("Failed to parse Stage 2 JSON:", e);
+      }
+    } else {
+      console.error("Stage 2 AI Error:", stage2Response.statusText);
     }
-
-    const stage2Data = await stage2Response.json();
-    const optimizedText = stage2Data?.choices?.[0]?.message?.content?.trim() || resumeText;
 
     // --- AI Stage 3: Final Resume Generation ---
     console.log("Stage 3: Final Formatting...");
@@ -203,8 +207,17 @@ EDUCATION`
       }
     );
 
-    const stage3Data = await stage3Response.json();
-    const finalOptimizedResume = stage3Data?.choices?.[0]?.message?.content?.trim() || optimizedText;
+    let finalOptimizedResume = optimizedText;
+    if (stage3Response.ok) {
+      try {
+        const stage3Data = await stage3Response.json();
+        finalOptimizedResume = stage3Data?.choices?.[0]?.message?.content?.trim() || optimizedText;
+      } catch (e) {
+        console.error("Failed to parse Stage 3 JSON:", e);
+      }
+    } else {
+      console.error("Stage 3 AI Error:", stage3Response.statusText);
+    }
     
     console.log("Final optimizedResume length:", finalOptimizedResume?.length || 0);
     
@@ -214,21 +227,14 @@ EDUCATION`
     // --- Supabase Integration ---
     let analysisId: string | null = null;
     try {
-      const logFile = path.join(process.cwd(), "debug_db.log");
-      const log = (msg: string) => {
-        const entry = `[${new Date().toISOString()}] ${msg}\n`;
-        fs.appendFileSync(logFile, entry);
-        console.log(msg);
-      };
-
-      log("[DB] Starting Supabase integration...");
+      console.log("[DB] Starting Supabase integration...");
       const supabase = await createClient();
 
-      log("[DB] Calling getUser()...");
+      console.log("[DB] Calling getUser()...");
       const { data: authData, error: authError } = await supabase.auth.getUser();
-      log(`[DB] getUser result — user: ${authData?.user?.id ?? "null"} | authError: ${authError?.message ?? "none"}`);
+      console.log(`[DB] getUser result — user: ${authData?.user?.id ?? "null"} | authError: ${authError?.message ?? "none"}`);
 
-      log("[DB] Inserting analysis...");
+      console.log("[DB] Inserting analysis...");
       
       // Merge missing keywords into suggestions for storage since column is missing
       const suggestionsToSave = [...(suggestions.suggestions ?? [])];
@@ -251,16 +257,14 @@ EDUCATION`
         .single();
 
       if (dbError) {
-        log(`[DB] Insert error — code: ${dbError.code} | message: ${dbError.message} | details: ${dbError.details} | hint: ${dbError.hint}`);
+        console.error(`[DB] Insert error — code: ${dbError.code} | message: ${dbError.message} | details: ${dbError.details} | hint: ${dbError.hint}`);
       } else {
-        log(`[DB] Insert success — row id: ${insertedRow?.id}`);
-      analysisId = insertedRow?.id ?? null;
+        console.log(`[DB] Insert success — row id: ${insertedRow?.id}`);
+        analysisId = insertedRow?.id ?? null;
       }
     } catch (dbCatchError: unknown) {
-      const logFile = path.join(process.cwd(), "debug_db.log");
       const errorMessage = dbCatchError instanceof Error ? dbCatchError.message : String(dbCatchError);
-      fs.appendFileSync(logFile, `[${new Date().toISOString()}] [DB] Unexpected Supabase error: ${errorMessage}\n`);
-      console.error("[DB] Unexpected Supabase error:", dbCatchError);
+      console.error("[DB] Unexpected Supabase error:", errorMessage);
     }
     // --- End Supabase Integration ---
 

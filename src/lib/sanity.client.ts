@@ -2,10 +2,10 @@ import { createClient } from 'next-sanity';
 import { createImageUrlBuilder } from '@sanity/image-url';
 
 export const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'byw5korl',
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'production',
   apiVersion: '2024-03-23',
-  useCdn: false,
+  useCdn: process.env.NODE_ENV === 'production',
 });
 
 const builder = createImageUrlBuilder(client);
@@ -35,7 +35,7 @@ export async function getPosts() {
     mainImage,
     publishedAt,
     author,
-    "readingTime": round(length(pt::text(body)) / 5 / 200)
+    "readingTime": select(defined(body) => round(length(pt::text(body)) / 5 / 200), 0)
   }`);
 }
 
@@ -51,7 +51,7 @@ export async function getLatestPosts(limit: number = 5, excludeSlug?: string) {
     mainImage,
     publishedAt,
     author,
-    "readingTime": round(length(pt::text(body)) / 5 / 200)
+    "readingTime": select(defined(body) => round(length(pt::text(body)) / 5 / 200), 0)
   }`, { limit, excludeSlug });
 }
 
@@ -68,7 +68,7 @@ export async function getPost(slug: string) {
     body,
     publishedAt,
     author,
-    "readingTime": round(length(pt::text(body)) / 5 / 200)
+    "readingTime": select(defined(body) => round(length(pt::text(body)) / 5 / 200), 0)
   }`, { slug });
 }
 
