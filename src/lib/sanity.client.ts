@@ -68,6 +68,7 @@ export async function getPost(slug: string) {
     body,
     publishedAt,
     author,
+    faqs,
     "readingTime": select(defined(body) => round(length(pt::text(body)) / 5 / 200), 0)
   }`, { slug });
 }

@@ -6,6 +6,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import SanityImage from "@/components/SanityImage";
+import FAQSection from "@/components/FAQSection";
+import { generateFAQSchema } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -162,6 +164,24 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
         </aside>
       </div>
+
+      {/* FAQ Section */}
+      {post.faqs && post.faqs.length > 0 && (
+        <div className="max-w-7xl mx-auto px-6 mt-16">
+          <FAQSection 
+            faqs={post.faqs} 
+            title="Questions About This Topic"
+          />
+        </div>
+      )}
+
+      {/* FAQ Schema */}
+      {post.faqs && post.faqs.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(generateFAQSchema(post.faqs)) }}
+        />
+      )}
     </div>
   );
 }

@@ -78,5 +78,19 @@ export const blog = defineType({
       title: "Author",
       type: "string"
     }),
+    defineField({
+      name: "faqs",
+      title: "Frequently Asked Questions",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            { name: "question", title: "Question", type: "string" },
+            { name: "answer", title: "Answer", type: "text", rows: 4 }
+          ]
+        }
+      ]
+    }),
   ]
 });

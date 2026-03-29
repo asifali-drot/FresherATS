@@ -200,28 +200,25 @@ export default function ResumeEditorPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={downloadPDF}
-            disabled={isDownloading || !resumeText}
-            className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 px-6 py-2.5 text-sm font-bold text-white hover:opacity-90 disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-zinc-200 dark:shadow-none"
-          >
-            {isDownloading ? (
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                <span>Generating...</span>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center leading-tight">
-                <span>Download Resume</span>
-                {!user && (
+            <button
+              onClick={downloadPDF}
+              disabled={isDownloading || !resumeText}
+              className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 px-6 py-2.5 text-sm font-bold text-white hover:opacity-90 disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-zinc-200 dark:shadow-none"
+            >
+              {isDownloading ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  <span>Generating...</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center leading-tight">
+                  <span>Download Resume</span>
                   <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest mt-0.5">
                     FREE - Limited Time
                   </span>
-                )}
-              </div>
-            )}
-          </button>
-
+                </div>
+              )}
+            </button>
         </div>
       </header>
 

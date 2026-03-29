@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, Suspense, useCallback } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Suggestions, { type AnalysisResult } from "@/components/Suggestions";
 import ATSScore from "@/components/ATSScore";
 import { parseResumeText, generateResumeHtml } from "@/lib/resume/resumeUtils";
@@ -16,6 +16,7 @@ function AnalyzeResultContent() {
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
   const searchParams = useSearchParams();
   const hasTriggeredAuto = useRef(false);
 
@@ -125,6 +126,17 @@ function AnalyzeResultContent() {
       setIsDownloading(false);
     }
   }, [isDownloading, user, data]);
+  
+  const handlePreview = useCallback(() => {
+    if (!user) {
+      const params = new URLSearchParams();
+      params.set("claim_id", data?.analysis_id || "");
+      params.set("redirect", "/analyze/editor");
+      router.push(`/login?${params.toString()}`);
+      return;
+    }
+    router.push("/analyze/editor");
+  }, [user, data, router]);
 
   // Auto-download effect
   useEffect(() => {
@@ -161,40 +173,38 @@ function AnalyzeResultContent() {
               <ATSScore score={data.score ?? 72} />
 
               <div className="flex flex-col items-center gap-2">
-                <button
-                  onClick={downloadPDF}
-                  disabled={isDownloading}
-                  className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-sm font-bold text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-600 transition-all active:scale-95 shadow-lg shadow-zinc-200"
-                >
-                  {isDownloading ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Generating...
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center leading-tight">
-                      <span>Download Resume</span>
-                      {!user && (
+                  <button
+                    onClick={downloadPDF}
+                    disabled={isDownloading}
+                    className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-sm font-bold text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-600 transition-all active:scale-95 shadow-lg shadow-zinc-200 w-full justify-center"
+                  >
+                    {isDownloading ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Generating...
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center leading-tight">
+                        <span>Download Resume</span>
                         <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest mt-0.5">
                           FREE - Limited Time
                         </span>
-                      )}
-                    </div>
-                  )}
-                </button>
+                      </div>
+                    )}
+                  </button>
 
-                <Link
-                  href="/analyze/editor"
+                <button
+                  onClick={handlePreview}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-8 py-4 text-sm font-bold text-zinc-900 hover:bg-zinc-50 transition-all active:scale-95 shadow-sm"
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                   Preview & Edit Resume
-                </Link>
+                </button>
                 {downloadError && (
                   <p className="text-xs font-medium text-red-600 bg-red-50 px-4 py-2 rounded-full">
                     {downloadError}

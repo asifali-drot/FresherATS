@@ -1,4 +1,6 @@
 import Link from "next/link";
+import FAQSection from "@/components/FAQSection";
+import { generateFAQSchema } from "@/lib/seo";
 
 export default function Home() {
     return (
@@ -17,7 +19,7 @@ export default function Home() {
 
                 <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-zinc-900 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-100">
                     Fix Your Resume Before <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600 bg-[length:200%_auto] animate-gradient">
+                    <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-600 via-pink-500 to-purple-600 bg-size-[200%_auto] animate-gradient">
                         ATS Rejects It
                     </span>
                 </h1>
@@ -55,6 +57,41 @@ export default function Home() {
                     </div>
                 </div>
             </div>
+
+            <FAQSection
+                faqs={HOME_FAQS}
+                title="Got Questions? We Have Answers"
+                description="Everything you need to know about our ATS analyzer and how it helps you land your dream job."
+            />
+
+            {/* FAQ Schema */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(generateFAQSchema(HOME_FAQS)) }}
+            />
         </main>
     );
 }
+
+const HOME_FAQS = [
+    {
+        question: "What is an ATS resume?",
+        answer: "An ATS resume is a resume designed to be easily read and parsed by Applicant Tracking Systems (ATS). It typically uses standard fonts, clear headings, and keywords relevant to the job description."
+    },
+    {
+        question: "How does the ATS score work?",
+        answer: "The ATS score is calculated by comparing your resume's content against the job description. It looks for matching keywords, skills, and experience to determine how well you fit the role."
+    },
+    {
+        question: "Is my resume stored?",
+        answer: "No, we prioritize your privacy. Your resume is processed for analysis and then deleted. We do not store your personal data or resume files on our servers longer than necessary for the session."
+    },
+    {
+        question: "Can I download the optimized resume?",
+        answer: "Yes! After optimizing your resume using our editor, you can download it as a PDF that is fully ATS-friendly."
+    },
+    {
+        question: "Is this tool free?",
+        answer: "Yes, our basic ATS analysis and editor are free to use for all job seekers."
+    }
+];
