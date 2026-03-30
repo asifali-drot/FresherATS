@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { useState, useEffect } from "react";
-import { Menu, X, Zap, History, FileText, Info, Mail, Rss, LogIn, Sparkles } from "lucide-react";
+import { Menu, X, Zap, History, FileText, Info, Mail, Rss, Sparkles } from "lucide-react";
 
 export default function Header({ user, logoutAction }: { user: User | null, logoutAction: () => void }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -88,6 +88,14 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
                   Login
                 </Link>
               )}
+
+              <Link
+                href="/templates"
+                className="flex items-center gap-2 text-sm font-extrabold text-zinc-700 hover:text-blue-600 transition-colors"
+              >
+                Templates <FileText className="h-4 w-4" />
+              </Link>
+
               <Link
                 href="/analyze"
                 className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-extrabold text-white hover:bg-blue-700 active:scale-95 transition-all shadow-lg shadow-blue-100"
@@ -127,6 +135,9 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             <MobileNavLink href="/blog" icon={<Rss className="h-5 w-5" />} label="Blog" onClick={closeMenu} />
             <MobileNavLink href="/about" icon={<Info className="h-5 w-5" />} label="About Us" onClick={closeMenu} />
             <MobileNavLink href="/contact" icon={<Mail className="h-5 w-5" />} label="Contact Us" onClick={closeMenu} />
+
+              <div className="px-4 pt-3 pb-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Templates</div>
+              <MobileNavLink href="/templates" icon={<FileText className="h-5 w-5" />} label="Browse Templates" onClick={closeMenu} />
           </div>
 
           <div className="mt-auto p-6 border-t border-zinc-100 flex flex-col gap-4 bg-zinc-50/50">

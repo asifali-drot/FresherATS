@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { parseResumeText, generateResumeHtml, ParsedSection } from "@/lib/resume/resumeUtils";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { AnalysisResult } from "@/components/Suggestions";
+import { getResumeTemplateById, type ResumeTemplateId } from "@/lib/resume/templates";
 import {
-  Edit3, Layout, FileText, Download, ChevronLeft, User, Mail, MapPin, Briefcase, GraduationCap, Code, Target,
+  Edit3, Layout, FileText, ChevronLeft, User, Mail, MapPin, Briefcase, GraduationCap, Code, Target,
   Award,
   List,
   Highlighter
@@ -24,6 +26,13 @@ export default function ResumeEditorPage() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
+  const searchParams = useSearchParams();
+  const templateIdParam = searchParams.get("template");
+  const isTemplateMode = templateIdParam !== null;
+  const resolvedTemplateId: ResumeTemplateId | undefined = templateIdParam
+    ? getResumeTemplateById(templateIdParam).id
+    : undefined;
+
   useEffect(() => {
     async function init() {
       const { createClient } = await import("@/lib/supabase/client");
@@ -31,6 +40,33 @@ export default function ResumeEditorPage() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
 
+      // Template editing starts from a pre-filled ATS-friendly seed.
+      if (templateIdParam && typeof window !== "undefined") {
+        if (!user) {
+          // Require login to edit templates.
+          const params = new URLSearchParams();
+          params.set("claim_id", "");
+          params.set("redirect", window.location.pathname + window.location.search);
+          window.location.href = `/login?${params.toString()}`;
+          return;
+        }
+
+        const template = getResumeTemplateById(templateIdParam);
+        const text = template.seedResumeText;
+
+        setResumeText(text);
+        setAnalysisId(null);
+
+        // Initial parse for guided mode
+        const { nameLines, sections } = parseResumeText(text);
+        setLocalNameLines(nameLines);
+        setLocalSections(sections);
+
+        setIsLoading(false);
+        return;
+      }
+
+      // Resume editing for uploaded/AI-optimized resumes.
       if (typeof window !== "undefined") {
         const stored = window.sessionStorage.getItem("fresherAtsResult");
         if (stored) {
@@ -49,10 +85,11 @@ export default function ResumeEditorPage() {
           }
         }
       }
+
       setIsLoading(false);
     }
     init();
-  }, []);
+  }, [templateIdParam]);
 
   // Sync resumeText when in guided mode
   const syncToText = useCallback((nameLines: string[], sections: ParsedSection[]) => {
@@ -88,13 +125,13 @@ export default function ResumeEditorPage() {
   };
 
   const downloadPDF = useCallback(async () => {
-    if (isDownloading || !resumeText) return;
+    if (isDownloading || !resumeText.trim()) return;
 
     if (!user) {
       // Redirect to login to claim this analysis
       const params = new URLSearchParams();
       params.set("claim_id", analysisId || "");
-      params.set("redirect", window.location.pathname);
+      params.set("redirect", window.location.pathname + window.location.search);
       window.location.href = `/login?${params.toString()}`;
       return;
     }
@@ -105,7 +142,7 @@ export default function ResumeEditorPage() {
       const response = await fetch('/api/generate-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText: resumeText }),
+        body: JSON.stringify({ resumeText: resumeText, templateId: resolvedTemplateId }),
       });
 
       if (!response.ok) {
@@ -150,7 +187,7 @@ export default function ResumeEditorPage() {
     } finally {
       setIsDownloading(false);
     }
-  }, [isDownloading, resumeText, user, analysisId]);
+  }, [isDownloading, resumeText, user, analysisId, resolvedTemplateId]);
 
   if (isLoading) {
     return (
@@ -160,7 +197,7 @@ export default function ResumeEditorPage() {
     );
   }
 
-  const previewHtml = generateResumeHtml(localNameLines, localSections);
+  const previewHtml = generateResumeHtml(localNameLines, localSections, resolvedTemplateId);
 
   return (
     <div className="flex flex-col h-screen bg-zinc-50 dark:bg-zinc-950 overflow-hidden font-sans">
@@ -168,7 +205,7 @@ export default function ResumeEditorPage() {
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200 px-6 dark:border-zinc-800 bg-white dark:bg-zinc-950 z-20 shadow-sm">
         <div className="flex items-center gap-4">
           <Link
-            href="/analyze/result"
+            href={isTemplateMode ? "/templates" : "/analyze/result"}
             className="group flex items-center gap-2 text-sm font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
           >
             <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
@@ -202,7 +239,7 @@ export default function ResumeEditorPage() {
         <div className="flex items-center gap-3">
             <button
               onClick={downloadPDF}
-              disabled={isDownloading || !resumeText}
+              disabled={isDownloading || !resumeText.trim()}
               className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 px-6 py-2.5 text-sm font-bold text-white hover:opacity-90 disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-zinc-200 dark:shadow-none"
             >
               {isDownloading ? (
@@ -220,6 +257,14 @@ export default function ResumeEditorPage() {
               )}
             </button>
         </div>
+
+        {downloadError && (
+          <div className="px-6 pb-4">
+            <p className="text-xs font-medium text-red-600 bg-red-50 px-4 py-2 rounded-full inline-block">
+              {downloadError}
+            </p>
+          </div>
+        )}
       </header>
 
       <main className="flex flex-1 overflow-hidden">

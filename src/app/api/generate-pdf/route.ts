@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 export async function POST(req: NextRequest): Promise<Response> {
   try {
     const body = await req.json();
-    const { resumeText } = body;
+    const { resumeText, templateId } = body;
 
     console.log("[PDF] Generation request received. Length:", resumeText?.length);
 
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     const { nameLines, sections } = parseResumeText(resumeText);
     
     console.log("[PDF] Generating PDF with @react-pdf/renderer");
-    const element = React.createElement(ResumePdfDocument, { nameLines, sections });
+    const element = React.createElement(ResumePdfDocument, { nameLines, sections, templateId });
     // @ts-expect-error - @react-pdf/renderer types can be strict with React.createElement
     const pdfBuffer = await renderToBuffer(element as React.ReactElement);
 

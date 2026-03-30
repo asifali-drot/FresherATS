@@ -8,6 +8,8 @@ import { Metadata } from "next";
 import SanityImage from "@/components/SanityImage";
 import FAQSection from "@/components/FAQSection";
 import { generateFAQSchema } from "@/lib/seo";
+import TableOfContents from "@/components/blog/TableOfContents";
+import { createSlugger, extractToc } from "@/lib/blog/toc";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -46,6 +48,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   }
 
   const latestPosts = await getLatestPosts(5, slug);
+  const toc = extractToc(post.body);
+  const sluggerForRender = createSlugger();
+  type LatestPost = {
+    _id: string;
+    slug: string;
+    title: string;
+    publishedAt?: string;
+    mainImage?: unknown;
+  };
 
   const formattedDate = post.publishedAt
     ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -106,29 +117,67 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </div>
       )}
 
-      {/* Layout Grid: Content on Left, Sidebar on Right */}
+      {/* Layout Grid: TOC (left), Content (center), Latest (right) */}
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Article Content - Shifted left */}
-        <div className="lg:col-span-8">
+        {/* Left: Table of Contents */}
+        <aside className="lg:col-span-3 lg:pr-2 lg:sticky lg:top-28 lg:h-fit lg:self-start z-20">
+          <TableOfContents items={toc} />
+        </aside>
+
+        {/* Center: Article Content */}
+        <div className="lg:col-span-6">
           <article className="prose-blog">
             {post.body ? (
-              <PortableText value={post.body} />
+              <PortableText
+                value={post.body}
+                components={{
+                  block: {
+                    h2: ({ children }) => {
+                      const text = Array.isArray(children) ? children.join("") : String(children ?? "");
+                      const id = sluggerForRender.slug(text);
+                      return (
+                        <h2 id={id} className="scroll-mt-28">
+                          {children}
+                        </h2>
+                      );
+                    },
+                    h3: ({ children }) => {
+                      const text = Array.isArray(children) ? children.join("") : String(children ?? "");
+                      const id = sluggerForRender.slug(text);
+                      return (
+                        <h3 id={id} className="scroll-mt-28">
+                          {children}
+                        </h3>
+                      );
+                    },
+                    h4: ({ children }) => {
+                      const text = Array.isArray(children) ? children.join("") : String(children ?? "");
+                      const id = sluggerForRender.slug(text);
+                      return (
+                        <h4 id={id} className="scroll-mt-28">
+                          {children}
+                        </h4>
+                      );
+                    },
+                  },
+                }}
+              />
             ) : (
               <p>No content available.</p>
             )}
           </article>
         </div>
 
-        {/* Sidebar - Latest Blogs */}
-        <aside className="lg:col-span-4 border-l border-zinc-100 pl-0 lg:pl-10">
-          <div className="sticky top-24">
+        {/* Right: Latest Blogs */}
+        <aside className="lg:col-span-3 border-l border-zinc-100 pl-0 lg:pl-10 lg:sticky lg:top-28 lg:h-fit lg:self-start z-10">
+          <div>
             <h3 className="text-xl font-extrabold text-zinc-900 mb-8 flex items-center gap-2">
               <div className="w-1.5 h-6 bg-blue-600 rounded-full"></div>
               Latest Articles
             </h3>
 
             <div className="space-y-8">
-              {latestPosts.map((latest: any) => (
+              {(latestPosts as LatestPost[]).map((latest) => (
                 <Link
                   key={latest._id}
                   href={`/blog/${latest.slug}`}

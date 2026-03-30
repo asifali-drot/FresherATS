@@ -1,3 +1,5 @@
+import type { ResumeTemplateId } from "./templates";
+
 export interface ParsedSection {
   title: string;
   content: string[];
@@ -97,7 +99,29 @@ export function parseResumeText(text: string): {
   return { nameLines, sections };
 }
 
-export function generateResumeHtml(nameLines: string[], sections: ParsedSection[]): string {
+export function generateResumeHtml(
+  nameLines: string[],
+  sections: ParsedSection[],
+  templateId?: ResumeTemplateId
+): string {
+  const template = templateId ?? "professional";
+  const templateVars =
+    template === "minimal"
+      ? {
+          primaryColor: "#0f172a",
+          accentColor: "#334155",
+          baseFontSize: "10pt",
+          bodyPadding: "32px 44px",
+          nameFontSize: "26pt",
+        }
+      : {
+          primaryColor: "#0f172a",
+          accentColor: "#2563eb",
+          baseFontSize: "10.5pt",
+          bodyPadding: "40px 50px",
+          nameFontSize: "28pt",
+        };
+
   const nameHeader = nameLines.length > 0 ? `
     <header class="resume-header">
       <h1 class="resume-name">${nameLines[0]}</h1>
@@ -150,13 +174,13 @@ export function generateResumeHtml(nameLines: string[], sections: ParsedSection[
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
  
         :root {
-          --primary-color: #0f172a;
+          --primary-color: ${templateVars.primaryColor};
           --secondary-color: #475569;
-          --accent-color: #2563eb;
+          --accent-color: ${templateVars.accentColor};
           --border-color: #e2e8f0;
           --text-color: #1e293b;
           --line-height: 1.5;
-          --base-font-size: 10.5pt;
+          --base-font-size: ${templateVars.baseFontSize};
           --highlight-color: #fef9c3;
         }
  
@@ -170,7 +194,7 @@ export function generateResumeHtml(nameLines: string[], sections: ParsedSection[
           line-height: var(--line-height);
           color: var(--text-color);
           margin: 0;
-          padding: 40px 50px;
+          padding: ${templateVars.bodyPadding};
           background: #fff;
           font-size: var(--base-font-size);
         }
@@ -190,7 +214,7 @@ export function generateResumeHtml(nameLines: string[], sections: ParsedSection[
         }
 
         .resume-name {
-          font-size: 28pt;
+          font-size: ${templateVars.nameFontSize};
           font-weight: 800;
           color: var(--primary-color);
           margin: 0 0 10px 0;

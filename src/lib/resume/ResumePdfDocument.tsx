@@ -1,84 +1,112 @@
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import type { Style } from '@react-pdf/types';
 import { ParsedSection } from './resumeUtils';
+import type { ResumeTemplateId } from './templates';
 
-// Register fonts if needed, for now standard ones are good enough.
-// We'll use Times-Roman/Helvetica which are built-in, or we could register Inter.
+function getTemplateStyles(templateId: ResumeTemplateId) {
+  const template = templateId ?? 'professional';
 
-const styles = StyleSheet.create({
-  page: {
-    padding: 40,
-    fontFamily: 'Helvetica',
-    fontSize: 10,
-    color: '#1e293b',
-    lineHeight: 1.5,
-  },
-  header: {
-    marginBottom: 20,
-    textAlign: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: '#0f172a',
-    paddingBottom: 15,
-  },
-  name: {
-    fontSize: 24,
-    fontFamily: 'Helvetica-Bold',
-    color: '#0f172a',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-  },
-  contactContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    flexWrap: 'wrap',
-  },
-  contactItem: {
-    fontSize: 9,
-    color: '#475569',
-  },
-  separator: {
-    marginHorizontal: 6,
-    color: '#e2e8f0',
-  },
-  section: {
-    marginBottom: 15,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontFamily: 'Helvetica-Bold',
-    color: '#0f172a',
-    textTransform: 'uppercase',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    paddingBottom: 4,
-    marginBottom: 8,
-  },
-  paragraph: {
-    marginBottom: 6,
-    textAlign: 'justify',
-  },
-  bulletContainer: {
-    flexDirection: 'row',
-    marginBottom: 4,
-    alignItems: 'flex-start',
-  },
-  bullet: {
-    width: 12,
-    fontSize: 10,
-    fontFamily: 'Helvetica',
-  },
-  bulletText: {
-    flex: 1,
-    textAlign: 'justify',
-  }
-});
+  const vars =
+    template === 'minimal'
+      ? {
+          padding: 30,
+          fontSize: 10,
+          primaryColor: '#0f172a',
+          accentColor: '#334155',
+          nameFontSize: 22,
+          sectionTitleFontSize: 11,
+          sectionTitleBorderColor: '#cbd5e1',
+        }
+      : {
+          padding: 40,
+          fontSize: 10,
+          primaryColor: '#0f172a',
+          accentColor: '#2563eb',
+          nameFontSize: 24,
+          sectionTitleFontSize: 12,
+          sectionTitleBorderColor: '#e2e8f0',
+        };
+
+  return StyleSheet.create({
+    page: {
+      padding: vars.padding,
+      fontFamily: 'Helvetica',
+      fontSize: vars.fontSize,
+      color: '#1e293b',
+      lineHeight: 1.5,
+    },
+    header: {
+      marginBottom: 20,
+      textAlign: 'center',
+      borderBottomWidth: 2,
+      borderBottomColor: vars.primaryColor,
+      paddingBottom: 15,
+    },
+    name: {
+      fontSize: vars.nameFontSize,
+      fontFamily: 'Helvetica-Bold',
+      color: vars.primaryColor,
+      marginBottom: 8,
+      textTransform: 'uppercase',
+    },
+    contactContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      flexWrap: 'wrap',
+    },
+    contactItem: {
+      fontSize: 9,
+      color: '#475569',
+    },
+    separator: {
+      marginHorizontal: 6,
+      color: '#e2e8f0',
+    },
+    section: {
+      marginBottom: vars.fontSize <= 10 ? 14 : 15,
+    },
+    sectionTitle: {
+      fontSize: vars.sectionTitleFontSize,
+      fontFamily: 'Helvetica-Bold',
+      color: vars.primaryColor,
+      textTransform: 'uppercase',
+      borderBottomWidth: 1,
+      borderBottomColor: vars.sectionTitleBorderColor,
+      paddingBottom: 4,
+      marginBottom: 8,
+    },
+    paragraph: {
+      marginBottom: 6,
+      textAlign: 'justify',
+    },
+    bulletContainer: {
+      flexDirection: 'row',
+      marginBottom: 4,
+      alignItems: 'flex-start',
+    },
+    bullet: {
+      width: 12,
+      fontSize: vars.fontSize,
+      fontFamily: 'Helvetica',
+    },
+    bulletText: {
+      flex: 1,
+      textAlign: 'justify',
+    },
+  });
+}
 
 interface ResumePdfDocumentProps {
   nameLines: string[];
   sections: ParsedSection[];
+  templateId?: ResumeTemplateId;
 }
 
-const renderRichText = (text: string, style: any) => {
+const renderRichText = (
+  text: string,
+  style: Style | Style[] | undefined
+) => {
   const parts = text.split(/(\*\*.*?\*\*|__.*?__|==.*?==)/g);
   return (
     <Text style={style}>
@@ -110,7 +138,12 @@ const renderRichText = (text: string, style: any) => {
   );
 };
 
-export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({ nameLines, sections }) => {
+export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({
+  nameLines,
+  sections,
+  templateId,
+}) => {
+  const styles = getTemplateStyles(templateId ?? 'professional');
   return (
     <Document>
       <Page size="A4" style={styles.page}>
