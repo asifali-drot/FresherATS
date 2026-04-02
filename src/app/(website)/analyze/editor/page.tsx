@@ -24,6 +24,7 @@ export default function ResumeEditorPage() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const templateIdParam = searchParams.get("template");
@@ -135,6 +136,7 @@ export default function ResumeEditorPage() {
       return;
     }
 
+    setDownloadError(null);
     setIsDownloading(true);
     try {
       const response = await fetch('/api/generate-pdf', {
@@ -182,6 +184,7 @@ export default function ResumeEditorPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error(error);
+      setDownloadError(error instanceof Error ? error.message : 'Failed to generate PDF');
     } finally {
       setIsDownloading(false);
     }

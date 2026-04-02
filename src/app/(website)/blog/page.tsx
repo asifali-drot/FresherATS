@@ -19,7 +19,7 @@ interface Post {
   title: string;
   slug: string;
   excerpt: string;
-  mainImage?: any;
+  mainImage?: unknown;
   publishedAt?: string;
   author?: string;
   readingTime?: number;
