@@ -66,7 +66,61 @@ export const blog = defineType({
       name: "body",
       title: "Blog Content",
       type: "array",
-      of: [{ type: "block" }]
+      of: [
+        { type: "block" },
+        {
+          type: "image",
+          options: { hotspot: true },
+          fields: [
+            {
+              name: "alt",
+              type: "string",
+              title: "Alternative text",
+              description: "Important for SEO and accessibility.",
+            },
+          ],
+        },
+        {
+          type: "code",
+          options: {
+            language: "javascript",
+            languageAlternatives: [
+              { title: "JavaScript", value: "javascript" },
+              { title: "TypeScript", value: "typescript" },
+              { title: "HTML", value: "html" },
+              { title: "CSS", value: "css" },
+              { title: "Python", value: "python" },
+              { title: "Bash", value: "sh" },
+              { title: "JSON", value: "json" },
+              { title: "Markdown", value: "markdown" },
+            ],
+            withFilename: true,
+          },
+        },
+        {
+          type: "object",
+          name: "htmlEmbed",
+          title: "HTML Embed",
+          fields: [
+            {
+              name: "html",
+              title: "Raw HTML",
+              type: "text",
+              rows: 10,
+              description: "Paste your raw HTML here. It will be rendered directly on the page.",
+            },
+          ],
+          preview: {
+            select: { html: "html" },
+            prepare({ html }: { html?: string }) {
+              return {
+                title: "HTML Embed",
+                subtitle: html ? html.slice(0, 80) + "…" : "Empty",
+              };
+            },
+          },
+        },
+      ]
     }),
     defineField({
       name: "publishedAt",

@@ -11,7 +11,7 @@ export default function AboutPage() {
               About FresherATS
             </h1>
             <p className="mt-6 text-lg leading-8 text-zinc-600">
-              We're on a mission to level the playing field for fresh graduates.
+              We&apos;re on a mission to level the playing field for fresh graduates.
               Our AI-powered platform helps you navigate the complex world of Applicant Tracking Systems (ATS)
               and land your dream job.
             </p>
@@ -27,7 +27,7 @@ export default function AboutPage() {
               <h2 className="text-3xl font-bold tracking-tight text-zinc-900">Our Story</h2>
               <p className="mt-6 text-lg leading-7 text-zinc-600">
                 FresherATS was born out of a simple observation: talented graduates were being rejected
-                by companies not because of their skills, but because their resumes weren't "ATS-friendly."
+                by companies not because of their skills, but because their resumes weren&apos;t ATS-friendly.
                 We saw a gap between academic success and career entry, and we decided to bridge it.
               </p>
               <p className="mt-6 text-lg leading-7 text-zinc-600">
@@ -61,7 +61,7 @@ export default function AboutPage() {
             <p className="mt-6 text-lg leading-8 text-zinc-600">
               To be the definitive bridge between education and employment,
               empowering every graduate with the tools they need to showcase their true potential
-              to the world's leading companies.
+              to the world&apos;s leading companies.
             </p>
           </div>
         </div>
@@ -75,7 +75,7 @@ export default function AboutPage() {
               Ready to fix your resume?
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-zinc-300">
-              Don't let a poorly formatted resume hold you back. Let FresherATS help you land your first role.
+              Don&apos;t let a poorly formatted resume hold you back. Let FresherATS help you land your first role.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link

@@ -160,6 +160,39 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       );
                     },
                   },
+                  types: {
+                    image: ({ value }: any) => {
+                      if (!value?.asset) return null;
+                      return (
+                        <div className="my-8">
+                          <SanityImage
+                            image={value}
+                            alt={value.alt || post.title}
+                            className="rounded-3xl"
+                          />
+                        </div>
+                      );
+                    },
+                    code: ({ value }: any) => {
+                      if (!value?.code) return null;
+                      return (
+                        <div className="my-8 overflow-x-auto rounded-3xl bg-slate-950 p-4 text-sm text-slate-100">
+                          {value.filename ? (
+                            <div className="mb-3 text-xs uppercase tracking-[0.2em] text-slate-400">
+                              {value.filename}
+                            </div>
+                          ) : null}
+                          <pre className="overflow-x-auto">
+                            <code>{value.code}</code>
+                          </pre>
+                        </div>
+                      );
+                    },
+                    htmlEmbed: ({ value }: any) => {
+                      if (!value?.html) return null;
+                      return <div dangerouslySetInnerHTML={{ __html: value.html }} />;
+                    },
+                  },
                 }}
               />
             ) : (

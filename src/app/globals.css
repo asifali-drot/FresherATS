@@ -90,7 +90,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.87 0.00 0);
+  --primary: oklch(0.87 0 0);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -133,7 +133,7 @@
 @layer utilities {
   .prose-blog {
     @apply prose prose-zinc max-w-none;
-    
+
     /* Max line width: 65 characters */
     & {
       --tw-prose-body: var(--foreground);
@@ -160,12 +160,14 @@
     }
 
     /* Small Text */
-    small, .text-small {
+    small,
+    .text-small {
       @apply text-[14px];
     }
 
     /* Other elements */
-    ul, ol {
+    ul,
+    ol {
       @apply mb-6;
       max-width: 65ch;
     }
@@ -182,5 +184,28 @@
     img {
       @apply rounded-3xl my-12 w-full h-auto;
     }
+  }
+
+  @import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap");
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: "DM Sans", sans-serif;
+    background-color: var(--background);
+    color: var(--foreground);
+    line-height: 1.6;
+  }
+  .score-strip {
+    flex-direction: column;
+  }
+  .author-box {
+    flex-direction: column;
   }
 }

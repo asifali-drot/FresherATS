@@ -1,17 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { NextStudio } from 'next-sanity/studio';
 import config from '../../../../sanity.config';
 
 export default function StudioPage() {
-  const [mounted, setMounted] = useState(false);
+  const isClient = useMemo(() => typeof window !== 'undefined', []);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
+  if (!isClient) return null;
 
   return <NextStudio config={config} />;
 }

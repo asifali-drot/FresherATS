@@ -24,7 +24,6 @@ export default function ResumeEditorPage() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const templateIdParam = searchParams.get("template");
@@ -137,7 +136,6 @@ export default function ResumeEditorPage() {
     }
 
     setIsDownloading(true);
-    setDownloadError(null);
     try {
       const response = await fetch('/api/generate-pdf', {
         method: 'POST',
@@ -183,7 +181,7 @@ export default function ResumeEditorPage() {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      setDownloadError(error instanceof Error ? error.message : 'Failed to download PDF');
+      console.error(error);
     } finally {
       setIsDownloading(false);
     }
@@ -527,10 +525,10 @@ export default function ResumeEditorPage() {
             </div>
           </div>
           <div className="flex-1 p-8 overflow-y-auto flex justify-center bg-zinc-200/20 dark:bg-zinc-950/20 scrollbar-hide">
-            <div className="w-full max-w-[800px] h-fit min-h-[1100px] bg-white shadow-2xl rounded-sm overflow-hidden transition-all duration-300">
+            <div className="w-full max-w-200 h-fit min-h-275 bg-white shadow-2xl rounded-sm overflow-hidden transition-all duration-300">
               <iframe
                 title="Resume Preview"
-                className="w-full h-[1100px] border-none"
+                className="w-full h-275 border-none"
                 srcDoc={previewHtml}
               />
             </div>

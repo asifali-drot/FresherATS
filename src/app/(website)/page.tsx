@@ -6,7 +6,7 @@ export default function Home() {
     return (
         <main className="relative min-h-[calc(100vh-81px)] flex flex-col items-center justify-center px-6 overflow-hidden">
             {/* Glow Effect */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-100 rounded-full blur-[140px] -z-10"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 bg-purple-100 rounded-full blur-[140px] -z-10"></div>
 
             <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center text-center space-y-9">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-purple-200 bg-purple-50 text-purple-700 text-xs font-bold animate-in fade-in slide-in-from-bottom-3 duration-1000">
