@@ -117,15 +117,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </div>
       )}
 
-      {/* Layout Grid: TOC (left), Content (center), Latest (right) */}
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12">
+      {/* Layout Grid: TOC (left), Content (center) */}
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-10 gap-12">
         {/* Left: Table of Contents */}
         <aside className="lg:col-span-3 lg:pr-2 lg:sticky lg:top-28 lg:h-fit lg:self-start z-20">
           <TableOfContents items={toc} />
         </aside>
 
         {/* Center: Article Content */}
-        <div className="lg:col-span-6">
+        <div className="lg:col-span-7">
           <article className="prose-blog">
             {post.body ? (
               <PortableText
@@ -201,50 +201,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </article>
         </div>
 
-        {/* Right: Latest Blogs */}
-        <aside className="lg:col-span-3 border-l border-zinc-100 pl-0 lg:pl-10 lg:sticky lg:top-28 lg:h-fit lg:self-start z-10">
-          <div>
-            <h3 className="text-xl font-extrabold text-zinc-900 mb-8 flex items-center gap-2">
-              <div className="w-1.5 h-6 bg-blue-600 rounded-full"></div>
-              Latest Articles
-            </h3>
-
-            <div className="space-y-8">
-              {(latestPosts as LatestPost[]).map((latest) => (
-                <Link
-                  key={latest._id}
-                  href={`/blog/${latest.slug}`}
-                  className="group flex gap-4 items-start hover:bg-zinc-50 p-2 rounded-2xl transition-all"
-                >
-                  <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0">
-                    <SanityImage
-                      image={latest.mainImage}
-                      alt={latest.title}
-                      className="w-full h-full object-cover"
-                      sizes="80px"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <h4 className="text-sm font-bold text-zinc-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
-                      {latest.title}
-                    </h4>
-                    <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                      {latest.publishedAt ? new Date(latest.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            <Link
-              href="/blog"
-              className="mt-10 flex items-center justify-between p-4 rounded-2xl bg-blue-50 text-blue-700 font-bold text-sm group hover:bg-blue-600 hover:text-white transition-all"
-            >
-              View All Articles
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        </aside>
+        {/* Right: Empty for now */}
       </div>
 
       {/* FAQ Section */}
@@ -264,6 +221,48 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           dangerouslySetInnerHTML={{ __html: JSON.stringify(generateFAQSchema(post.faqs)) }}
         />
       )}
+
+      {/* Latest Articles Section */}
+      <section className="max-w-7xl mx-auto px-6 mt-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-extrabold text-zinc-900 mb-4">Latest Articles</h2>
+          <p className="text-zinc-600 max-w-2xl mx-auto">Discover more insights and tips from our blog</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {(latestPosts as LatestPost[]).slice(0, 4).map((latest) => (
+            <Link
+              key={latest._id}
+              href={`/blog/${latest.slug}`}
+              className="group bg-white border border-zinc-200 rounded-2xl p-4 hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300"
+            >
+              <div className="w-full h-32 rounded-xl overflow-hidden mb-4">
+                <SanityImage
+                  image={latest.mainImage}
+                  alt={latest.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <h4 className="text-sm font-bold text-zinc-900 line-clamp-2 group-hover:text-blue-600 transition-colors mb-2">
+                {latest.title}
+              </h4>
+              <span className="text-xs font-medium text-zinc-500">
+                {latest.publishedAt ? new Date(latest.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
+              </span>
+            </Link>
+          ))}
+        </div>
+
+        <div className="text-center mt-10">
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors"
+          >
+            View All Articles
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

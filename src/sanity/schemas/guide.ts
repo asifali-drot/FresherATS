@@ -53,39 +53,7 @@ export const guide = defineType({
     defineField({
       name: 'body',
       title: 'Body',
-      type: 'array',
-      of: [
-        { type: 'block' },
-        {
-          type: 'image',
-          options: { hotspot: true },
-          fields: [
-            {
-              name: 'alt',
-              type: 'string',
-              title: 'Alternative text',
-              description: 'Important for SEO and accessibility.',
-            },
-          ],
-        },
-        {
-          type: 'code',
-          options: {
-            language: 'javascript',
-            languageAlternatives: [
-              { title: 'JavaScript', value: 'javascript' },
-              { title: 'TypeScript', value: 'typescript' },
-              { title: 'HTML', value: 'html' },
-              { title: 'CSS', value: 'css' },
-              { title: 'Python', value: 'python' },
-              { title: 'Bash', value: 'sh' },
-              { title: 'JSON', value: 'json' },
-              { title: 'Markdown', value: 'markdown' },
-            ],
-            withFilename: true,
-          },
-        },
-      ],
+      type: 'blockContent',
     }),
   ],
 });

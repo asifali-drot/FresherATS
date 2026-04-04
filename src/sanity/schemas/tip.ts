@@ -13,7 +13,7 @@ export const tip = defineType({
     defineField({
       name: 'content',
       title: 'Content',
-      type: 'text',
+      type: 'blockContent',
     }),
     defineField({
       name: 'category',
