@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { logoutAction } from "./(auth)/actions";
-import Antigravity from "@/components/Antigravity";
+import AntigravityBackground from "@/components/AntigravityBackground";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -16,7 +16,7 @@ export default async function WebsiteLayout({
     <>
       {/* Antigravity Background */}
       <div className="fixed inset-0 -z-10 pointer-events-none opacity-20">
-        <Antigravity
+        <AntigravityBackground
           count={350}
           color="#9333EA"
           particleSize={1.1}

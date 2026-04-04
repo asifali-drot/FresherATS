@@ -15,6 +15,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "FresherATS | Master Your Resume",
   description: "Advanced ATS resume analyzer for fresh graduates. Optimize your career path with AI-driven insights.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   verification: {
     google: "5BxzQElKJd_onGdtdvBwmM8enJ7Aw1nlzguTXZXNgUc",
   },

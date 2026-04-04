@@ -35,13 +35,19 @@ export default function SanityImage({
     );
   }
 
-  // Generate the URL with optimizations
-  let imageUrl = urlFor(image).auto('format').quality(80);
+  // Check if image is a string (direct URL) or a Sanity image object
+  const isDirectUrl = typeof image === 'string';
+  let finalUrl = "";
 
-  if (width) imageUrl = imageUrl.width(width);
-  if (height) imageUrl = imageUrl.height(height);
-
-  const finalUrl = imageUrl.url();
+  if (isDirectUrl) {
+    finalUrl = image;
+  } else {
+    // Generate the URL with optimizations for Sanity images
+    let imageUrlBuilder = urlFor(image).auto('format').quality(80);
+    if (width) imageUrlBuilder = imageUrlBuilder.width(width);
+    if (height) imageUrlBuilder = imageUrlBuilder.height(height);
+    finalUrl = imageUrlBuilder.url();
+  }
 
   const aspectStyles = {
     video: "aspect-video",

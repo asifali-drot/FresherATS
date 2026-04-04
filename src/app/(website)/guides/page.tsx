@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { client } from "../../../sanity/client";
 import { createImageUrlBuilder } from "@sanity/image-url";
 import { 
@@ -26,23 +23,13 @@ interface Guide {
   duration: string;
 }
 
-export default function GuidesPage() {
-  const [guides, setGuides] = useState<Guide[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchGuides() {
-      try {
-        const data = await client.fetch(`*[_type == "guide"]`);
-        setGuides(data);
-      } catch (error) {
-        console.error("Failed to fetch guides:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchGuides();
-  }, []);
+export default async function GuidesPage() {
+  let guides: Guide[] = [];
+  try {
+    guides = await client.fetch(`*[_type == "guide"]`);
+  } catch (error) {
+    console.error("Failed to fetch guides:", error);
+  }
 
   const builder = createImageUrlBuilder(client);
   function urlFor(source: any) {
@@ -77,19 +64,6 @@ export default function GuidesPage() {
     };
   });
 
-  // Use dynamic categories if guides are loaded, otherwise use static (as fallback)
-  const displayCategories = guides.length > 0 ? dynamicCategories : [
-    {
-      title: "Resume Mastery",
-      icon: <FileText className="h-6 w-6" />,
-      description: "Build an ATS-proof resume that highlights your true value and beats the algorithms.",
-      items: ["2024 ATS Algorithm Secrets", "Keyword Optimization Guide", "Action Verbs for Impact"],
-      color: "blue"
-    },
-    // ... we can keep the static ones if needed, but for now I'll just use dynamicCategories if guides exist
-  ];
-
-  // If we have guides, we use dynamicCategories. If not, we use the original ones.
   const categories = guides.length > 0 ? dynamicCategories : [
     {
       title: "Resume Mastery",
@@ -196,7 +170,7 @@ export default function GuidesPage() {
               guides.slice(0, 2).map((guide) => (
                 <GuideCard 
                   key={guide._id}
-                  image={guide.mainImage ? urlFor(guide.mainImage).url() : "https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=800"}
+                  image={guide.mainImage || "https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=800"}
                   category={guide.category}
                   title={guide.title}
                   duration={guide.duration || "5 min read"}
@@ -248,7 +222,7 @@ export default function GuidesPage() {
   );
 }
 
-function GuideCard({ image, category, title, duration, slug }: { image: string, category: string, title: string, duration: string, slug?: string }) {
+function GuideCard({ image, category, title, duration, slug }: { image: any, category: string, title: string, duration: string, slug?: string }) {
   return (
     <Link href={slug ? `/guides/${slug}` : "#"} className="group flex flex-col md:flex-row gap-6 p-4 rounded-3xl border border-zinc-100 bg-white hover:border-blue-100 hover:shadow-lg transition-all">
       <div className="w-full md:w-48 h-48 rounded-2xl overflow-hidden shrink-0">

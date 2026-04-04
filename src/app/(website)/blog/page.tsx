@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { getPosts, urlFor } from "@/lib/sanity.client";
 import {
   FileText,
@@ -25,23 +22,13 @@ interface Post {
   readingTime?: number;
 }
 
-export default function BlogPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchPosts() {
-      try {
-        const data = await getPosts();
-        setPosts(data);
-      } catch (error) {
-        console.error("Failed to fetch posts:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchPosts();
-  }, []);
+export default async function BlogPage() {
+  let posts: Post[] = [];
+  try {
+    posts = await getPosts();
+  } catch (error) {
+    console.error("Failed to fetch posts:", error);
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -83,41 +70,35 @@ export default function BlogPage() {
             </div>
           </div>
 
-          {isLoading ? (
-            <div className="min-h-100 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {posts.length > 0 ? (
-                posts.map((post) => (
-                  <BlogCard
-                    key={post._id}
-                    image={post.mainImage ? urlFor(post.mainImage).url() : "https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=800"}
-                    title={post.title}
-                    excerpt={post.excerpt}
-                    slug={post.slug}
-                    publishedAt={post.publishedAt}
-                    author={post.author}
-                    readingTime={post.readingTime}
-                  />
-                ))
-              ) : (
-                <div className="col-span-full text-center py-20 bg-zinc-50 rounded-3xl border border-dashed border-zinc-200">
-                  <FileText className="h-12 w-12 text-zinc-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-zinc-900 mb-2">No Posts Found</h3>
-                  <p className="text-zinc-500">Check back later for new articles.</p>
-                </div>
-              )}
-            </div>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {posts.length > 0 ? (
+              posts.map((post) => (
+                <BlogCard
+                  key={post._id}
+                  image={post.mainImage || "https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=800"}
+                  title={post.title}
+                  excerpt={post.excerpt}
+                  slug={post.slug}
+                  publishedAt={post.publishedAt}
+                  author={post.author}
+                  readingTime={post.readingTime}
+                />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-20 bg-zinc-50 rounded-3xl border border-dashed border-zinc-200">
+                <FileText className="h-12 w-12 text-zinc-300 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-zinc-900 mb-2">No Posts Found</h3>
+                <p className="text-zinc-500">Check back later for new articles.</p>
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </div>
   );
 }
 
-function BlogCard({ image, title, excerpt, slug, publishedAt, author, readingTime }: { image: string, title: string, excerpt: string, slug?: string, publishedAt?: string, author?: string, readingTime?: number }) {
+function BlogCard({ image, title, excerpt, slug, publishedAt, author, readingTime }: { image: any, title: string, excerpt: string, slug?: string, publishedAt?: string, author?: string, readingTime?: number }) {
   const formattedDate = publishedAt ? new Date(publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
 
   return (

@@ -103,10 +103,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
       {/* Main Image - Natural fit without distortion or cutting */}
       {post.mainImage && (
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 mb-16">
+        <div className="max-w-4xl mx-auto px-6 lg:px-8 mb-16">
           <div className="rounded-3xl shadow-xl overflow-hidden bg-zinc-50 leading-0">
             <Image
-              src={urlFor(post.mainImage).width(2000).quality(80).url()}
+              src={urlFor(post.mainImage).width(2000).quality(95).url()}
               alt={post.title}
               width={2000}
               height={1000}
@@ -191,6 +191,20 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     htmlEmbed: ({ value }: any) => {
                       if (!value?.html) return null;
                       return <div dangerouslySetInnerHTML={{ __html: value.html }} />;
+                    },
+                  },
+                  marks: {
+                    link: ({ children, value }: any) => {
+                      const rel = !value.href.startsWith('/') ? 'noreferrer noopener' : undefined;
+                      return (
+                        <a
+                          href={value.href}
+                          rel={rel}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          {children}
+                        </a>
+                      );
                     },
                   },
                 }}
