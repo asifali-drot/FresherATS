@@ -125,7 +125,7 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
 
       {/* Mobile Navigation Drawer */}
       <div
-        className={`fixed right-0 top-[73px] bottom-0 z-999 w-[50vw] sm:w-1/2 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-l border-zinc-100 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed right-0 top-18.25 bottom-0 z-999 w-[50vw] sm:w-1/2 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-l border-zinc-100 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
       >
         <div className="flex flex-col h-full bg-white overflow-y-auto">
