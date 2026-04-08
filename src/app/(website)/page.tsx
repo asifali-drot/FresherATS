@@ -24,7 +24,7 @@ export default function Home() {
                     </span>
                 </h1>
 
-                <p className="max-w-2xl text-lg md:text-xl text-zinc-600 leading-relaxed font-medium animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-200">
+                <p className="max-w-2xl text-lg md:text-xl text-zinc-700 leading-relaxed font-medium animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-200">
                     Empowering fresh graduates to land their dream jobs. Analyze your ATS score,
                     uncover missing keywords, and transform your career path in seconds.
                 </p>
@@ -45,15 +45,15 @@ export default function Home() {
                 <div className="pt-14 grid grid-cols-2 md:grid-cols-3 gap-10 md:gap-20 opacity-70 animate-in fade-in duration-1000 delay-500">
                     <div className="flex flex-col items-center space-y-2.5">
                         <span className="text-3xl font-extrabold text-zinc-900">98%</span>
-                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Accuracy</span>
+                        <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em]">Accuracy</span>
                     </div>
                     <div className="flex flex-col items-center space-y-2.5">
                         <span className="text-3xl font-extrabold text-zinc-900">10s</span>
-                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Analysis Time</span>
+                        <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em]">Analysis Time</span>
                     </div>
                     <div className="flex flex-col items-center space-y-2.5 col-span-2 md:col-span-1">
                         <span className="text-3xl font-extrabold text-zinc-900">10k+</span>
-                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Resumes Fixed</span>
+                        <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em]">Resumes Fixed</span>
                     </div>
                 </div>
             </div>

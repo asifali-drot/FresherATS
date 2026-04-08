@@ -195,7 +195,7 @@ function MobileNavLink({ href, icon, label, onClick }: { href: string; icon: Rea
       onClick={onClick}
       className="flex items-center gap-5 px-4 py-4 rounded-2xl text-base font-bold text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-all group border border-transparent hover:border-blue-100"
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-50 text-zinc-500 group-hover:bg-white group-hover:text-blue-600 group-hover:shadow-sm group-hover:border group-hover:border-blue-100 transition-all">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-50 text-zinc-700 group-hover:bg-white group-hover:text-blue-600 group-hover:shadow-sm group-hover:border group-hover:border-blue-100 transition-all">
         {icon}
       </div>
       {label}
