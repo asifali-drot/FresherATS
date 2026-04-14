@@ -7,8 +7,8 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: [
         '/api/',
-        '/analyze/editor',
-        '/analyze/result',
+        '/free-ats-resume-checker/editor',
+        '/free-ats-resume-checker/result',
         '/history',
         '/studio',
       ],

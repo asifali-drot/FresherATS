@@ -53,7 +53,7 @@ export default function ResumeUpload() {
         window.sessionStorage.setItem("fresherAtsResult", JSON.stringify(payload));
       }
 
-      router.push("/analyze/result");
+      router.push("/free-ats-resume-checker/result");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e) || "Unknown error");
     } finally {

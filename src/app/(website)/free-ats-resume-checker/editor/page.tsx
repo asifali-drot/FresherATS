@@ -206,7 +206,7 @@ export default function ResumeEditorPage() {
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200 px-6 dark:border-zinc-800 bg-white dark:bg-zinc-950 z-20 shadow-sm">
         <div className="flex items-center gap-4">
           <Link
-            href={isTemplateMode ? "/templates" : "/analyze/result"}
+            href={isTemplateMode ? "/resume-templates" : "/free-ats-resume-checker/result"}
             className="group flex items-center gap-2 text-sm font-semibold text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
           >
             <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />

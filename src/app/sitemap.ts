@@ -18,19 +18,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/analyze`,
+      url: `${baseUrl}/free-ats-resume-checker`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/analyze/result`,
+      url: `${baseUrl}/free-ats-resume-checker/result`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/analyze/editor`,
+      url: `${baseUrl}/free-ats-resume-checker/editor`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.6,
@@ -78,7 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.3,
     },
     {
-      url: `${baseUrl}/templates`,
+      url: `${baseUrl}/resume-templates`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,

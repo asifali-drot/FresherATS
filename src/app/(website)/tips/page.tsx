@@ -114,7 +114,7 @@ export default async function TipsPage() {
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link
-                href="/analyze"
+                href="/free-ats-resume-checker"
                 className="rounded-xl bg-white px-8 py-4 text-sm font-bold text-zinc-900 shadow-sm hover:bg-zinc-100 transition-all active:scale-95"
               >
                 Analyze My Resume

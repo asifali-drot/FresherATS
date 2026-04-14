@@ -45,7 +45,7 @@ export default function TemplatesPage() {
 
               <div className="p-6 pt-0">
                 <Link
-                  href={`/analyze/editor?template=${t.id}`}
+                  href={`/free-ats-resume-checker/editor?template=${t.id}`}
                   className="inline-flex w-full items-center justify-center rounded-xl bg-zinc-900 px-6 py-3 text-sm font-extrabold text-white hover:opacity-90 transition-all active:scale-[0.99] shadow-md shadow-zinc-200"
                 >
                   Start Editing

@@ -209,7 +209,7 @@ export default async function GuidesPage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href="/analyze"
+                href="/free-ats-resume-checker"
                 className="w-full sm:w-auto rounded-xl bg-white px-10 py-4 text-base font-bold text-zinc-900 shadow-xl hover:bg-zinc-100 transition-all active:scale-95"
               >
                 Analyze My Resume

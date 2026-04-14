@@ -90,17 +90,17 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
               )}
 
               <Link
-                href="/templates"
+                href="/resume-templates"
                 className="flex items-center gap-2 text-sm font-extrabold text-zinc-700 hover:text-blue-600 transition-colors"
               >
                 Templates <FileText className="h-4 w-4" />
               </Link>
 
               <Link
-                href="/analyze"
+                href="/free-ats-resume-checker"
                 className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-extrabold text-white hover:bg-blue-700 active:scale-95 transition-all shadow-lg shadow-blue-100"
               >
-                Analyze Resume
+                Resume Checker
               </Link>
             </div>
 
@@ -118,15 +118,13 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
 
       {/* Backdrop for Mobile Menu */}
       <div
-        className={`fixed inset-0 z-998 bg-zinc-900/20 backdrop-blur-sm transition-opacity lg:hidden ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-          }`}
+        className={`fixed inset-0 z-998 bg-zinc-900/20 backdrop-blur-sm transition-opacity lg:hidden ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={closeMenu}
       />
 
       {/* Mobile Navigation Drawer */}
       <div
-        className={`fixed right-0 top-18.25 bottom-0 z-999 w-[50vw] sm:w-1/2 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-l border-zinc-100 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+        className={`fixed right-0 top-18.25 bottom-0 z-999 w-[50vw] sm:w-1/2 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-l border-zinc-100 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex flex-col h-full bg-white overflow-y-auto">
           <div className="flex flex-col gap-1 p-6">
@@ -137,7 +135,7 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             <MobileNavLink href="/contact" icon={<Mail className="h-5 w-5" />} label="Contact Us" onClick={closeMenu} />
 
               <div className="px-4 pt-3 pb-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Templates</div>
-              <MobileNavLink href="/templates" icon={<FileText className="h-5 w-5" />} label="Browse Templates" onClick={closeMenu} />
+              <MobileNavLink href="/resume-templates" icon={<FileText className="h-5 w-5" />} label="Browse Templates" onClick={closeMenu} />
           </div>
 
           <div className="mt-auto p-6 border-t border-zinc-100 flex flex-col gap-4 bg-zinc-50/50">
@@ -175,11 +173,11 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             )}
             <Link
               onClick={closeMenu}
-              href="/analyze"
+              href="/free-ats-resume-checker"
               className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 p-4 text-sm font-black text-white shadow-xl shadow-blue-600/20 transition-all hover:scale-[1.02] hover:shadow-blue-600/30 active:scale-[0.98]"
             >
               <Sparkles className="h-5 w-5 animate-pulse text-blue-200" />
-              <span>Analyze Resume</span>
+              <span>Resume Checker</span>
             </Link>
           </div>
         </div>

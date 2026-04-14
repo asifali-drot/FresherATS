@@ -2,10 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 export default function Footer() {
   const pathname = usePathname();
-  const isResultPage = pathname === "/analyze/result";
+  const mounted = useIsMounted();
+  const isResultPage = pathname === "/free-ats-resume-checker/result";
+  
+  // Use a hardcoded fallback during SSR/Hydration to match exactly,
+  // then update to current year once mounted.
+  const currentYear = mounted ? new Date().getFullYear() : 2026;
 
   const downloadPDF = async () => {
     const stored = window.sessionStorage.getItem("fresherAtsResult");
@@ -122,7 +128,7 @@ export default function Footer() {
 
         <div className="mt-20 flex flex-col items-center justify-center border-t border-zinc-200 pt-8 md:flex-row">
           <p className="text-sm text-zinc-500">
-            © {new Date().getFullYear()} FresherATS. All rights reserved.
+            © {currentYear} FresherATS. All rights reserved.
           </p>
           <div className="mt-4 flex gap-6 md:mt-0">
             {/* Social links removed as per user request */}

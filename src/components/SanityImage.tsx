@@ -67,10 +67,7 @@ export default function SanityImage({
         priority={priority}
         sizes={sizes}
         data-fetchpriority={priority ? "high" : undefined}
-        className={`
-          duration-700 ease-in-out object-cover
-          ${isLoading ? "scale-110 blur-2xl grayscale" : "scale-100 blur-0 grayscale-0"}
-        `}
+        className={`duration-700 ease-in-out object-cover ${isLoading ? "scale-110 blur-2xl grayscale" : "scale-100 blur-0 grayscale-0"}`}
         onLoad={() => setIsLoading(false)}
       />
     </div>

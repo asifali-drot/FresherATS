@@ -31,7 +31,7 @@ export default function Home() {
 
                 <div className="flex flex-col sm:flex-row items-center gap-5 pt-6 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300">
                     <Link
-                        href="/analyze"
+                        href="/free-ats-resume-checker"
                         className="group relative px-10 py-4.5 bg-zinc-900 text-white font-bold rounded-2xl hover:bg-zinc-800 transition-all active:scale-95 shadow-xl shadow-zinc-200 text-center w-full sm:w-auto"
                     >
                         Analyze My Resume

@@ -31,7 +31,7 @@ export default async function HistoryPage() {
                 <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-white p-12 text-center text-gray-500 shadow-sm">
                     <p className="mb-4 text-lg font-medium">No analyses found yet.</p>
                     <Link
-                        href="/analyze"
+                        href="/free-ats-resume-checker"
                         className="rounded-lg bg-black px-6 py-2.5 text-sm font-medium text-white transition-all hover:bg-gray-800"
                     >
                         Start Your First Analysis

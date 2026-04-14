@@ -53,7 +53,6 @@ export default function RootLayout({
       </head>
       <body
         className={`${inter.variable} ${geistMono.variable} ${dmSans.variable} ${dmSerifDisplay.variable} font-sans antialiased`}
-        suppressHydrationWarning
       >
         {children}
       </body>
