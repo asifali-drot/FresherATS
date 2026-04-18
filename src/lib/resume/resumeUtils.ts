@@ -79,7 +79,21 @@ export function parseResumeText(text: string): {
         content: [],
       };
     } else if (currentSection) {
-      currentSection.content.push(trimmedLine);
+      if (currentSection.title === 'SKILLS') {
+        // Automatically convert comma-separated skills to bullets if not already bulleted
+        if (!trimmedLine.startsWith('•') && !trimmedLine.startsWith('-') && !trimmedLine.startsWith('*')) {
+          const skills = trimmedLine.split(/[,,|]/).map(s => s.trim()).filter(Boolean);
+          if (skills.length > 1) {
+            skills.forEach(skill => currentSection?.content.push(`• ${skill}`));
+          } else {
+            currentSection.content.push(`• ${trimmedLine}`);
+          }
+        } else {
+          currentSection.content.push(trimmedLine);
+        }
+      } else {
+        currentSection.content.push(trimmedLine);
+      }
     } else {
       if (!sections.length) {
         currentSection = {
@@ -114,6 +128,14 @@ export function generateResumeHtml(
           bodyPadding: "32px 44px",
           nameFontSize: "26pt",
         }
+      : template === "program-manager"
+      ? {
+          primaryColor: "#064e3b",
+          accentColor: "#059669",
+          baseFontSize: "11pt",
+          bodyPadding: "40px 50px",
+          nameFontSize: "28pt",
+        }
       : {
           primaryColor: "#0f172a",
           accentColor: "#2563eb",
@@ -138,22 +160,6 @@ export function generateResumeHtml(
           // Handle bold text (markdown style)
           let processedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                                   .replace(/==(.*?)==/g, '<mark>$1</mark>');
-          
-          // Refined skills rendering if in SKILLS section
-          if (section.title === 'SKILLS') {
-            // Remove common labels and specific words (including AI-tools)
-            let cleanLine = processedLine.replace(/^(frontend|backend|skills|technical skills|tools|languages|ai-tools|ai tools):\s*/i, '')
-                                         .replace(/(frontend|backend|pipeline|ai-tools|ai tools|\|)/gi, '');
-            
-            // If it still has a label-like structure (text followed by colon), remove it
-            if (cleanLine.includes(':')) {
-              cleanLine = cleanLine.split(':').slice(1).join(':').trim();
-            }
-
-            // Split by comma or any existing pipes, trim, and wrap in <u>
-            const skills = cleanLine.split(/[,,|]/).map(s => s.trim()).filter(Boolean);
-            processedLine = skills.map(skill => `<u>${skill}</u>`).join('&nbsp;&nbsp;&nbsp;&nbsp;');
-          }
           
           if (processedLine.startsWith('*') || processedLine.startsWith('•') || processedLine.startsWith('-')) {
             const pureLine = processedLine.replace(/^[\*•\-]\s*/, '');

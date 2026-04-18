@@ -20,12 +20,12 @@ export default function TemplatesPage() {
           const previewHtml = generateResumeHtml(nameLines, sections, t.id);
 
           return (
-            <section key={t.id} className="rounded-2xl border border-zinc-100 bg-white shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-zinc-100">
+            <section key={t.id} className="rounded-2xl border border-zinc-100 bg-white shadow-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-zinc-200/50 group">
+              <div className="p-6 border-b border-zinc-100 bg-zinc-50/30">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-lg font-bold text-zinc-900">{t.label}</h2>
-                    <p className="text-xs text-zinc-500 mt-1">ATS-friendly structure with editable seed content.</p>
+                    <h2 className="text-lg font-bold text-zinc-900 group-hover:text-blue-600 transition-colors">{t.label}</h2>
+                    <p className="text-xs text-zinc-500 mt-1 line-clamp-1">{t.description}</p>
                   </div>
                   <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full whitespace-nowrap">
                     Template
@@ -34,10 +34,10 @@ export default function TemplatesPage() {
               </div>
 
               <div className="p-6">
-                <div className="rounded-xl border border-zinc-200 overflow-hidden bg-zinc-50">
+                <div className="rounded-xl border border-zinc-200 overflow-hidden bg-zinc-50 shadow-inner">
                   <iframe
                     title={`Template preview: ${t.label}`}
-                    className="w-full h-[560px] border-none bg-white"
+                    className="w-full h-[480px] border-none bg-white"
                     srcDoc={previewHtml}
                   />
                 </div>
@@ -45,10 +45,10 @@ export default function TemplatesPage() {
 
               <div className="p-6 pt-0">
                 <Link
-                  href={`/free-ats-resume-checker/editor?template=${t.id}`}
-                  className="inline-flex w-full items-center justify-center rounded-xl bg-zinc-900 px-6 py-3 text-sm font-extrabold text-white hover:opacity-90 transition-all active:scale-[0.99] shadow-md shadow-zinc-200"
+                  href={`/resume-templates/${t.slug}`}
+                  className="inline-flex w-full items-center justify-center rounded-xl bg-zinc-900 px-6 py-3.5 text-sm font-extrabold text-white hover:bg-zinc-800 transition-all active:scale-[0.98] shadow-md shadow-zinc-200"
                 >
-                  Start Editing
+                  View Template & Edit
                 </Link>
               </div>
             </section>

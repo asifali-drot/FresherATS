@@ -18,6 +18,16 @@ function getTemplateStyles(templateId: ResumeTemplateId) {
           sectionTitleFontSize: 11,
           sectionTitleBorderColor: '#cbd5e1',
         }
+      : template === 'program-manager'
+      ? {
+          padding: 40,
+          fontSize: 11,
+          primaryColor: '#064e3b',
+          accentColor: '#059669',
+          nameFontSize: 26,
+          sectionTitleFontSize: 13,
+          sectionTitleBorderColor: '#064e3b',
+        }
       : {
           padding: 40,
           fontSize: 10,
@@ -169,20 +179,6 @@ export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({
             <View>
               {section.content.map((line, lIndex) => {
                 let processedLine = line;
-                if (section.title === 'SKILLS') {
-                  // Remove common labels and specific words (including AI-tools)
-                  let cleanLine = line.replace(/^(frontend|backend|skills|technical skills|tools|languages|ai-tools|ai tools):\s*/i, '')
-                                       .replace(/(frontend|backend|pipeline|ai-tools|ai tools|\|)/gi, '');
-                  
-                  // If it still has a label-like structure (text followed by colon), remove it
-                  if (cleanLine.includes(':')) {
-                    cleanLine = cleanLine.split(':').slice(1).join(':').trim();
-                  }
-
-                  // Split by comma or any existing pipes, trim, and wrap in __ for PDF underline
-                  const skills = cleanLine.split(/[,,|]/).map(s => s.trim()).filter(Boolean);
-                  processedLine = skills.map(skill => `__${skill}__`).join('    ');
-                }
 
                 if (processedLine.startsWith('*') || processedLine.startsWith('•') || processedLine.startsWith('-')) {
                   const pureLine = processedLine.replace(/^[\*•\-]\s*/, '');
