@@ -15,8 +15,8 @@ export const metadata: Metadata = {
         images: [
             {
                 url: "/og-image.png",
-                width: 1200,
-                height: 630,
+                width: 1995,
+                height: 528,
                 alt: "FresherATS - Master Your Resume",
             },
         ],
