@@ -26,12 +26,48 @@ const dmSerifDisplay = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "FresherATS | Master Your Resume",
+  metadataBase: new URL("https://fresherats.com"),
+  title: {
+    default: "FresherATS | Master Your Resume",
+    template: "%s | FresherATS",
+  },
   description: "Advanced ATS resume analyzer for fresh graduates. Optimize your career path with AI-driven insights.",
+  keywords: ["ATS Resume Analyzer", "Fresher Resume", "Resume Optimization", "AI Career Help", "Free ATS Checker"],
+  authors: [{ name: "FresherATS Team" }],
+  creator: "FresherATS",
+  publisher: "FresherATS",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
     apple: "/favicon.svg",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://fresherats.com",
+    siteName: "FresherATS",
+    title: "FresherATS | Master Your Resume",
+    description: "Advanced ATS resume analyzer for fresh graduates. Optimize your career path with AI-driven insights.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "FresherATS - Master Your Resume",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FresherATS | Master Your Resume",
+    description: "Advanced ATS resume analyzer for fresh graduates. Optimize your career path with AI-driven insights.",
+    images: ["/og-image.png"],
+    creator: "@fresherats",
   },
   verification: {
     google: "5BxzQElKJd_onGdtdvBwmM8enJ7Aw1nlzguTXZXNgUc",

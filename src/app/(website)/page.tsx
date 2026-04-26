@@ -1,6 +1,27 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import FAQSection from "@/components/FAQSection";
 import { generateFAQSchema } from "@/lib/seo";
+
+export const metadata: Metadata = {
+    title: {
+        absolute: "FresherATS | Master Your Resume",
+    },
+    description: "Advanced ATS resume analyzer for fresh graduates. Optimize your career path with AI-driven insights. Get your ATS score and keywords analysis for free.",
+    openGraph: {
+        title: "FresherATS | Master Your Resume",
+        description: "Advanced ATS resume analyzer for fresh graduates. Optimize your career path with AI-driven insights.",
+        url: "https://fresherats.com",
+        images: [
+            {
+                url: "/og-image.png",
+                width: 1200,
+                height: 630,
+                alt: "FresherATS - Master Your Resume",
+            },
+        ],
+    },
+};
 
 export default function Home() {
     return (
