@@ -187,13 +187,14 @@ function AnalyzeResultContent() {
                         Generating...
                       </>
                     ) : (
-                      <div className="flex flex-col items-center leading-tight">
+                      <span className="flex flex-col items-center leading-tight">
                         <span>Download Resume</span>
                         <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest mt-0.5">
                           FREE - Limited Time
                         </span>
-                      </div>
+                      </span>
                     )}
+
                   </button>
 
                 <button

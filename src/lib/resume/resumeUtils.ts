@@ -156,6 +156,7 @@ export function generateResumeHtml(
   const sectionHtml = sections.map(section => `
     <section class="resume-section">
       <h2 class="resume-section-title">${section.title}</h2>
+      <div class="resume-section-content">
         ${section.content.map(line => {
           // Handle bold text (markdown style)
           let processedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -169,6 +170,7 @@ export function generateResumeHtml(
         }).join('')}
       </div>
     </section>
+
   `).join('');
 
   return `

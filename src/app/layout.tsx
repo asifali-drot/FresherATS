@@ -71,6 +71,9 @@ export const metadata: Metadata = {
   },
   verification: {
     google: "5BxzQElKJd_onGdtdvBwmM8enJ7Aw1nlzguTXZXNgUc",
+    other: {
+      "p:domain_verify": "e6ae17b1e04ef0ba38b7f3b337baf62a",
+    },
   },
 };
 
@@ -84,11 +87,13 @@ export default function RootLayout({
       <head>
         {/* <meta name="google-site-verification" content="5BxzQElKJd_onGdtdvBwmM8enJ7Aw1nlzguTXZXNgUc" /> */}
         <meta name="google-site-verification" content="5BxzQElKJd_onGdtdvBwmM8enJ7Aw1nlzguTXZXNgUc" />
+        <meta name="p:domain_verify" content="e6ae17b1e04ef0ba38b7f3b337baf62a"/>
         <link rel="preconnect" href="https://cdn.sanity.io" />
         <link rel="preconnect" href="https://images.unsplash.com" />
       </head>
       <body
         className={`${inter.variable} ${geistMono.variable} ${dmSans.variable} ${dmSerifDisplay.variable} font-sans antialiased`}
+        suppressHydrationWarning
       >
         {children}
       </body>
