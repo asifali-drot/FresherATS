@@ -10,6 +10,8 @@ import {
   User
 } from "lucide-react";
 import SanityImage from "@/components/SanityImage";
+import BlogSearch from "./BlogSearch";
+import { Suspense } from "react";
 
 interface Post {
   _id: string;
@@ -22,12 +24,27 @@ interface Post {
   readingTime?: number;
 }
 
-export default async function BlogPage() {
+type Props = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
+export default async function BlogPage(props: Props) {
+  const searchParams = await props.searchParams;
+  const q = typeof searchParams?.q === "string" ? searchParams.q : "";
+
   let posts: Post[] = [];
   try {
     posts = await getPosts();
   } catch (error) {
     console.error("Failed to fetch posts:", error);
+  }
+
+  if (q) {
+    const lowerQ = q.toLowerCase();
+    posts = posts.filter(post => 
+      post.title.toLowerCase().includes(lowerQ) || 
+      (post.excerpt && post.excerpt.toLowerCase().includes(lowerQ))
+    );
   }
 
   return (
@@ -46,17 +63,10 @@ export default async function BlogPage() {
             The latest news, tips, and strategies for accelerating your career and getting the most out of your resume.
           </p>
 
-          {/* Static Search Bar */}
-          <div className="max-w-xl mx-auto relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-zinc-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search articles..."
-              className="block w-full pl-11 pr-4 py-4 border border-zinc-200 rounded-2xl bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            />
-          </div>
+          {/* Interactive Search Bar */}
+          <Suspense fallback={<div className="h-[58px] max-w-xl mx-auto rounded-2xl bg-zinc-100 animate-pulse"></div>}>
+            <BlogSearch />
+          </Suspense>
         </div>
       </section>
 
