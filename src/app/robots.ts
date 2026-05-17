@@ -7,13 +7,12 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: [
         '/api/',
-        '/free-ats-resume-checker/editor',
-        '/free-ats-resume-checker/result',
+        '/editor',
+        '/result',
         '/history',
         '/studio',
       ],
     },
-    // Replace with your actual domain when known
     sitemap: 'https://fresherats.com/sitemap.xml',
   };
 }

@@ -129,7 +129,7 @@ export default async function TemplateDetailPage({ params }: Props) {
               </div>
 
               <Link
-                href={`/free-ats-resume-checker/editor?template=${template.id}`}
+                href={`/editor?template=${template.id}`}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-zinc-900 py-4 text-base font-extrabold text-white hover:bg-zinc-800 transition-all active:scale-[0.98] shadow-lg shadow-zinc-200"
               >
                 <FileText className="h-5 w-5" />

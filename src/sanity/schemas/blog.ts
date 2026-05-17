@@ -91,5 +91,31 @@ export const blog = defineType({
         }
       ]
     }),
-  ]
+  ],
+  preview: {
+    select: {
+      title: 'title',
+      author: 'author',
+      publishedAt: 'publishedAt',
+      media: 'mainImage',
+      slug: 'slug',
+    },
+    prepare({ title, author, publishedAt, media, slug }) {
+      const date = publishedAt
+        ? new Date(publishedAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })
+        : 'Unpublished';
+      const byLine = author ? `By ${author}` : '';
+      return {
+        title: title || 'Untitled Post',
+        subtitle: [byLine, date, slug?.current ? `/${slug.current}` : '']
+          .filter(Boolean)
+          .join(' · '),
+        media,
+      };
+    },
+  },
 });

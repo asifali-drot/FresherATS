@@ -108,5 +108,32 @@ export const blockContent = defineType({
         },
       },
     }),
+    // ── Program Manager Summary Builder Widget ──────────────────────────────
+    // Renders an interactive, self-contained summary-builder tool in blog posts.
+    // No configurable fields needed — the widget is fully self-contained.
+    defineArrayMember({
+      type: "object",
+      name: "programManagerSummaryBuilder",
+      title: "Program Manager Summary Builder",
+      fields: [
+        {
+          // A single hidden "dummy" field so Sanity has something to store.
+          // Editors don't need to fill this in — the widget is self-contained.
+          name: "placeholder",
+          title: "Placeholder",
+          type: "string",
+          hidden: true,
+          initialValue: "programManagerSummaryBuilder",
+        },
+      ],
+      preview: {
+        prepare() {
+          return {
+            title: "✍️ Program Manager Summary Builder",
+            subtitle: "Interactive widget — fully self-contained",
+          };
+        },
+      },
+    }),
   ],
 });

@@ -53,7 +53,7 @@ export default function ResumeUpload() {
         window.sessionStorage.setItem("fresherAtsResult", JSON.stringify(payload));
       }
 
-      router.push("/free-ats-resume-checker/result");
+      router.push("/result");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e) || "Unknown error");
     } finally {
@@ -83,7 +83,7 @@ export default function ResumeUpload() {
   };
 
   return (
-    <div className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="space-y-6 rounded-2xl border border-purple-100/60 bg-white/80 backdrop-blur-sm p-6 shadow-[0_8px_30px_rgba(124,58,237,0.10),0_2px_8px_rgba(0,0,0,0.06)]">
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-gray-800">
           Resume (PDF or DOCX)

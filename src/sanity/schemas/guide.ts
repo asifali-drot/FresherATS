@@ -56,4 +56,26 @@ export const guide = defineType({
       type: 'blockContent',
     }),
   ],
+  preview: {
+    select: {
+      title: 'title',
+      category: 'category',
+      duration: 'duration',
+      media: 'mainImage',
+      slug: 'slug',
+    },
+    prepare({ title, category, duration, media, slug }) {
+      return {
+        title: title || 'Untitled Guide',
+        subtitle: [
+          category ?? '',
+          duration ?? '',
+          slug?.current ? `/${slug.current}` : '',
+        ]
+          .filter(Boolean)
+          .join(' · '),
+        media,
+      };
+    },
+  },
 });

@@ -130,7 +130,7 @@ export async function loginAction(formData: FormData) {
     }
 
     let target = redirectPath || '/'
-    if (claimId && target.includes('/free-ats-resume-checker/result')) {
+    if (claimId && target.includes('/result')) {
         const separator = target.includes('?') ? '&' : '?'
         target = `${target}${separator}download=auto`
     }

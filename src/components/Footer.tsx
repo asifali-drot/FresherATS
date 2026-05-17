@@ -7,7 +7,7 @@ import { useIsMounted } from "@/hooks/useIsMounted";
 export default function Footer() {
   const pathname = usePathname();
   const mounted = useIsMounted();
-  const isResultPage = pathname === "/free-ats-resume-checker/result";
+  const isResultPage = pathname === "/result";
   
   // Use a hardcoded fallback during SSR/Hydration to match exactly,
   // then update to current year once mounted.

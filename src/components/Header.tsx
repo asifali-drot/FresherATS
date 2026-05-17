@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { useState, useEffect } from "react";
-import { Menu, X, Zap, History, FileText, Info, Mail, Rss, Sparkles } from "lucide-react";
+import { Menu, X, Zap, FileText, Info, Mail, Rss } from "lucide-react";
 
 export default function Header({ user, logoutAction }: { user: User | null, logoutAction: () => void }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -47,6 +47,12 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
               Blog
             </Link>
             <Link
+              href="/resume-templates"
+              className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
+            >
+              Templates
+            </Link>
+            <Link
               href="/about"
               className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
             >
@@ -88,20 +94,6 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
                   Login
                 </Link>
               )}
-
-              <Link
-                href="/resume-templates"
-                className="flex items-center gap-2 text-sm font-extrabold text-zinc-700 hover:text-blue-600 transition-colors"
-              >
-                Templates <FileText className="h-4 w-4" />
-              </Link>
-
-              <Link
-                href="/free-ats-resume-checker"
-                className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-extrabold text-white hover:bg-blue-700 active:scale-95 transition-all shadow-lg shadow-blue-100"
-              >
-                Resume Checker
-              </Link>
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -131,27 +123,17 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-2">Main Menu</p>
             <MobileNavLink href="/" icon={<Zap className="h-5 w-5" />} label="Home" onClick={closeMenu} />
             <MobileNavLink href="/blog" icon={<Rss className="h-5 w-5" />} label="Blog" onClick={closeMenu} />
+            <MobileNavLink href="/resume-templates" icon={<FileText className="h-5 w-5" />} label="Templates" onClick={closeMenu} />
             <MobileNavLink href="/about" icon={<Info className="h-5 w-5" />} label="About Us" onClick={closeMenu} />
             <MobileNavLink href="/contact" icon={<Mail className="h-5 w-5" />} label="Contact Us" onClick={closeMenu} />
 
-              <div className="px-4 pt-3 pb-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Templates</div>
-              <MobileNavLink href="/resume-templates" icon={<FileText className="h-5 w-5" />} label="Browse Templates" onClick={closeMenu} />
           </div>
 
           <div className="mt-auto p-6 border-t border-zinc-100 flex flex-col gap-4 bg-zinc-50/50">
             <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-2">Account</p>
             {user ? (
               <div className="flex flex-col gap-2">
-                <Link
-                  onClick={closeMenu}
-                  href="/history"
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-zinc-200 text-zinc-700 font-bold hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm"
-                >
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                    <History className="h-5 w-5" />
-                  </div>
-                  <span className="text-sm">History</span>
-                </Link>
+
                 <form action={logoutAction} className="w-full">
                   <button
                     type="submit"
@@ -171,14 +153,7 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
                 <span>Login</span>
               </Link>
             )}
-            <Link
-              onClick={closeMenu}
-              href="/free-ats-resume-checker"
-              className="group flex w-full items-center justify-center gap-3 rounded-2xl bg-linear-to-r from-blue-600 to-indigo-600 p-4 text-sm font-black text-white shadow-xl shadow-blue-600/20 transition-all hover:scale-[1.02] hover:shadow-blue-600/30 active:scale-[0.98]"
-            >
-              <Sparkles className="h-5 w-5 animate-pulse text-blue-200" />
-              <span>Resume Checker</span>
-            </Link>
+
           </div>
         </div>
       </div>

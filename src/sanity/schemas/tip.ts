@@ -35,4 +35,22 @@ export const tip = defineType({
       of: [{ type: 'string' }],
     }),
   ],
+  preview: {
+    select: {
+      title: 'title',
+      category: 'category',
+    },
+    prepare({ title, category }) {
+      const categoryLabel: Record<string, string> = {
+        resume: '📄 Resume',
+        interview: '🎤 Interview',
+        linkedin: '💼 LinkedIn',
+        general: '💡 General',
+      };
+      return {
+        title: title || 'Untitled Tip',
+        subtitle: category ? categoryLabel[category] ?? category : 'No category',
+      };
+    },
+  },
 });

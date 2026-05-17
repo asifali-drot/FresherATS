@@ -131,11 +131,11 @@ function AnalyzeResultContent() {
     if (!user) {
       const params = new URLSearchParams();
       params.set("claim_id", data?.analysis_id || "");
-      params.set("redirect", "/free-ats-resume-checker/editor");
+      params.set("redirect", "/editor");
       router.push(`/login?${params.toString()}`);
       return;
     }
-    router.push("/free-ats-resume-checker/editor");
+    router.push("/editor");
   }, [user, data, router]);
 
   // Auto-download effect
@@ -153,10 +153,10 @@ function AnalyzeResultContent() {
           <h2 className="text-2xl font-bold text-zinc-900">No Analysis Found</h2>
           <p className="mt-2 text-zinc-600">Please upload your resume first to see the analysis results.</p>
           <Link
-            href="/free-ats-resume-checker"
+            href="/#analyze"
             className="mt-8 inline-flex rounded-xl bg-blue-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95"
           >
-            Go to Analyzer
+            Analyze on Homepage
           </Link>
         </div>
       </div>
@@ -221,7 +221,7 @@ function AnalyzeResultContent() {
           </div>
 
           <div className="flex items-center justify-between px-2">
-            <Link href="/free-ats-resume-checker" className="text-sm font-semibold text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-2">
+            <Link href="/#analyze" className="text-sm font-semibold text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-2">
               <span>←</span> Analyze another resume
             </Link>
           </div>

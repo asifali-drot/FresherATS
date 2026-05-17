@@ -6,6 +6,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import SanityImage from "@/components/SanityImage";
+import HtmlEmbed from "@/components/blog/HtmlEmbed";
+import ProgramManagerSummaryBuilder from "@/components/blog/ProgramManagerSummaryBuilder";
 import FAQSection from "@/components/FAQSection";
 import { generateFAQSchema } from "@/lib/seo";
 import TableOfContents from "@/components/blog/TableOfContents";
@@ -195,7 +197,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     },
                     htmlEmbed: ({ value }: any) => {
                       if (!value?.html) return null;
-                      return <div dangerouslySetInnerHTML={{ __html: value.html }} />;
+                      return <HtmlEmbed html={value.html} />;
+                    },
+                    programManagerSummaryBuilder: () => {
+                      return <ProgramManagerSummaryBuilder />;
                     },
                   },
                   marks: {

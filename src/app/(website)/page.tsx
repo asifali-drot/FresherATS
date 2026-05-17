@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import FAQSection from "@/components/FAQSection";
+import HomeMarketing from "@/components/home/HomeMarketing";
+import ResumeUpload from "@/components/ResumeUpload";
 import { generateFAQSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
@@ -25,74 +26,97 @@ export const metadata: Metadata = {
 
 export default function Home() {
     return (
-        <main className="relative min-h-[calc(100vh-81px)] flex flex-col items-center justify-center px-6 overflow-hidden">
-            {/* Glow Effect */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 bg-purple-100 rounded-full blur-[140px] -z-10"></div>
+        <main className="relative overflow-hidden">
+            {/* Single unified hero + tool section — one seamless background */}
+            <section className="relative flex flex-col items-center justify-center px-6 pt-12 pb-24">
+                <HeroGlow />
 
-            <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center text-center space-y-9">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-purple-200 bg-purple-50 text-purple-700 text-xs font-bold animate-in fade-in slide-in-from-bottom-3 duration-1000">
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-500 opacity-20"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600"></span>
-                    </span>
-                    AI-Powered Insights
-                </div>
-
-                <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-zinc-900 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-100">
-                    Fix Your Resume Before <br />
-                    <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-600 via-pink-500 to-purple-600 bg-size-[200%_auto] animate-gradient">
-                        ATS Rejects It
-                    </span>
-                </h1>
-
-                <p className="max-w-2xl text-lg md:text-xl text-zinc-700 leading-relaxed font-medium animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-200">
-                    Empowering fresh graduates to land their dream jobs. Analyze your ATS score,
-                    uncover missing keywords, and transform your career path in seconds.
-                </p>
-
-                <div className="flex flex-col sm:flex-row items-center gap-5 pt-6 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300">
-                    <Link
-                        href="/free-ats-resume-checker"
-                        className="group relative px-10 py-4.5 bg-zinc-900 text-white font-bold rounded-2xl hover:bg-zinc-800 transition-all active:scale-95 shadow-xl shadow-zinc-200 text-center w-full sm:w-auto"
-                    >
-                        Analyze My Resume
-                        <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-500 opacity-40"></span>
-                            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-purple-600"></span>
+                {/* Hero copy */}
+                <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center text-center space-y-9">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-purple-200 bg-purple-50 text-purple-700 text-xs font-bold">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-500 opacity-20"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600"></span>
                         </span>
-                    </Link>
+                        AI-Powered Insights
+                    </div>
+
+                    <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-zinc-900">
+                        Fix Your Resume Before <br />
+                        <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-600 via-pink-500 to-purple-600 bg-size-[200%_auto] animate-gradient">
+                            ATS Rejects It
+                        </span>
+                    </h1>
+
+                    <p className="max-w-2xl text-lg md:text-xl text-zinc-700 leading-relaxed font-medium">
+                        Empowering fresh graduates to land their dream jobs. Analyze your ATS score,
+                        uncover missing keywords, and transform your career path in seconds.
+                    </p>
+
+                    <div className="pt-6 grid grid-cols-2 md:grid-cols-3 gap-10 md:gap-20 opacity-70 w-full max-w-3xl">
+                        <StatItem value="98%" label="Accuracy" />
+                        <StatItem value="10s" label="Analysis Time" />
+                        <StatItem value="10k+" label="Resumes Fixed" className="col-span-2 md:col-span-1" />
+                    </div>
                 </div>
 
-                <div className="pt-14 grid grid-cols-2 md:grid-cols-3 gap-10 md:gap-20 opacity-70 animate-in fade-in duration-1000 delay-500">
-                    <div className="flex flex-col items-center space-y-2.5">
-                        <span className="text-3xl font-extrabold text-zinc-900">98%</span>
-                        <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em]">Accuracy</span>
-                    </div>
-                    <div className="flex flex-col items-center space-y-2.5">
-                        <span className="text-3xl font-extrabold text-zinc-900">10s</span>
-                        <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em]">Analysis Time</span>
-                    </div>
-                    <div className="flex flex-col items-center space-y-2.5 col-span-2 md:col-span-1">
-                        <span className="text-3xl font-extrabold text-zinc-900">10k+</span>
-                        <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em]">Resumes Fixed</span>
-                    </div>
+                {/* Upload card — flows directly below hero, no section break */}
+                <div id="analyze" className="scroll-mt-24 relative z-10 w-full max-w-2xl mx-auto mt-16 px-4 sm:px-6">
+                    {/* <AnalyzeHeader /> */}
+                    <ResumeUpload />
                 </div>
-            </div>
+            </section>
 
-            <FAQSection
-                faqs={HOME_FAQS}
-                title="Got Questions? We Have Answers"
-                description="Everything you need to know about our ATS analyzer and how it helps you land your dream job."
-            />
+            <HomeMarketing />
 
-            {/* FAQ Schema */}
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(generateFAQSchema(HOME_FAQS)) }}
-            />
+            <section className="px-6 pb-24">
+                <FAQSection
+                    faqs={HOME_FAQS}
+                    title="Got Questions? We Have Answers"
+                    description="Everything you need to know about our ATS analyzer and how it helps you land your dream job."
+                />
+
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(generateFAQSchema(HOME_FAQS)) }}
+                />
+            </section>
         </main>
     );
 }
+
+function HeroGlow() {
+    return (
+        <>
+            {/* Large central glow covers the full hero + card area */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/3 w-[700px] h-[700px] bg-purple-100 rounded-full blur-[160px] -z-10 pointer-events-none" />
+            {/* Subtle pink accent offset to the right */}
+            <div className="absolute top-[60%] left-[65%] -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-pink-100 rounded-full blur-[120px] -z-10 pointer-events-none opacity-60" />
+        </>
+    );
+}
+
+function StatItem({ value, label, className = "" }: { value: string; label: string; className?: string }) {
+    return (
+        <div className={`flex flex-col items-center space-y-2.5 ${className}`}>
+            <span className="text-3xl font-extrabold text-zinc-900">{value}</span>
+            <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em]">{label}</span>
+        </div>
+    );
+}
+
+// function AnalyzeHeader() {
+//     return (
+//         <div className="mb-8 text-center">
+//             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">
+//                 Free ATS Resume Checker
+//             </h2>
+//             <p className="mt-3 text-zinc-600 leading-relaxed">
+//                 Upload your resume (PDF or DOCX) and optionally add a job description to get ATS-style feedback and improvement suggestions.
+//             </p>
+//         </div>
+//     );
+// }
 
 const HOME_FAQS = [
     {
