@@ -39,6 +39,11 @@ const nextConfig: NextConfig = {
         destination: "/resume-templates",
         permanent: true,
       },
+      {
+        source: "/resume-templates/program-manager-resume-sample",
+        destination: "/resume-templates/program-manager-resume-template",
+        permanent: true,
+      },
     ];
   },
   images: {

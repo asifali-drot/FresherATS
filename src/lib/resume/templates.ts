@@ -92,7 +92,7 @@ export const RESUME_TEMPLATES: ResumeTemplate[] = [
   },
   {
     id: "program-manager",
-    slug: "program-manager-resume-sample",
+    slug: "program-manager-resume-template",
     label: "Senior Program Manager Template",
     description: "Tailored specifically for senior leaders and program managers. Highlighting strategic impact, stakeholder management, and multi-million dollar project delivery.",
     roleTips: [
