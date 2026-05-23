@@ -89,9 +89,9 @@ function HeroGlow() {
     return (
         <>
             {/* Large central glow covers the full hero + card area */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/3 w-[700px] h-[700px] bg-purple-100 rounded-full blur-[160px] -z-10 pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/3 w-175 h-175 bg-purple-100 rounded-full blur-[160px] -z-10 pointer-events-none" />
             {/* Subtle pink accent offset to the right */}
-            <div className="absolute top-[60%] left-[65%] -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-pink-100 rounded-full blur-[120px] -z-10 pointer-events-none opacity-60" />
+            <div className="absolute top-[60%] left-[65%] -translate-x-1/2 -translate-y-1/2 w-75 h-75 bg-pink-100 rounded-full blur-[120px] -z-10 pointer-events-none opacity-60" />
         </>
     );
 }

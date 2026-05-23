@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import Suggestions, { type AnalysisResult } from "@/components/Suggestions";
 import ATSScore from "@/components/ATSScore";
-import { parseResumeText, generateResumeHtml } from "@/lib/resume/resumeUtils";
 import { User } from "@supabase/supabase-js";
 import Image from "next/image";
 
@@ -169,7 +168,7 @@ function AnalyzeResultContent() {
         {/* Main Content */}
         <div className="lg:col-span-2 flex flex-col gap-10">
           <div className="flex flex-col gap-8 rounded-3xl border border-zinc-100 bg-white p-8 shadow-sm">
-            <div className="flex flex-col items-center justify-center gap-10">
+            <div className="flex flex-col items-center justify-center gap-3">
               <ATSScore score={data.score ?? 72} />
 
               <div className="flex flex-col items-center gap-2">
@@ -258,8 +257,8 @@ function AnalyzeResultContent() {
                     <Image src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&q=80&w=200" alt="post" fill className="object-cover" />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <h5 className="text-sm font-bold text-zinc-900 leading-snug">Top 5 ATS Resume Mistakes to Avoid</h5>
-                    <Link href="/blog/mistakes" className="text-xs font-bold text-blue-600 hover:underline">Read More</Link>
+                    <h5 className="text-sm font-bold text-zinc-900 leading-snug">ATS-Friendly Resume Format for Freshers</h5>
+                    <Link href="/blog/ats-friendly-resume-format-fresher" className="text-xs font-bold text-blue-600 hover:underline">Read More</Link>
                   </div>
                 </div>
 
@@ -269,8 +268,8 @@ function AnalyzeResultContent() {
                     <Image src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=200" alt="post" fill className="object-cover" />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <h5 className="text-sm font-bold text-zinc-900 leading-snug">How to Tailor Your Resume for Any Job</h5>
-                    <Link href="/blog/tailor" className="text-xs font-bold text-blue-600 hover:underline">Read More</Link>
+                    <h5 className="text-sm font-bold text-zinc-900 leading-snug">How to Increase Your ATS Resume Score</h5>
+                    <Link href="/blog/increase-your-ats-resume-score" className="text-xs font-bold text-blue-600 hover:underline">Read More</Link>
                   </div>
                 </div>
               </div>

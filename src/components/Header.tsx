@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { useState, useEffect } from "react";
-import { Menu, X, Zap, FileText, Info, Mail, Rss } from "lucide-react";
+import { Menu, X, Zap, FileText, Info, Mail, Rss, LayoutDashboard } from "lucide-react";
 
 export default function Header({ user, logoutAction }: { user: User | null, logoutAction: () => void }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -70,13 +70,13 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             <div className="hidden lg:flex items-center gap-6">
               {user ? (
                 <div className="flex items-center gap-6">
-                  {/* <Link
-                    href="/history"
+                  <Link
+                    href="/my-resumes"
                     className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors flex items-center gap-2"
                   >
-                    <History className="h-4 w-4" />
-                    History
-                  </Link> */}
+                    <LayoutDashboard className="h-4 w-4" />
+                    My Resumes
+                  </Link>
                   <form action={logoutAction}>
                     <button
                       type="submit"
@@ -126,6 +126,9 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             <MobileNavLink href="/resume-templates" icon={<FileText className="h-5 w-5" />} label="Templates" onClick={closeMenu} />
             <MobileNavLink href="/about" icon={<Info className="h-5 w-5" />} label="About Us" onClick={closeMenu} />
             <MobileNavLink href="/contact" icon={<Mail className="h-5 w-5" />} label="Contact Us" onClick={closeMenu} />
+            {user && (
+              <MobileNavLink href="/my-resumes" icon={<LayoutDashboard className="h-5 w-5" />} label="My Resumes" onClick={closeMenu} />
+            )}
 
           </div>
 

@@ -3,6 +3,7 @@
 import { useRef, useState, type DragEvent } from "react";
 import { useRouter } from "next/navigation";
 import JDInput from "./JDInput";
+import AnalysisLoadingScreen from "./AnalysisLoadingScreen";
 import type { AnalysisResult } from "./Suggestions";
 
 export default function ResumeUpload() {
@@ -81,6 +82,10 @@ export default function ResumeUpload() {
   const openFilePicker = () => {
     fileInputRef.current?.click();
   };
+
+  if (loading) {
+    return <AnalysisLoadingScreen />;
+  }
 
   return (
     <div className="space-y-6 rounded-2xl border border-purple-100/60 bg-white/80 backdrop-blur-sm p-6 shadow-[0_8px_30px_rgba(124,58,237,0.10),0_2px_8px_rgba(0,0,0,0.06)]">

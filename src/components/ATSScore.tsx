@@ -275,7 +275,7 @@ export default function ATSScore({ score }: ATSScoreProps) {
       </div>
 
       {/* ── Status pill ── */}
-      <div className="flex flex-col items-center gap-1 -mt-2">
+      <div className="flex flex-col items-center gap-1">
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1 text-xs font-bold uppercase tracking-widest text-white ring-2 ring-offset-1 ${status.tailwindBg} ${status.tailwindRing}`}
         >
@@ -291,6 +291,7 @@ export default function ATSScore({ score }: ATSScoreProps) {
         <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 mt-1">
           ATS Score
         </p>
+
       </div>
     </div>
   );
