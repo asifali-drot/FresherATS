@@ -435,6 +435,17 @@ export default function MyResumesPage() {
         .eq("id", analysis.id);
       
       if (error) throw error;
+
+      // Verify if the row was actually deleted (RLS can silently prevent deletion)
+      const { data: checkData } = await supabase
+        .from("analyses")
+        .select("id")
+        .eq("id", analysis.id)
+        .single();
+
+      if (checkData) {
+        throw new Error("Deletion prevented by Supabase RLS. Please add a DELETE policy for the 'analyses' table in your Supabase Dashboard.");
+      }
       
       setAnalyses(prev => prev.filter(a => a.id !== analysis.id));
       alert("Resume deleted successfully!");

@@ -72,7 +72,7 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                 </div>
             ) : (
                 <>
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <input type="hidden" name="claim_id" value={claimId} />
                         <input type="hidden" name="redirect" value={redirectPath} />
                         {type === 'signup' && (
@@ -112,7 +112,7 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                             </div>
                         )}
                         {(type === 'login' || type === 'signup' || type === 'forgot-password') && (
-                            <div className="space-y-2">
+                            <div className="space-y-2 mb-2">
                                 <label
                                     htmlFor="email"
                                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-700 dark:text-zinc-300"
@@ -131,11 +131,11 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                         )}
 
                         {(type === 'login' || type === 'signup' || type === 'reset-password') && (
-                            <div className="space-y-2">
+                            <div className="space-y-2 mb-2">
                                 <div className="flex items-center justify-between">
                                     <label
                                         htmlFor="password"
-                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-700 dark:text-zinc-300"
+                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-700 dark:text-zinc-300 mb-1"
                                     >
                                         {type === 'reset-password' ? 'New Password' : 'Password'}
                                     </label>
@@ -168,7 +168,7 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-11 px-4 py-2 w-full active:scale-[0.98] dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50/90"
+                            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-11 px-4 py-2 w-full active:scale-[0.98] dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50/90 mb-2"
                         >
                             {loading ? (
                                 <div className="flex items-center gap-2">
