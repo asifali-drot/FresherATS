@@ -72,6 +72,11 @@ export function parseResumeText(text: string): {
 
     if (sectionTitle) {
       if (currentSection) {
+        if (currentSection.title === sectionTitle) {
+          // If we encounter a header for the section we are already in 
+          // (like an explicit "SUMMARY" after an implicit one), just ignore the header
+          continue;
+        }
         sections.push(currentSection);
       }
       currentSection = {

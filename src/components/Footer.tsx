@@ -86,7 +86,7 @@ export default function Footer() {
             <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-900">Company</h4>
             <nav className="flex flex-col gap-2.5">
               <Link href="/about" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">About Us</Link>
-              <Link href="/blog" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">Blog</Link>
+              <Link href="/contact" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">Contact Us</Link>
             </nav>
           </div>
 
@@ -111,7 +111,7 @@ export default function Footer() {
           {/* Download CTA (Result Page Only) */}
           {isResultPage && (
             <div className="flex flex-col gap-6 md:col-span-2 lg:col-span-2 lg:col-start-4 lg:items-end">
-              <div className="flex flex-col gap-4 rounded-3xl bg-[#1c212e] p-6 text-center text-white shadow-xl w-full max-w-[300px]">
+              <div className="flex flex-col gap-4 rounded-3xl bg-[#1c212e] p-6 text-center text-white shadow-xl w-full max-w-75">
                 <button
                   onClick={downloadPDF}
                   className="w-full rounded-xl bg-blue-600 py-3 text-sm font-bold transition-all hover:bg-blue-700 active:scale-95 flex flex-col items-center justify-center leading-tight shadow-lg shadow-blue-500/20"

@@ -46,6 +46,9 @@ export const metadata: Metadata = {
     shortcut: "/favicon.svg",
     apple: "/favicon.svg",
   },
+  alternates: {
+    canonical: "https://fresherats.com/",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",

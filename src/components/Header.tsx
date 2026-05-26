@@ -125,7 +125,7 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             <MobileNavLink href="/blog" icon={<Rss className="h-5 w-5" />} label="Blog" onClick={closeMenu} />
             <MobileNavLink href="/resume-templates" icon={<FileText className="h-5 w-5" />} label="Templates" onClick={closeMenu} />
             <MobileNavLink href="/about" icon={<Info className="h-5 w-5" />} label="About Us" onClick={closeMenu} />
-            <MobileNavLink href="/contact" icon={<Mail className="h-5 w-5" />} label="Contact Us" onClick={closeMenu} />
+            {/* <MobileNavLink href="/contact" icon={<Mail className="h-5 w-5" />} label="Contact Us" onClick={closeMenu} /> */}
             {user && (
               <MobileNavLink href="/my-resumes" icon={<LayoutDashboard className="h-5 w-5" />} label="My Resumes" onClick={closeMenu} />
             )}
