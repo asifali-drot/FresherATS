@@ -111,6 +111,23 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                                 </div>
                             </div>
                         )}
+                        {type === 'signup' && (
+                            <div className="space-y-2 mb-2">
+                                <label
+                                    htmlFor="profile_picture"
+                                    className="text-sm font-medium leading-none text-zinc-700 dark:text-zinc-300"
+                                >
+                                    Profile Picture (Optional)
+                                </label>
+                                <input
+                                    id="profile_picture"
+                                    name="profile_picture"
+                                    type="file"
+                                    accept="image/*"
+                                    className="flex h-11 w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm file:border-0 file:bg-zinc-100 file:text-zinc-900 file:font-medium file:px-2 file:py-1 file:rounded-md file:mr-3 hover:file:bg-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-50 dark:hover:file:bg-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:focus-visible:ring-zinc-300 transition-colors"
+                                />
+                            </div>
+                        )}
                         {(type === 'login' || type === 'signup' || type === 'forgot-password') && (
                             <div className="space-y-2 mb-2">
                                 <label

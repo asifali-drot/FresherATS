@@ -105,6 +105,7 @@ export default function Footer() {
             <nav className="flex flex-col gap-2.5">
               <Link href="/tips" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">ATS Tips</Link>
               <Link href="/guides" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">Resume Guides</Link>
+              <Link href="/reviews" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">Reviews</Link>
             </nav>
           </div>
 

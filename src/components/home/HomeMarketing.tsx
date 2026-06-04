@@ -78,7 +78,7 @@ function WhySection() {
         <div className="lg:col-span-5">
           <p className="text-xs font-black uppercase tracking-[0.25em] text-purple-600 mb-4">Why FresherATS</p>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 leading-tight">
-            Most resumes never reach a human—{" "}
+            Most resumes never reach a human {" "}
             <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-pink-500">
               the ATS decides first
             </span>
@@ -91,9 +91,9 @@ function WhySection() {
             can be filtered out in seconds.
           </p>
           <p>
-            FresherATS is built for students and early-career job seekers. We score your resume against
+            FresherATS is built for students and early career job seekers. We score your resume against
             real job descriptions, surface missing keywords, and help you edit into a clean,
-            parser-friendly format.
+            parser friendly format.
           </p>
           <Link
             href="/#analyze"
@@ -151,7 +151,7 @@ function ShowcaseScore() {
             A score you can act on—not a vague “looks fine”
           </h2>
           <ul className="space-y-3 text-zinc-600">
-            <CheckItem>Instant ATS-style score with a plain-language summary</CheckItem>
+            <CheckItem>Instant ATS resume score with a plain-language summary</CheckItem>
             <CheckItem>Section-level feedback on structure and readability</CheckItem>
             <CheckItem>See what’s strong before you rewrite everything</CheckItem>
           </ul>
@@ -351,7 +351,7 @@ function EditorMockPanel() {
         <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
         <span className="ml-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Resume Studio</span>
       </div>
-      <div className="grid grid-cols-2 min-h-[220px]">
+      <div className="grid grid-cols-2 min-h-55">
         <div className="border-r border-zinc-100 bg-white p-4 space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold text-purple-700">
             <PenLine className="h-3.5 w-3.5" /> Guided edit

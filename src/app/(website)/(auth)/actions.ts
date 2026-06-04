@@ -33,8 +33,27 @@ export async function signup(formData: FormData) {
     const password = formData.get('password') as string
     const first_name = formData.get('first_name') as string
     const last_name = formData.get('last_name') as string
+    const profile_picture = formData.get('profile_picture') as File | null
 
     console.log('Attempting signup for:', email, { first_name, last_name })
+
+    let avatar_url = null
+    if (profile_picture && profile_picture.size > 0) {
+        const fileExt = profile_picture.name.split('.').pop()
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(fileName, profile_picture)
+
+        if (!uploadError && uploadData) {
+            const { data: publicUrlData } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(fileName)
+            avatar_url = publicUrlData.publicUrl
+        } else {
+            console.error('Avatar upload error:', uploadError)
+        }
+    }
 
     const { data: authData, error } = await supabase.auth.signUp({
         email,
@@ -44,6 +63,7 @@ export async function signup(formData: FormData) {
                 first_name,
                 last_name,
                 full_name: `${first_name} ${last_name}`.trim(),
+                avatar_url,
             }
         }
     })

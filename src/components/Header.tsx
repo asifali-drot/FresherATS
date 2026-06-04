@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { useState, useEffect } from "react";
-import { Menu, X, Zap, FileText, Info, Mail, Rss, LayoutDashboard } from "lucide-react";
+import { Menu, X, Zap, FileText, Info, Mail, Rss, LayoutDashboard, Star, User as UserIcon } from "lucide-react";
 
 export default function Header({ user, logoutAction }: { user: User | null, logoutAction: () => void }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -53,16 +53,16 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
               Templates
             </Link>
             <Link
+              href="/reviews"
+              className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
+            >
+              Reviews
+            </Link>
+            <Link
               href="/about"
               className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
             >
               About Us
-            </Link>
-            <Link
-              href="/contact"
-              className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
-            >
-              Contact Us
             </Link>
           </nav>
 
@@ -70,6 +70,13 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             <div className="hidden lg:flex items-center gap-6">
               {user ? (
                 <div className="flex items-center gap-6">
+                  <Link
+                    href="/profile"
+                    className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors flex items-center gap-2"
+                  >
+                    <UserIcon className="h-4 w-4" />
+                    Profile
+                  </Link>
                   <Link
                     href="/my-resumes"
                     className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors flex items-center gap-2"
@@ -124,10 +131,14 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             <MobileNavLink href="/" icon={<Zap className="h-5 w-5" />} label="Home" onClick={closeMenu} />
             <MobileNavLink href="/blog" icon={<Rss className="h-5 w-5" />} label="Blog" onClick={closeMenu} />
             <MobileNavLink href="/resume-templates" icon={<FileText className="h-5 w-5" />} label="Templates" onClick={closeMenu} />
+            <MobileNavLink href="/reviews" icon={<Star className="h-5 w-5" />} label="Reviews" onClick={closeMenu} />
             <MobileNavLink href="/about" icon={<Info className="h-5 w-5" />} label="About Us" onClick={closeMenu} />
             {/* <MobileNavLink href="/contact" icon={<Mail className="h-5 w-5" />} label="Contact Us" onClick={closeMenu} /> */}
             {user && (
-              <MobileNavLink href="/my-resumes" icon={<LayoutDashboard className="h-5 w-5" />} label="My Resumes" onClick={closeMenu} />
+              <>
+                <MobileNavLink href="/profile" icon={<UserIcon className="h-5 w-5" />} label="Profile" onClick={closeMenu} />
+                <MobileNavLink href="/my-resumes" icon={<LayoutDashboard className="h-5 w-5" />} label="My Resumes" onClick={closeMenu} />
+              </>
             )}
 
           </div>
