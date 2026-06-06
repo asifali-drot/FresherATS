@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
-import { useState, useEffect } from "react";
-import { Menu, X, Zap, FileText, Info, Mail, Rss, LayoutDashboard, Star, User as UserIcon } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Menu, X, Zap, FileText, Info, Rss, LayoutDashboard, Star, User as UserIcon, LogOut } from "lucide-react";
 
 export default function Header({ user, logoutAction }: { user: User | null, logoutAction: () => void }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   // Prevent scrolling when menu is open
   useEffect(() => {
@@ -17,8 +19,34 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
     }
   }, [isMenuOpen]);
 
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    if (isProfileDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileDropdownOpen]);
+
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
+  const toggleProfileDropdown = () => setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  const closeProfileDropdown = () => setIsProfileDropdownOpen(false);
+
+  // Get user profile data
+  const metadata = user?.user_metadata || {};
+  const avatarUrl = metadata.avatar_url || '';
+  const firstName = metadata.first_name || '';
+  const lastName = metadata.last_name || '';
+  const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || 'U';
 
   return (
     <>
@@ -69,29 +97,67 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
           <div className="flex items-center gap-4">
             <div className="hidden lg:flex items-center gap-6">
               {user ? (
-                <div className="flex items-center gap-6">
-                  <Link
-                    href="/profile"
-                    className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors flex items-center gap-2"
+                <div className="relative" ref={profileDropdownRef}>
+                  {/* Profile Image Button */}
+                  <button
+                    onClick={toggleProfileDropdown}
+                    className="relative flex items-center justify-center h-10 w-10 rounded-full border-2 border-zinc-200 hover:border-blue-400 transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-white"
+                    aria-label="Profile menu"
                   >
-                    <UserIcon className="h-4 w-4" />
-                    Profile
-                  </Link>
-                  <Link
-                    href="/my-resumes"
-                    className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors flex items-center gap-2"
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                    My Resumes
-                  </Link>
-                  <form action={logoutAction}>
-                    <button
-                      type="submit"
-                      className="text-sm font-bold text-zinc-600 hover:text-red-600 transition-colors flex items-center gap-2"
-                    >
-                      Logout
-                    </button>
-                  </form>
+                    {avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={avatarUrl} alt="Profile" className="h-full w-full rounded-full object-cover" />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-cyan-400 text-white text-xs font-bold">
+                        {initials}
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {isProfileDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden z-1002 animate-in fade-in slide-in-from-top-2 duration-200">
+                      {/* User Info Header */}
+                      <div className="px-4 py-3 border-b border-zinc-100 bg-zinc-50">
+                        <p className="text-sm font-semibold text-zinc-900">{firstName} {lastName}</p>
+                        <p className="text-xs text-zinc-500 truncate">{user.email}</p>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="py-2">
+                        <Link
+                          href="/profile"
+                          onClick={closeProfileDropdown}
+                          className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                        >
+                          <UserIcon className="h-4 w-4" />
+                          Edit Profile
+                        </Link>
+                        <Link
+                          href="/my-resumes"
+                          onClick={closeProfileDropdown}
+                          className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          My Resumes
+                        </Link>
+                      </div>
+
+                      {/* Logout Button */}
+                      <div className="border-t border-zinc-100 py-2">
+                        <form action={logoutAction} className="w-full">
+                          <button
+                            type="submit"
+                            onClick={closeProfileDropdown}
+                            className="flex items-center gap-3 w-full px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+                          >
+                            <LogOut className="h-4 w-4" />
+                            Logout
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <Link

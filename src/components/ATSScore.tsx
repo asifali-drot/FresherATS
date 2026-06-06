@@ -128,7 +128,7 @@ export default function ATSScore({ score }: ATSScoreProps) {
   const bRY = CY - NEEDLE_BASE * Math.sin(perpRad);
 
   return (
-    <div className="flex flex-col items-center gap-0">
+    <div className="flex flex-col items-center gap-1">
       {/* ── Gauge SVG ── */}
       <div className="relative">
         <svg
@@ -254,25 +254,15 @@ export default function ATSScore({ score }: ATSScoreProps) {
           {/* ── Hub gloss dot ── */}
           <circle cx={CX} cy={CY} r={5} fill="url(#hubGrad)" />
         </svg>
-
-        {/* ── Score + label centred in the arc opening ── */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center"
-          style={{ top: H * 0.56 }}
-        >
-          {/* Large animated score number */}
-          <span
-            className="text-5xl font-black tabular-nums leading-none tracking-tight"
-            style={{ color: status.hex }}
-          >
-            {displayScore}
-          </span>
-          {/* Score out of 100 */}
-          {/* <span className="text-xs font-semibold text-slate-400 -mt-0.5 tracking-wide">
-            / 100
-          </span> */}
-        </div>
       </div>
+
+      {/* ── Score number ── */}
+      <span
+        className="text-5xl font-black tabular-nums leading-none tracking-tight -mt-3"
+        style={{ color: status.hex }}
+      >
+        {displayScore}
+      </span>
 
       {/* ── Status pill ── */}
       <div className="flex flex-col items-center gap-1">
@@ -288,9 +278,9 @@ export default function ATSScore({ score }: ATSScoreProps) {
           </span>
           {status.text}
         </span>
-        <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 mt-1">
+        {/* <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 mt-1">
           ATS Score
-        </p>
+        </p> */}
 
       </div>
     </div>

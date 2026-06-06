@@ -22,6 +22,18 @@ export default function ProfileForm({ user }: ProfileFormProps) {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
+            const MAX_FILE_SIZE = 1 * 1024 * 1024 // 1MB
+            
+            // Check file size
+            if (file.size > MAX_FILE_SIZE) {
+                setError(`Image size must be less than 1MB. Your image is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`)
+                setAvatarPreview('')
+                // Reset file input
+                e.target.value = ''
+                return
+            }
+            
+            setError(null)
             const reader = new FileReader()
             reader.onloadend = () => {
                 setAvatarPreview(reader.result as string)
@@ -41,6 +53,8 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             const result = await updateProfileAction(formData)
             if (result.error) {
                 setError(result.error)
+            } else if (result.duplicate) {
+                setError(result.duplicate)
             } else if (result.success) {
                 setSuccess(result.success)
             }
@@ -102,6 +116,9 @@ export default function ProfileForm({ user }: ProfileFormProps) {
                             onChange={handleFileChange}
                             className="hidden"
                         />
+                        <p className="text-xs text-zinc-500 mt-2">
+                            Maximum file size: 1MB. Supported formats: JPG, PNG, GIF, WebP
+                        </p>
                     </div>
                 </div>
 

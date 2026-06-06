@@ -1,27 +1,27 @@
 "use client";
 
-import { useState, useEffect, type ComponentType } from "react";
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+
+const Antigravity = dynamic(() => import("./Antigravity"), {
+  ssr: false,
+});
 
 export default function AntigravityBackground(props: any) {
-  const [Antigravity, setAntigravity] = useState<ComponentType<any> | null>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
 
   useEffect(() => {
     // Delay the network download of Three.js to prioritize initial core bundles
-    const timer = setTimeout(async () => {
-      try {
-        const { default: Component } = await import("./Antigravity");
-        setAntigravity(() => Component);
-      } catch (err) {
-        console.error("Failed to load Antigravity background:", err);
-      }
+    const timer = setTimeout(() => {
+      setShouldLoad(true);
     }, 1500);
 
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className={`absolute inset-0 transition-opacity duration-1000 ${Antigravity ? 'opacity-100' : 'opacity-0'}`}>
-      {Antigravity ? (
+    <div className={`absolute inset-0 transition-opacity duration-1000 ${shouldLoad ? 'opacity-100' : 'opacity-0'}`}>
+      {shouldLoad ? (
         <Antigravity {...props} />
       ) : (
         <div className="absolute inset-0 bg-transparent animate-pulse" />
