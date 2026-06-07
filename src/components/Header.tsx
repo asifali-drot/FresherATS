@@ -189,21 +189,21 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
 
       {/* Mobile Navigation Drawer */}
       <div
-        className={`fixed right-0 top-18.25 bottom-0 z-999 w-[50vw] sm:w-1/2 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-l border-zinc-100 ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed right-0 top-18.25 max-h-[80vh] z-999 w-[50vw] sm:w-1/2 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-l border-zinc-100 overflow-y-auto ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
-        <div className="flex flex-col h-full bg-white overflow-y-auto">
+        <div className="flex flex-col bg-white">
           <div className="flex flex-col gap-1 p-6">
             <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-2">Main Menu</p>
-            <MobileNavLink href="/" icon={<Zap className="h-5 w-5" />} label="Home" onClick={closeMenu} />
-            <MobileNavLink href="/blog" icon={<Rss className="h-5 w-5" />} label="Blog" onClick={closeMenu} />
-            <MobileNavLink href="/resume-templates" icon={<FileText className="h-5 w-5" />} label="Templates" onClick={closeMenu} />
-            <MobileNavLink href="/reviews" icon={<Star className="h-5 w-5" />} label="Reviews" onClick={closeMenu} />
-            <MobileNavLink href="/about" icon={<Info className="h-5 w-5" />} label="About Us" onClick={closeMenu} />
+            <MobileNavLink href="/" label="Home" onClick={closeMenu} />
+            <MobileNavLink href="/blog" label="Blog" onClick={closeMenu} />
+            <MobileNavLink href="/resume-templates" label="Templates" onClick={closeMenu} />
+            <MobileNavLink href="/reviews" label="Reviews" onClick={closeMenu} />
+            <MobileNavLink href="/about" label="About Us" onClick={closeMenu} />
             {/* <MobileNavLink href="/contact" icon={<Mail className="h-5 w-5" />} label="Contact Us" onClick={closeMenu} /> */}
             {user && (
               <>
-                <MobileNavLink href="/profile" icon={<UserIcon className="h-5 w-5" />} label="Profile" onClick={closeMenu} />
-                <MobileNavLink href="/my-resumes" icon={<LayoutDashboard className="h-5 w-5" />} label="My Resumes" onClick={closeMenu} />
+                <MobileNavLink href="/profile" label="Profile" onClick={closeMenu} />
+                <MobileNavLink href="/my-resumes" label="My Resumes" onClick={closeMenu} />
               </>
             )}
 
@@ -241,16 +241,13 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
   );
 }
 
-function MobileNavLink({ href, icon, label, onClick }: { href: string; icon: React.ReactNode; label: string; onClick: () => void }) {
+function MobileNavLink({ href, label, onClick }: { href: string; label: string; onClick: () => void }) {
   return (
     <Link
       href={href}
       onClick={onClick}
-      className="flex items-center gap-5 px-4 py-4 rounded-2xl text-base font-bold text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-all group border border-transparent hover:border-blue-100"
+      className="flex items-center px-4 py-4 rounded-2xl text-base font-bold text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-all border border-transparent hover:border-blue-100"
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-50 text-zinc-700 group-hover:bg-white group-hover:text-blue-600 group-hover:shadow-sm group-hover:border group-hover:border-blue-100 transition-all">
-        {icon}
-      </div>
       {label}
     </Link>
   );
