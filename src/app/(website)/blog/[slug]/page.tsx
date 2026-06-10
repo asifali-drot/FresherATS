@@ -72,17 +72,19 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   return (
     <div className="bg-white min-h-screen pb-24">
       {/* Article Header */}
-      <div className="pt-20 pb-12 px-6 lg:px-8 max-w-7xl mx-auto">
-        <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors mb-8">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Blog
-        </Link>
+      <div className="pt-20 pb-12 px-6 lg:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
+        <div className="w-full flex justify-start mb-8">
+          <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Blog
+          </Link>
+        </div>
 
         <h1 className="text-[40px] md:text-[48px] font-extrabold tracking-tight text-zinc-900 mb-6 leading-tight max-w-4xl">
           {post.title}
         </h1>
 
-        <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-500 font-medium">
+        <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-zinc-500 font-medium">
           {post.author && (
             <span className="flex items-center gap-1.5 shrink-0">
               <User className="h-4 w-4" />
@@ -110,7 +112,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
       {/* Main Image - Natural fit without distortion or cutting */}
       {post.mainImage && (
-        <div className="max-w-4xl mx-auto px-6 lg:px-8 mb-16">
+        <div className="max-w-7xl mx-auto px-6 mb-16">
           <div className="rounded-3xl shadow-xl overflow-hidden bg-zinc-50 leading-0">
             <Image
               src={urlFor(post.mainImage).width(2000).quality(95).url()}

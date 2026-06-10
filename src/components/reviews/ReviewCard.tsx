@@ -1,3 +1,5 @@
+"use client";
+
 import StarRating from "./StarRating";
 
 interface ReviewCardProps {
@@ -75,7 +77,23 @@ export default function ReviewCard({
         {avatarUrl ? (
           <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full shadow-sm border border-zinc-200">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={avatarUrl} alt={userName} className="h-full w-full object-cover" />
+            <img
+              src={avatarUrl}
+              alt={userName}
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                const img = e.currentTarget;
+                img.style.display = 'none';
+                const fallback = img.nextElementSibling as HTMLElement | null;
+                if (fallback) fallback.style.display = 'flex';
+              }}
+            />
+            <div
+              style={{ display: 'none' }}
+              className={`absolute inset-0 flex items-center justify-center rounded-full bg-linear-to-br ${gradient} text-white text-xs font-bold`}
+            >
+              {initials}
+            </div>
           </div>
         ) : (
           <div

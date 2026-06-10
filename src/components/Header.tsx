@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
-import { useState, useEffect, useRef } from "react";
-import { Menu, X, Zap, FileText, Info, Rss, LayoutDashboard, Star, User as UserIcon, LogOut } from "lucide-react";
+import { useState, useEffect, useRef, useTransition } from "react";
+import { Menu, X, Zap, FileText, Info, Rss, LayoutDashboard, Star, User as UserIcon, LogOut, Loader2 } from "lucide-react";
 
-export default function Header({ user, logoutAction }: { user: User | null, logoutAction: () => void }) {
+export default function Header({ user, logoutAction }: { user: User | null, logoutAction: () => Promise<void> }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
@@ -36,10 +36,18 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
     };
   }, [isProfileDropdownOpen]);
 
+  const [isPendingLogout, startLogoutTransition] = useTransition();
+
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
   const toggleProfileDropdown = () => setIsProfileDropdownOpen(!isProfileDropdownOpen);
   const closeProfileDropdown = () => setIsProfileDropdownOpen(false);
+
+  const handleLogout = () => {
+    closeProfileDropdown();
+    closeMenu();
+    startLogoutTransition(() => logoutAction());
+  };
 
   // Get user profile data
   const metadata = user?.user_metadata || {};
@@ -145,16 +153,19 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
 
                       {/* Logout Button */}
                       <div className="border-t border-zinc-100 py-2">
-                        <form action={logoutAction} className="w-full">
-                          <button
-                            type="submit"
-                            onClick={closeProfileDropdown}
-                            className="flex items-center gap-3 w-full px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-red-50 hover:text-red-600 transition-colors"
-                          >
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          disabled={isPendingLogout}
+                          className="flex items-center gap-3 w-full px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          {isPendingLogout ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
                             <LogOut className="h-4 w-4" />
-                            Logout
-                          </button>
-                        </form>
+                          )}
+                          {isPendingLogout ? "Logging out…" : "Logout"}
+                        </button>
                       </div>
                     </div>
                   )}
@@ -214,14 +225,19 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             {user ? (
               <div className="flex flex-col gap-2">
 
-                <form action={logoutAction} className="w-full">
-                  <button
-                    type="submit"
-                    className="flex items-center gap-4 w-full p-4 rounded-2xl bg-white border border-zinc-200 text-zinc-700 font-bold hover:bg-red-50 hover:text-red-600 transition-all shadow-sm"
-                  >
-                    <span className="text-sm">Logout</span>
-                  </button>
-                </form>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={isPendingLogout}
+                  className="flex items-center gap-4 w-full p-4 rounded-2xl bg-white border border-zinc-200 text-zinc-700 font-bold hover:bg-red-50 hover:text-red-600 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isPendingLogout ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <LogOut className="h-4 w-4" />
+                  )}
+                  <span className="text-sm">{isPendingLogout ? "Logging out…" : "Logout"}</span>
+                </button>
               </div>
             ) : (
               <Link

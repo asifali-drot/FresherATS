@@ -38,8 +38,8 @@ export default async function ReviewsPage() {
   const averageRating =
     totalReviews > 0
       ? Math.round(
-          (allReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews) * 10
-        ) / 10
+        (allReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews) * 10
+      ) / 10
       : 0;
 
   const ratingBreakdown = [0, 0, 0, 0, 0];
@@ -142,9 +142,9 @@ export default async function ReviewsPage() {
               existingReview={
                 existingReview
                   ? {
-                      rating: existingReview.rating,
-                      comment: existingReview.comment,
-                    }
+                    rating: existingReview.rating,
+                    comment: existingReview.comment,
+                  }
                   : null
               }
             />
@@ -171,6 +171,7 @@ export default async function ReviewsPage() {
                   comment={review.comment}
                   userName={review.user_name}
                   createdAt={review.created_at}
+                  avatarUrl={review.avatar_url}
                 />
               ))}
             </div>

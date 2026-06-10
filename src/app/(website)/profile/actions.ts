@@ -88,6 +88,15 @@ export async function updateProfileAction(formData: FormData) {
         return { error: updateError.message }
     }
 
+    // Sync avatar_url + user_name into the user's existing review (if any)
+    await supabase
+        .from('reviews')
+        .update({
+            avatar_url: avatar_url,
+            user_name: full_name || user.user_metadata?.full_name || 'Anonymous User',
+        })
+        .eq('user_id', user.id)
+
     revalidatePath('/', 'layout')
     return { success: 'Profile updated successfully' }
 }
