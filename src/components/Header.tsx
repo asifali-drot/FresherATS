@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { useState, useEffect, useRef, useTransition } from "react";
-import { Menu, X, Zap, FileText, Info, Rss, LayoutDashboard, Star, User as UserIcon, LogOut, Loader2 } from "lucide-react";
+import { Menu, X, Zap, FileText, Info, Rss, LayoutDashboard, Star, User as UserIcon, LogOut, Loader2, ChevronDown, Sparkles, Layout } from "lucide-react";
 
 export default function Header({ user, logoutAction }: { user: User | null, logoutAction: () => Promise<void> }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -88,6 +88,36 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             >
               Templates
             </Link>
+            <div className="relative group py-2">
+              <button className="flex items-center gap-1 text-sm font-bold text-zinc-600 group-hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
+                Cover Letter
+                <ChevronDown className="h-4 w-4 text-zinc-400 group-hover:text-blue-500 transition-colors" />
+              </button>
+              
+              {/* Cover Letter Dropdown Menu */}
+              <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white p-3 shadow-xl border border-zinc-100 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-1002">
+                <Link
+                  href="/cover-letter?action=new"
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-blue-50/50 hover:text-blue-600 transition-colors"
+                >
+                  <Sparkles className="h-5 w-5 text-purple-600 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-xs font-extrabold text-zinc-900">AI Cover Letter Generator</div>
+                    <div className="text-[10px] text-zinc-500 mt-0.5 leading-relaxed font-medium">Create tailored letters matching your resume to jobs.</div>
+                  </div>
+                </Link>
+                <Link
+                  href="/cover-letter-templates"
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-blue-50/50 hover:text-blue-600 transition-colors mt-1"
+                >
+                  <Layout className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-xs font-extrabold text-zinc-900">Cover Letter Templates</div>
+                    <div className="text-[10px] text-zinc-500 mt-0.5 leading-relaxed font-medium">Browse clean, ATS-compliant designs to edit manually.</div>
+                  </div>
+                </Link>
+              </div>
+            </div>
             <Link
               href="/reviews"
               className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
@@ -142,12 +172,12 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
                           Edit Profile
                         </Link>
                         <Link
-                          href="/my-resumes"
+                          href="/dashboard"
                           onClick={closeProfileDropdown}
                           className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                         >
                           <LayoutDashboard className="h-4 w-4" />
-                          My Resumes
+                          Dashboard
                         </Link>
                       </div>
 
@@ -208,13 +238,15 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             <MobileNavLink href="/" label="Home" onClick={closeMenu} />
             <MobileNavLink href="/blog" label="Blog" onClick={closeMenu} />
             <MobileNavLink href="/resume-templates" label="Templates" onClick={closeMenu} />
+            <MobileNavLink href="/cover-letter?action=new" label="AI Cover Letter Generator" onClick={closeMenu} />
+            <MobileNavLink href="/cover-letter-templates" label="Cover Letter Templates" onClick={closeMenu} />
             <MobileNavLink href="/reviews" label="Reviews" onClick={closeMenu} />
             <MobileNavLink href="/about" label="About Us" onClick={closeMenu} />
             {/* <MobileNavLink href="/contact" icon={<Mail className="h-5 w-5" />} label="Contact Us" onClick={closeMenu} /> */}
             {user && (
               <>
                 <MobileNavLink href="/profile" label="Profile" onClick={closeMenu} />
-                <MobileNavLink href="/my-resumes" label="My Resumes" onClick={closeMenu} />
+                <MobileNavLink href="/dashboard" label="Dashboard" onClick={closeMenu} />
               </>
             )}
 
