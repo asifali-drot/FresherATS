@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { parseResumeText, generateResumeHtml } from "@/lib/resume/resumeUtils";
 import { RESUME_TEMPLATES } from "@/lib/resume/templates";
+import { generateItemListSchema } from "@/lib/seo";
 
 export default function TemplatesPage() {
   return (
@@ -55,6 +56,19 @@ export default function TemplatesPage() {
           );
         })}
       </div>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generateItemListSchema(
+            RESUME_TEMPLATES.map(t => ({
+              name: t.label,
+              url: `https://fresherats.com/resume-templates/${t.slug}`,
+              description: t.description
+            }))
+          ))
+        }}
+      />
     </main>
   );
 }

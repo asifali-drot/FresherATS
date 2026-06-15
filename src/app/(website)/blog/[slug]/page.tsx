@@ -9,7 +9,7 @@ import SanityImage from "@/components/SanityImage";
 import HtmlEmbed from "@/components/blog/HtmlEmbed";
 import ProgramManagerSummaryBuilder from "@/components/blog/ProgramManagerSummaryBuilder";
 import FAQSection from "@/components/FAQSection";
-import { generateFAQSchema } from "@/lib/seo";
+import { generateFAQSchema, generateArticleSchema } from "@/lib/seo";
 import TableOfContents from "@/components/blog/TableOfContents";
 import { createSlugger, extractToc } from "@/lib/blog/toc";
 import { Suspense } from "react";
@@ -57,6 +57,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const toc = extractToc(post.body);
   const sluggerForRender = createSlugger();
+
+  const articleSchema = generateArticleSchema({
+    title: post.title,
+    description: post.metaDescription || post.excerpt,
+    image: post.mainImage ? urlFor(post.mainImage).width(1200).height(630).url() : undefined,
+    publishedAt: post.publishedAt,
+    authorName: post.author,
+    url: `https://fresherats.com/blog/${slug}`
+  });
 
   const LatestArticlesSkeleton = () => (
     <div className="max-w-7xl mx-auto px-6 mt-20 animate-pulse">
@@ -240,7 +249,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </div>
       )}
 
-      {/* FAQ Schema */}
+      {/* Schema Markup */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       {post.faqs && post.faqs.length > 0 && (
         <script
           type="application/ld+json"

@@ -3,7 +3,7 @@ import FAQSection from "@/components/FAQSection";
 import HomeMarketing from "@/components/home/HomeMarketing";
 import LatestReviews from "@/components/reviews/LatestReviews";
 import ResumeUpload from "@/components/ResumeUpload";
-import { generateFAQSchema } from "@/lib/seo";
+import { generateFAQSchema, generateOrganizationSchema, generateSoftwareApplicationSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: {
@@ -95,6 +95,23 @@ export default function Home() {
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(generateFAQSchema(HOME_FAQS)),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generateOrganizationSchema()),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generateSoftwareApplicationSchema({
+              name: "FresherATS Free ATS Resume Checker",
+              url: "https://fresherats.com",
+              description: "Advanced ATS resume analyzer for fresh graduates.",
+              applicationCategory: "BusinessApplication"
+            })),
           }}
         />
       </section>

@@ -309,7 +309,7 @@ function CoverLetterCard({
     >
       {/* Icon + Info */}
       <div className="flex gap-5 items-start mt-1">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100 shrink-0">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-purple-50 to-indigo-50 border border-purple-100 shrink-0">
           <svg className="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
           </svg>
@@ -430,7 +430,7 @@ function CoverLetterCard({
 function EmptyResumeState({ filter }: { filter: FilterType }) {
   return (
     <div className="col-span-full flex flex-col items-center justify-center py-24 text-center">
-      <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-100">
+      <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-linear-to-br from-blue-50 to-violet-50 border border-blue-100">
         <svg className="h-12 w-12 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
@@ -461,7 +461,7 @@ function EmptyResumeState({ filter }: { filter: FilterType }) {
 function EmptyCoverLetterState() {
   return (
     <div className="col-span-full flex flex-col items-center justify-center py-24 text-center">
-      <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100">
+      <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-linear-to-br from-purple-50 to-indigo-50 border border-purple-100">
         <svg className="h-12 w-12 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
         </svg>
@@ -768,7 +768,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-zinc-50">
 
       {/* ── Hero header ── */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-[#1e3a5f]">
+      <div className="relative overflow-hidden bg-linear-to-br from-[#0f172a] via-[#1e1b4b] to-[#1e3a5f]">
         {/* Decorative blobs */}
         <div className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full bg-blue-600/20 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-violet-600/20 blur-3xl" />
@@ -994,7 +994,7 @@ export default function DashboardPage() {
       {showViewModal && viewingCl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <div className="w-full max-w-3xl max-h-[85vh] flex flex-col bg-white rounded-3xl shadow-2xl border border-zinc-100 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="p-6 border-b border-zinc-100 flex justify-between items-start flex-shrink-0">
+            <div className="p-6 border-b border-zinc-100 flex justify-between items-start shrink-0">
               <div className="min-w-0 pr-8">
                 <h3 className="text-lg font-black text-zinc-900 truncate">
                   {viewingCl.job_title ? `Cover Letter: ${viewingCl.job_title}` : "Cover Letter Details"}
@@ -1016,7 +1016,7 @@ export default function DashboardPage() {
             <div className="flex-1 overflow-y-auto p-6 font-mono text-xs leading-relaxed whitespace-pre-wrap bg-zinc-50 text-zinc-800 border-b border-zinc-100">
               {viewingCl.cover_letter_text}
             </div>
-            <div className="p-6 bg-zinc-50 flex justify-between items-center flex-shrink-0">
+            <div className="p-6 bg-zinc-50 flex justify-between items-center shrink-0">
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(viewingCl.cover_letter_text);

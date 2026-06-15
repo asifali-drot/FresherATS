@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import ReviewForm from "@/components/reviews/ReviewForm";
 import ReviewCard from "@/components/reviews/ReviewCard";
 import StarRating from "@/components/reviews/StarRating";
+import { generateReviewAggregateSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Reviews",
@@ -184,6 +185,23 @@ export default async function ReviewsPage() {
           </div>
         )}
       </div>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generateReviewAggregateSchema({
+            name: "FresherATS",
+            ratingValue: totalReviews > 0 ? averageRating : 5,
+            ratingCount: totalReviews > 0 ? totalReviews : 1,
+            reviews: allReviews.map(r => ({
+              authorName: r.user_name || "Anonymous",
+              rating: r.rating,
+              reviewBody: r.comment || "",
+              datePublished: new Date(r.created_at).toISOString()
+            }))
+          }))
+        }}
+      />
     </main>
   );
 }

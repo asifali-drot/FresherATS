@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { parseCoverLetterText, serializeCoverLetter, generateCoverLetterHtml, ParsedCoverLetter } from "@/lib/cover-letter/utils";
 import { getCoverLetterTemplateById, COVER_LETTER_TEMPLATES, CoverLetterTemplateId } from "@/lib/cover-letter/templates";
+import { generateSoftwareApplicationSchema } from "@/lib/seo";
 
 export default function CoverLetterPage() {
   const router = useRouter();
@@ -571,6 +572,17 @@ export default function CoverLetterPage() {
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
 
       {/* SECTION 1: SETUP SCREEN */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generateSoftwareApplicationSchema({
+            name: "FresherATS Cover Letter Generator",
+            url: "https://fresherats.com/cover-letter",
+            description: "Create a stunning, targeted cover letter in seconds using AI.",
+            applicationCategory: "BusinessApplication"
+          }))
+        }}
+      />
       {step === "setup" && (
         <div className="max-w-6xl mx-auto px-6 py-12">
 

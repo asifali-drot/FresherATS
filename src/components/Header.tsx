@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { useState, useEffect, useRef, useTransition } from "react";
-import { Menu, X, Zap, FileText, Info, Rss, LayoutDashboard, Star, User as UserIcon, LogOut, Loader2, ChevronDown, Sparkles, Layout } from "lucide-react";
+import { Menu, X, Zap, FileText, Info, Rss, LayoutDashboard, Star, User as UserIcon, LogOut, Loader2, ChevronDown, Sparkles, Layout, Linkedin } from "lucide-react";
 
 export default function Header({ user, logoutAction }: { user: User | null, logoutAction: () => Promise<void> }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -88,12 +88,19 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             >
               Templates
             </Link>
+            <Link
+              href="/linkedin-checker"
+              className="flex items-center gap-1.5 text-sm font-bold text-zinc-600 hover:text-[#0077B5] transition-colors"
+            >
+              <Linkedin className="h-3.5 w-3.5" />
+              LinkedIn Checker
+            </Link>
             <div className="relative group py-2">
               <button className="flex items-center gap-1 text-sm font-bold text-zinc-600 group-hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
                 Cover Letter
                 <ChevronDown className="h-4 w-4 text-zinc-400 group-hover:text-blue-500 transition-colors" />
               </button>
-              
+
               {/* Cover Letter Dropdown Menu */}
               <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white p-3 shadow-xl border border-zinc-100 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-1002">
                 <Link
@@ -124,12 +131,12 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             >
               Reviews
             </Link>
-            <Link
+            {/* <Link
               href="/about"
               className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
             >
               About Us
-            </Link>
+            </Link> */}
           </nav>
 
           <div className="flex items-center gap-4">
@@ -202,10 +209,9 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
                 </div>
               ) : (
                 <Link
-                  href="/login"
-                  className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors flex items-center gap-2"
-                >
-                  Login
+                  href="/sign-up"
+                  className="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-2 rounded-lg px-4 py-2"                >
+                  Sign up free
                 </Link>
               )}
             </div>
@@ -220,16 +226,17 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             </button>
           </div>
         </div>
-      </header>
+      </header >
 
       {/* Backdrop for Mobile Menu */}
-      <div
-        className={`fixed inset-0 z-998 bg-zinc-900/20 backdrop-blur-sm transition-opacity lg:hidden ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+      < div
+        className={`fixed inset-0 z-998 bg-zinc-900/20 backdrop-blur-sm transition-opacity lg:hidden ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`
+        }
         onClick={closeMenu}
       />
 
       {/* Mobile Navigation Drawer */}
-      <div
+      < div
         className={`fixed right-0 top-18.25 max-h-[80vh] z-999 w-[50vw] sm:w-1/2 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-l border-zinc-100 overflow-y-auto ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex flex-col bg-white">
@@ -238,10 +245,11 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             <MobileNavLink href="/" label="Home" onClick={closeMenu} />
             <MobileNavLink href="/blog" label="Blog" onClick={closeMenu} />
             <MobileNavLink href="/resume-templates" label="Templates" onClick={closeMenu} />
+            <MobileNavLink href="/linkedin-checker" label="LinkedIn Checker" onClick={closeMenu} />
             <MobileNavLink href="/cover-letter?action=new" label="AI Cover Letter Generator" onClick={closeMenu} />
             <MobileNavLink href="/cover-letter-templates" label="Cover Letter Templates" onClick={closeMenu} />
             <MobileNavLink href="/reviews" label="Reviews" onClick={closeMenu} />
-            <MobileNavLink href="/about" label="About Us" onClick={closeMenu} />
+            {/* <MobileNavLink href="/about" label="About Us" onClick={closeMenu} /> */}
             {/* <MobileNavLink href="/contact" icon={<Mail className="h-5 w-5" />} label="Contact Us" onClick={closeMenu} /> */}
             {user && (
               <>
@@ -284,7 +292,7 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
 
           </div>
         </div>
-      </div>
+      </div >
     </>
   );
 }

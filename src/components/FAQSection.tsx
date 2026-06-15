@@ -13,10 +13,11 @@ interface FAQSectionProps {
   faqs: FAQItem[];
   title?: string;
   description?: string;
+  defaultOpenIndex?: number;
 }
 
-export default function FAQSection({ faqs, title = "Frequently Asked Questions", description }: FAQSectionProps) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+export default function FAQSection({ faqs, title = "Frequently Asked Questions", description, defaultOpenIndex }: FAQSectionProps) {
+  const [openIndex, setOpenIndex] = useState<number | null>(defaultOpenIndex ?? null);
 
   if (!faqs || faqs.length === 0) return null;
 
