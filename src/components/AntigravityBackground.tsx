@@ -11,12 +11,14 @@ export default function AntigravityBackground(props: any) {
   const [shouldLoad, setShouldLoad] = useState(false);
 
   useEffect(() => {
-    // Delay the network download of Three.js to prioritize initial core bundles
-    const timer = setTimeout(() => {
-      setShouldLoad(true);
-    }, 1500);
-
-    return () => clearTimeout(timer);
+    // Defer Three.js loading until browser is idle to prioritize FCP/LCP
+    if ('requestIdleCallback' in window) {
+      const id = requestIdleCallback(() => setShouldLoad(true), { timeout: 4000 });
+      return () => cancelIdleCallback(id);
+    } else {
+      const timer = setTimeout(() => setShouldLoad(true), 3500);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   return (

@@ -1,14 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 import { useState, useEffect, useRef, useTransition } from "react";
 import { Menu, X, Zap, FileText, Info, Rss, LayoutDashboard, Star, User as UserIcon, LogOut, Loader2, ChevronDown, Sparkles, Layout, Linkedin } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { logoutAction } from "@/app/(website)/(auth)/actions";
 
-export default function Header({ user, logoutAction }: { user: User | null, logoutAction: () => Promise<void> }) {
+export default function Header() {
+  const [user, setUser] = useState<User | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fetch user client-side to avoid blocking server render (FCP optimization)
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
 
   // Prevent scrolling when menu is open
   useEffect(() => {
@@ -104,7 +115,7 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
               {/* Cover Letter Dropdown Menu */}
               <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white p-3 shadow-xl border border-zinc-100 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-1002">
                 <Link
-                  href="/cover-letter?action=new"
+                  href="/ai-cover-letter-generator?action=new"
                   className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-blue-50/50 hover:text-blue-600 transition-colors"
                 >
                   <Sparkles className="h-5 w-5 text-purple-600 shrink-0 mt-0.5" />
@@ -246,7 +257,7 @@ export default function Header({ user, logoutAction }: { user: User | null, logo
             <MobileNavLink href="/blog" label="Blog" onClick={closeMenu} />
             <MobileNavLink href="/resume-templates" label="Templates" onClick={closeMenu} />
             <MobileNavLink href="/linkedin-checker" label="LinkedIn Checker" onClick={closeMenu} />
-            <MobileNavLink href="/cover-letter?action=new" label="AI Cover Letter Generator" onClick={closeMenu} />
+            <MobileNavLink href="/ai-cover-letter-generator?action=new" label="AI Cover Letter Generator" onClick={closeMenu} />
             <MobileNavLink href="/cover-letter-templates" label="Cover Letter Templates" onClick={closeMenu} />
             <MobileNavLink href="/reviews" label="Reviews" onClick={closeMenu} />
             {/* <MobileNavLink href="/about" label="About Us" onClick={closeMenu} /> */}

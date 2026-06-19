@@ -1,18 +1,13 @@
-import { createClient } from "@/lib/supabase/server";
-import { logoutAction } from "./(auth)/actions";
 import AntigravityBackground from "@/components/AntigravityBackground";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 
-export default async function WebsiteLayout({
+export default function WebsiteLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
   return (
     <>
       {/* Antigravity Background */}
@@ -27,7 +22,7 @@ export default async function WebsiteLayout({
       </div>
 
       <div className="flex min-h-screen flex-col relative z-0">
-        <Header user={user} logoutAction={logoutAction} />
+        <Header />
 
         <main className="flex-1">
           {children}

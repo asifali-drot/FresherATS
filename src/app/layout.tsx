@@ -9,24 +9,28 @@ import "./globals.css";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
+  display: "swap",
 });
 
 const dmSerifDisplay = DM_Serif_Display({
   variable: "--font-dm-serif-display",
   subsets: ["latin"],
   weight: ["400"],
-  style: ["normal", "italic"],
+  style: ["normal"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -95,8 +99,11 @@ export default function RootLayout({
         {/* <meta name="google-site-verification" content="5BxzQElKJd_onGdtdvBwmM8enJ7Aw1nlzguTXZXNgUc" /> */}
         <meta name="google-site-verification" content="5BxzQElKJd_onGdtdvBwmM8enJ7Aw1nlzguTXZXNgUc" />
         <meta name="p:domain_verify" content="e6ae17b1e04ef0ba38b7f3b337baf62a"/>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://cdn.sanity.io" />
         <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://embed.tawk.to" />
       </head>
       <body
         className={`${inter.variable} ${geistMono.variable} ${dmSans.variable} ${dmSerifDisplay.variable} font-sans antialiased`}
@@ -106,19 +113,26 @@ export default function RootLayout({
         <SpeedInsights />
         <Toaster position="top-center" richColors />
         <Analytics />
-        {/* Tawk.to Chat Widget */}
+        {/* Tawk.to Chat Widget — deferred to avoid blocking FCP */}
         <script
           type="text/javascript"
           dangerouslySetInnerHTML={{
             __html: `
-              var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
               (function(){
-                var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-                s1.async=true;
-                s1.src='https://embed.tawk.to/6a12d35b8e6f681c357b3cfc/1jpcoj839';
-                s1.charset='UTF-8';
-                s1.setAttribute('crossorigin','*');
-                s0.parentNode.insertBefore(s1,s0);
+                function loadTawk(){
+                  var Tawk_API=window.Tawk_API||{};
+                  var s1=document.createElement("script");
+                  s1.async=true;
+                  s1.src='https://embed.tawk.to/6a12d35b8e6f681c357b3cfc/1jpcoj839';
+                  s1.charset='UTF-8';
+                  s1.setAttribute('crossorigin','*');
+                  document.body.appendChild(s1);
+                }
+                if('requestIdleCallback' in window){
+                  requestIdleCallback(loadTawk);
+                } else {
+                  setTimeout(loadTawk,3500);
+                }
               })();
             `,
           }}

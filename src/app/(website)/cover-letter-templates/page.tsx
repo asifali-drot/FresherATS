@@ -52,7 +52,7 @@ export default function CoverLetterTemplatesPage() {
 
               <div className="p-6">
                 <Link
-                  href={`/cover-letter?template=${t.id}`}
+                  href={`/ai-cover-letter-generator?template=${t.id}`}
                   className="inline-flex w-full items-center justify-center rounded-2xl bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 px-5 py-3 text-xs font-extrabold text-white transition-all active:scale-[0.98] shadow-sm shadow-zinc-200 dark:shadow-none"
                 >
                   Use Template & Edit

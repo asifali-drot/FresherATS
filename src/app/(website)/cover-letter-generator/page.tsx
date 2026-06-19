@@ -577,7 +577,7 @@ export default function CoverLetterPage() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(generateSoftwareApplicationSchema({
             name: "FresherATS Cover Letter Generator",
-            url: "https://fresherats.com/cover-letter",
+            url: "https://fresherats.com/cover-letter-generator",
             description: "Create a stunning, targeted cover letter in seconds using AI.",
             applicationCategory: "BusinessApplication"
           }))

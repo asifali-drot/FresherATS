@@ -471,7 +471,7 @@ function EmptyCoverLetterState() {
         Generate your first cover letter using our AI-powered tool. It will appear here for easy access.
       </p>
       <Link
-        href="/cover-letter?action=new"
+        href="/ai-cover-letter-generator?action=new"
         className="inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-6 py-3 text-sm font-bold text-white hover:bg-purple-700 transition-all active:scale-95 shadow-lg shadow-purple-100"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -690,7 +690,7 @@ export default function DashboardPage() {
         window.sessionStorage.setItem("coverLetterTemplateId", cl.template_id || "professional");
         window.sessionStorage.setItem("coverLetterId", cl.id);
       }
-      router.push("/cover-letter?action=edit");
+      router.push("/ai-cover-letter-generator?action=edit");
     }
   }, [router]);
 
@@ -806,7 +806,7 @@ export default function DashboardPage() {
                 Analyze Resume
               </Link>
               <Link
-                href="/cover-letter?action=new"
+                href="/ai-cover-letter-generator?action=new"
                 className="inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-5 py-3 text-sm font-bold text-white hover:bg-purple-500 transition-all active:scale-95 shadow-lg shadow-purple-900/40"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
