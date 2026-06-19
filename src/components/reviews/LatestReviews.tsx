@@ -49,15 +49,15 @@ export default async function LatestReviews() {
           <p className="text-xs font-black uppercase tracking-[0.25em] text-purple-600 mb-3">
             Reviews
           </p>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 tracking-tight mb-4">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-4">
             What our users say
           </h2>
-          <p className="text-zinc-500 max-w-xl mx-auto mb-8">
+          <p className="text-zinc-500 dark:text-zinc-400 max-w-xl mx-auto mb-8">
             No reviews yet. Be the first to share your experience with FresherATS!
           </p>
           <Link
             href="/reviews"
-            className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-6 py-3 text-sm font-bold text-white hover:bg-zinc-800 transition-colors active:scale-[0.98]"
+            className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 dark:bg-white dark:text-zinc-900 px-6 py-3 text-sm font-bold text-white hover:bg-zinc-800 transition-colors active:scale-[0.98]"
           >
             Write a review <ArrowRight className="h-4 w-4" />
           </Link>
@@ -74,7 +74,7 @@ export default async function LatestReviews() {
           <p className="text-xs font-black uppercase tracking-[0.25em] text-purple-600 mb-3">
             Reviews
           </p>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
             What our users say
           </h2>
         </div>
@@ -84,12 +84,12 @@ export default async function LatestReviews() {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <Star className="h-6 w-6 fill-amber-400 text-amber-400" />
-              <span className="text-2xl font-extrabold text-zinc-900">
+              <span className="text-2xl font-extrabold text-zinc-900 dark:text-white">
                 {stats.averageRating}
               </span>
             </div>
             <div className="text-xs text-zinc-400 leading-tight">
-              <span className="font-bold text-zinc-600">{stats.totalReviews}</span>
+              <span className="font-bold text-zinc-600 dark:text-zinc-400">{stats.totalReviews}</span>
               <br />
               {stats.totalReviews === 1 ? "review" : "reviews"}
             </div>

@@ -44,14 +44,14 @@ export default function Home() {
             AI-Powered Insights
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-zinc-900">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
             Fix Your Resume Before <br />
             <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-600 via-pink-500 to-purple-600 bg-size-[200%_auto] animate-gradient">
               ATS Rejects It
             </span>
           </h1>
 
-          <p className="max-w-2xl text-lg md:text-xl text-zinc-700 leading-relaxed font-medium">
+          <p className="max-w-2xl text-lg md:text-xl text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
             Empowering fresh graduates to land their dream jobs. Analyze resume
             with our free ATS resume checker, uncover missing keywords, and
             transform your career path in seconds.
@@ -80,7 +80,7 @@ export default function Home() {
 
       <HomeMarketing />
 
-      <div className="relative border-t border-zinc-100 bg-white">
+      <div className="relative border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950">
         <LatestReviews />
       </div>
 
@@ -123,9 +123,9 @@ function HeroGlow() {
   return (
     <>
       {/* Large central glow covers the full hero + card area */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/3 w-175 h-175 bg-purple-100 rounded-full blur-[160px] -z-10 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/3 w-175 h-175 bg-purple-100 dark:bg-purple-900/20 rounded-full blur-[160px] -z-10 pointer-events-none" />
       {/* Subtle pink accent offset to the right */}
-      <div className="absolute top-[60%] left-[65%] -translate-x-1/2 -translate-y-1/2 w-75 h-75 bg-pink-100 rounded-full blur-[120px] -z-10 pointer-events-none opacity-60" />
+      <div className="absolute top-[60%] left-[65%] -translate-x-1/2 -translate-y-1/2 w-75 h-75 bg-pink-100 dark:bg-pink-900/20 rounded-full blur-[120px] -z-10 pointer-events-none opacity-60" />
     </>
   );
 }
@@ -141,8 +141,8 @@ function StatItem({
 }) {
   return (
     <div className={`flex flex-col items-center space-y-2.5 ${className}`}>
-      <span className="text-3xl font-extrabold text-zinc-900">{value}</span>
-      <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-[0.2em]">
+      <span className="text-3xl font-extrabold text-zinc-900 dark:text-white">{value}</span>
+      <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-[0.2em]">
         {label}
       </span>
     </div>

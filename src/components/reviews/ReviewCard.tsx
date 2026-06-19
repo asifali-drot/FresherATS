@@ -71,11 +71,11 @@ export default function ReviewCard({
   const gradient = getGradient(userName);
 
   return (
-    <article className="group relative rounded-3xl border border-zinc-100 bg-white p-6 shadow-sm hover:shadow-lg hover:border-purple-100 transition-all duration-300 flex flex-col">
+    <article className="group relative rounded-3xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-lg hover:border-purple-100 dark:hover:border-purple-900/50 transition-all duration-300 flex flex-col">
       {/* Header: Avatar + Name + Time */}
       <div className="flex items-center gap-3 mb-4">
         {avatarUrl ? (
-          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full shadow-sm border border-zinc-200">
+          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full shadow-sm border border-zinc-200 dark:border-zinc-700">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={avatarUrl}
@@ -103,7 +103,7 @@ export default function ReviewCard({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-zinc-900 truncate">{userName}</p>
+          <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{userName}</p>
           <p className="text-xs text-zinc-400">{formatRelativeTime(createdAt)}</p>
         </div>
       </div>
@@ -114,7 +114,7 @@ export default function ReviewCard({
       </div>
 
       {/* Comment */}
-      <p className="text-sm text-zinc-600 leading-relaxed line-clamp-4 flex-1">
+      <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed line-clamp-4 flex-1">
         {comment}
       </p>
 

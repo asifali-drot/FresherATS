@@ -60,7 +60,7 @@ const FEATURES: {
 
 export default function HomeMarketing() {
   return (
-    <div className="relative border-t border-zinc-100 bg-white">
+    <div className="relative border-t border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-950">
       <WhySection />
       <FeaturesBento />
       <ShowcaseScore />
@@ -77,14 +77,14 @@ function WhySection() {
       <Grid12>
         <div className="lg:col-span-5">
           <p className="text-xs font-black uppercase tracking-[0.25em] text-purple-600 mb-4">Why FresherATS</p>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 leading-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white leading-tight">
             Most resumes never reach a human {" "}
             <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-600 to-pink-500">
               the ATS decides first
             </span>
           </h2>
         </div>
-        <div className="lg:col-span-7 space-y-5 text-zinc-600 leading-relaxed text-base sm:text-lg">
+        <div className="lg:col-span-7 space-y-5 text-zinc-600 dark:text-zinc-400 leading-relaxed text-base sm:text-lg">
           <p>
             Applicant Tracking Systems strip formatting, scan for keywords, and rank candidates before a
             recruiter opens your PDF. If your layout is messy or your skills don’t match the posting, you
@@ -118,7 +118,7 @@ function FeaturesBento() {
     <section className="mx-auto max-w-6xl px-6 pb-20 sm:pb-28">
       <div className="text-center max-w-2xl mx-auto mb-12">
         <p className="text-xs font-black uppercase tracking-[0.25em] text-zinc-400 mb-3">What you get</p>
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 tracking-tight">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
           One workflow, every check that matters
         </h2>
       </div>
@@ -131,8 +131,8 @@ function FeaturesBento() {
             <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-100 text-purple-700 group-hover:bg-purple-600 group-hover:text-white transition-colors">
               <f.icon className="h-5 w-5" />
             </div>
-            <h3 className="mt-4 text-lg font-bold text-zinc-900">{f.title}</h3>
-            <p className="mt-2 text-sm text-zinc-600 leading-relaxed">{f.description}</p>
+            <h3 className="mt-4 text-lg font-bold text-zinc-900 dark:text-white">{f.title}</h3>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{f.description}</p>
           </article>
         ))}
       </div>
@@ -147,10 +147,10 @@ function ShowcaseScore() {
         <ScoreMockPanel />
         <div>
           <p className="text-xs font-black uppercase tracking-[0.25em] text-purple-600 mb-3">Step 1 · Understand</p>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 mb-4">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white mb-4">
             A score you can act on—not a vague “looks fine”
           </h2>
-          <ul className="space-y-3 text-zinc-600">
+          <ul className="space-y-3 text-zinc-600 dark:text-zinc-400">
             <CheckItem>Instant ATS resume score with a plain-language summary</CheckItem>
             <CheckItem>Section-level feedback on structure and readability</CheckItem>
             <CheckItem>See what’s strong before you rewrite everything</CheckItem>
@@ -170,10 +170,10 @@ function ShowcaseKeywords() {
         </div>
         <div className="lg:order-1">
           <p className="text-xs font-black uppercase tracking-[0.25em] text-pink-600 mb-3">Step 2 · Match</p>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 mb-4">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white mb-4">
             Tailor to the job—not every job on the board
           </h2>
-          <ul className="space-y-3 text-zinc-600">
+          <ul className="space-y-3 text-zinc-600 dark:text-zinc-400">
             <CheckItem>Optional job description for targeted keyword analysis</CheckItem>
             <CheckItem>Missing skills surfaced as tags you can add honestly</CheckItem>
             <CheckItem>Stop guessing what the posting actually wants</CheckItem>
@@ -191,10 +191,10 @@ function ShowcaseEditor() {
         <EditorMockPanel />
         <div>
           <p className="text-xs font-black uppercase tracking-[0.25em] text-purple-600 mb-3">Step 3 · Improve</p>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 mb-4">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white mb-4">
             Edit, preview, and download an ATS-ready PDF
           </h2>
-          <ul className="space-y-3 text-zinc-600 mb-6">
+          <ul className="space-y-3 text-zinc-600 dark:text-zinc-400 mb-6">
             <CheckItem>Guided editor with live resume preview</CheckItem>
             <CheckItem>ATS-friendly templates to start from scratch</CheckItem>
             <CheckItem>Download a clean PDF when you’re happy with the result</CheckItem>
@@ -224,7 +224,7 @@ function BottomCta() {
         </p>
         <Link
           href="/#analyze"
-          className="relative inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-3.5 text-sm font-extrabold text-zinc-900 hover:bg-purple-50 transition-all active:scale-[0.98] shadow-lg"
+          className="relative inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-3.5 text-sm font-extrabold text-zinc-900 dark:text-white hover:bg-purple-50 transition-all active:scale-[0.98] shadow-lg"
         >
           Analyze my resume <ArrowRight className="h-4 w-4 text-purple-600" />
         </Link>
@@ -293,7 +293,7 @@ function ScoreRing() {
           </linearGradient>
         </defs>
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-2xl font-extrabold text-zinc-900">
+      <span className="absolute inset-0 flex items-center justify-center text-2xl font-extrabold text-zinc-900 dark:text-white">
         78
       </span>
     </div>
@@ -363,9 +363,9 @@ function EditorMockPanel() {
         </div>
         <div className="bg-zinc-50 p-4 text-[10px] text-zinc-500 leading-relaxed">
           <p className="font-bold text-zinc-800 text-xs mb-2">PREVIEW</p>
-          <p className="font-extrabold text-zinc-900">ALEX RIVERA</p>
+          <p className="font-extrabold text-zinc-900 dark:text-white">ALEX RIVERA</p>
           <p className="text-purple-600">alex@email.com</p>
-          <p className="mt-3 font-bold text-zinc-700">EXPERIENCE</p>
+          <p className="mt-3 font-bold text-zinc-700 dark:text-zinc-300">EXPERIENCE</p>
           <p>• Built features with React…</p>
         </div>
       </div>
@@ -379,7 +379,7 @@ function EditorLinePlaceholder({ w }: { w: string }) {
 
 function MockRow({ ok, warn, label }: { ok?: boolean; warn?: boolean; label: string }) {
   return (
-    <li className="flex items-center gap-2 text-zinc-700">
+    <li className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
       {ok && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />}
       {warn && <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />}
       {label}

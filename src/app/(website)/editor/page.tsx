@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { parseResumeText, generateResumeHtml, ParsedSection } from "@/lib/resume/resumeUtils";
@@ -14,7 +14,7 @@ import {
   Highlighter
 } from "lucide-react";
 
-export default function ResumeEditorPage() {
+function ResumeEditorContent() {
   const [resumeText, setResumeText] = useState("");
   const [editorMode, setEditorMode] = useState<'guided' | 'raw'>('guided');
   const [localNameLines, setLocalNameLines] = useState<string[]>([]);
@@ -540,5 +540,13 @@ export default function ResumeEditorPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function ResumeEditorPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950"><div className="text-zinc-500 animate-pulse font-medium">Loading Editor...</div></div>}>
+      <ResumeEditorContent />
+    </Suspense>
   );
 }

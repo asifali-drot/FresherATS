@@ -25,11 +25,11 @@ export default function FAQSection({ faqs, title = "Frequently Asked Questions",
     <section className="w-full py-20 px-6">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-zinc-900 mb-4 tracking-tight">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-zinc-900 dark:text-white mb-4 tracking-tight">
             {title}
           </h2>
           {description && (
-            <p className="text-zinc-500 text-lg font-medium">
+            <p className="text-zinc-500 dark:text-zinc-400 text-lg font-medium">
               {description}
             </p>
           )}
@@ -42,8 +42,8 @@ export default function FAQSection({ faqs, title = "Frequently Asked Questions",
               className={cn(
                 "group border rounded-2xl transition-all duration-300 overflow-hidden",
                 openIndex === index 
-                  ? "border-purple-200 bg-purple-50/30 ring-1 ring-purple-100" 
-                  : "border-zinc-200 bg-white hover:border-zinc-300"
+                  ? "border-purple-200 dark:border-purple-900/50 bg-purple-50/30 dark:bg-purple-900/20 ring-1 ring-purple-100 dark:ring-purple-900/50" 
+                  : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700"
               )}
             >
               <button
@@ -52,14 +52,14 @@ export default function FAQSection({ faqs, title = "Frequently Asked Questions",
               >
                 <span className={cn(
                   "text-lg font-bold transition-colors",
-                  openIndex === index ? "text-purple-700" : "text-zinc-800 group-hover:text-zinc-900"
+                  openIndex === index ? "text-purple-700 dark:text-purple-400" : "text-zinc-800 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white"
                 )}>
                   {faq.question}
                 </span>
                 <ChevronDown
                   className={cn(
                     "h-5 w-5 transition-transform duration-300 shrink-0",
-                    openIndex === index ? "rotate-180 text-purple-600" : "text-zinc-400 group-hover:text-zinc-500"
+                    openIndex === index ? "rotate-180 text-purple-600 dark:text-purple-400" : "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-500 dark:group-hover:text-zinc-400"
                   )}
                 />
               </button>
@@ -71,7 +71,7 @@ export default function FAQSection({ faqs, title = "Frequently Asked Questions",
                 )}
               >
                 <div className="overflow-hidden">
-                  <p className="text-zinc-600 leading-relaxed font-medium">
+                  <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed font-medium">
                     {faq.answer}
                   </p>
                 </div>
