@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useTransition } from "react";
+import { useState, useEffect, useCallback, useTransition, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { User as SupabaseUser } from "@supabase/supabase-js";
@@ -29,7 +29,7 @@ import { parseCoverLetterText, serializeCoverLetter, generateCoverLetterHtml, Pa
 import { getCoverLetterTemplateById, COVER_LETTER_TEMPLATES, CoverLetterTemplateId } from "@/lib/cover-letter/templates";
 import { generateSoftwareApplicationSchema } from "@/lib/seo";
 
-export default function CoverLetterPage() {
+function CoverLetterContent() {
   const router = useRouter();
 
   // Screen state
@@ -863,6 +863,37 @@ export default function CoverLetterPage() {
             </div>
 
           </div>
+          
+          {/* SEO Content / Features Marketing Block */}
+          <div className="mt-16 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/60 dark:border-zinc-800 p-8 shadow-sm">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-black text-zinc-900 dark:text-white">Why Use an AI Cover Letter Generator?</h2>
+              <p className="text-zinc-500 dark:text-zinc-400 mt-2 text-sm">Write faster, match ATS requirements, and stand out.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="space-y-3">
+                <div className="h-10 w-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                  <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 className="font-bold text-zinc-900 dark:text-white">AI-Powered Targeting</h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">Our AI analyzes your job description and resume to create a highly targeted cover letter that hits all the right keywords for ATS.</p>
+              </div>
+              <div className="space-y-3">
+                <div className="h-10 w-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                  <Layout className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="font-bold text-zinc-900 dark:text-white">Professional Templates</h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">Choose from modern, creative, or minimalist designs. Every template is strictly formatted to pass Applicant Tracking Systems.</p>
+              </div>
+              <div className="space-y-3">
+                <div className="h-10 w-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="font-bold text-zinc-900 dark:text-white">Guided Editor</h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">Not happy with the AI's first draft? Use our guided studio to polish paragraphs, adjust tone, and perfect your pitch.</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1232,5 +1263,13 @@ export default function CoverLetterPage() {
       )}
 
     </div>
+  );
+}
+
+export default function CoverLetterPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950"><div className="flex flex-col items-center gap-3"><Loader2 className="h-10 w-10 text-blue-600 animate-spin" /><span className="text-zinc-500 animate-pulse font-bold text-sm uppercase tracking-widest">Loading Cover Letter Studio...</span></div></div>}>
+      <CoverLetterContent />
+    </Suspense>
   );
 }

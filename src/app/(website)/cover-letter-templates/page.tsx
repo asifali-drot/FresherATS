@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { parseCoverLetterText, generateCoverLetterHtml } from "@/lib/cover-letter/utils";
 import { COVER_LETTER_TEMPLATES } from "@/lib/cover-letter/templates";
+import { generateItemListSchema, generateSoftwareApplicationSchema } from "@/lib/seo";
 
 export default function CoverLetterTemplatesPage() {
   return (
@@ -62,6 +63,56 @@ export default function CoverLetterTemplatesPage() {
           );
         })}
       </div>
+
+      {/* SEO & Features Text Block */}
+      <div className="mt-20 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200/60 dark:border-zinc-800 p-8 shadow-sm">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-black text-zinc-900 dark:text-white">Why Choose Our ATS-Friendly Templates?</h2>
+          <p className="text-zinc-500 dark:text-zinc-400 mt-2 text-sm">Formatting mistakes can get your application rejected. Play it safe and stylish.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="space-y-2">
+            <h3 className="font-bold text-zinc-900 dark:text-white text-sm">Parser Tested</h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">Our templates avoid complex tables, columns, and graphics that confuse ATS software.</p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-bold text-zinc-900 dark:text-white text-sm">Clean Typography</h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">We use standard, legible fonts that ensure your cover letter looks professional on any device.</p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-bold text-zinc-900 dark:text-white text-sm">One-Click Editing</h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">Take any template straight to our Cover Letter Studio to edit content manually or with AI.</p>
+          </div>
+          <div className="space-y-2">
+            <h3 className="font-bold text-zinc-900 dark:text-white text-sm">Free PDF Download</h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">Once you're satisfied, download a crisp, ATS-compliant PDF ready for your next job application.</p>
+          </div>
+        </div>
+      </div>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generateSoftwareApplicationSchema({
+            name: "FresherATS Cover Letter Templates",
+            url: "https://fresherats.com/cover-letter-templates",
+            description: "ATS-friendly cover letter templates designed to pass recruiters' software.",
+            applicationCategory: "BusinessApplication"
+          }))
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(generateItemListSchema(
+            COVER_LETTER_TEMPLATES.map(t => ({
+              name: t.label,
+              url: `https://fresherats.com/cover-letter-generator?template=${t.id}`,
+              description: t.description
+            }))
+          ))
+        }}
+      />
     </main>
   );
 }
