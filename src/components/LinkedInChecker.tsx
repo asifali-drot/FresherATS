@@ -36,7 +36,7 @@ export default function LinkedInChecker() {
     setState("analyzing");
 
     try {
-      const payload: Record<string, string> = { 
+      const payload: Record<string, string> = {
         jobDescription,
         profileText: profileText.trim(),
       };
@@ -138,11 +138,10 @@ export default function LinkedInChecker() {
                 Min. 30 characters required
               </p>
               <p
-                className={`text-xs font-semibold tabular-nums ${
-                  charCount < 30 && charCount > 0
+                className={`text-xs font-semibold tabular-nums ${charCount < 30 && charCount > 0
                     ? "text-red-500"
                     : "text-zinc-400"
-                }`}
+                  }`}
               >
                 {charCount.toLocaleString()} chars
               </p>
@@ -253,7 +252,7 @@ export default function LinkedInChecker() {
       {state === "done" && result && (
         <div id="li-results" className="space-y-6">
           {/* Summary Banner */}
-          <div className="rounded-3xl border border-zinc-200 bg-gradient-to-br from-[#0077B5]/5 to-purple-50/40 p-6">
+          <div className="rounded-3xl border border-zinc-200 bg-linear-to-br from-[#0077B5]/5 to-purple-50/40 p-6">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="h-4 w-4 text-[#0077B5]" />
               <span className="text-xs font-bold uppercase tracking-widest text-[#0077B5]">
@@ -340,7 +339,7 @@ export default function LinkedInChecker() {
           </div>
 
           {/* Cross-sell CTA */}
-          <div className="rounded-3xl border border-[#0077B5]/20 bg-gradient-to-r from-[#0077B5] to-[#005e93] p-6 text-white flex flex-col sm:flex-row items-center gap-4">
+          <div className="rounded-3xl border border-[#0077B5]/20 bg-linear-to-r from-[#0077B5] to-[#005e93] p-6 text-white flex flex-col sm:flex-row items-center gap-4">
             <div className="flex-1">
               <p className="font-extrabold text-base">Also check your resume?</p>
               <p className="text-sm text-white/80 font-medium mt-0.5">

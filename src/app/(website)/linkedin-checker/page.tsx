@@ -73,7 +73,7 @@ export default function LinkedInCheckerPage() {
 
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-zinc-900">
             LinkedIn Profile{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0077B5] via-purple-500 to-[#0077B5] bg-[length:200%_auto] animate-[gradient_4s_linear_infinite]">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#0077B5] via-purple-500 to-[#0077B5] bg-size-[200%_auto] animate-[gradient_4s_linear_infinite]">
               Checker
             </span>
           </h1>

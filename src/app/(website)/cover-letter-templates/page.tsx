@@ -107,7 +107,7 @@ export default function CoverLetterTemplatesPage() {
           __html: JSON.stringify(generateItemListSchema(
             COVER_LETTER_TEMPLATES.map(t => ({
               name: t.label,
-              url: `https://fresherats.com/cover-letter-generator?template=${t.id}`,
+              url: `https://fresherats.com/ai-cover-letter-generator?template=${t.id}`,
               description: t.description
             }))
           ))
