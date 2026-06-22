@@ -37,6 +37,28 @@ export async function POST(req: NextRequest): Promise<Response> {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Fetch subscription and usage
+    const { data: sub } = await supabase
+      .from("user_subscriptions")
+      .select("tier")
+      .eq("user_id", user.id)
+      .single();
+    
+    const tier = sub?.tier || "free";
+
+    const { data: usage } = await supabase
+      .from("usage_tracking")
+      .select("pdf_downloads")
+      .eq("user_id", user.id)
+      .single();
+
+    if (tier === "free" && usage && usage.pdf_downloads >= 2) {
+      return NextResponse.json(
+        { error: "Free tier limit reached: 2 PDF downloads per month. Please upgrade your plan." },
+        { status: 403 }
+      );
+    }
+
     // 1. Fetch optimized text from DB
     const { data: row, error } = await supabase
       .from("analyses")
@@ -98,6 +120,14 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (signedUrlError || !signedUrlData) {
       console.error("[STORAGE] Signed URL error details:", signedUrlError);
       throw new Error(`Failed to generate download link: ${signedUrlError?.message || "Unknown error"}`);
+    }
+
+    // 5. Update Usage Tracking
+    if (usage) {
+      await supabase
+        .from("usage_tracking")
+        .update({ pdf_downloads: usage.pdf_downloads + 1 })
+        .eq("user_id", user.id);
     }
 
     return NextResponse.json({

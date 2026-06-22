@@ -1,7 +1,7 @@
 export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
-
+import { createClient } from "@/lib/supabase/server";
 export interface LinkedInAnalysisResult {
   overallScore: number;
   keywordScore: number;
@@ -36,6 +36,35 @@ export async function POST(req: NextRequest) {
             "Please paste your LinkedIn profile text (at least 30 characters).",
         },
         { status: 400 }
+      );
+    }
+
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let tier = "free";
+    let usage = null;
+
+    if (user) {
+      const { data: sub } = await supabase
+        .from("user_subscriptions")
+        .select("tier")
+        .eq("user_id", user.id)
+        .single();
+      if (sub) tier = sub.tier;
+
+      const { data: u } = await supabase
+        .from("usage_tracking")
+        .select("linkedin_checks")
+        .eq("user_id", user.id)
+        .single();
+      usage = u;
+    }
+
+    if (tier === "free" && usage && usage.linkedin_checks >= 2) {
+      return NextResponse.json(
+        { error: "Free tier limit reached: 2 LinkedIn checks per month. Please upgrade your plan." },
+        { status: 403 }
       );
     }
 
@@ -140,6 +169,13 @@ ${
       for (const key of Object.keys(result.sections) as (keyof typeof result.sections)[]) {
         result.sections[key].score = clamp(result.sections[key].score);
       }
+    }
+
+    if (user && usage) {
+      await supabase
+        .from("usage_tracking")
+        .update({ linkedin_checks: usage.linkedin_checks + 1 })
+        .eq("user_id", user.id);
     }
 
     return NextResponse.json({ success: true, result });

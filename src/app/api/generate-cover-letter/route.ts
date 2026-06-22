@@ -17,6 +17,27 @@ export async function POST(req: NextRequest): Promise<Response> {
       tone,
     } = body;
 
+    const { createClient } = await import("@/lib/supabase/server");
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Please log in to generate a cover letter." }, { status: 401 });
+    }
+
+    const { data: sub } = await supabase.from("user_subscriptions").select("tier").eq("user_id", user.id).single();
+    const tier = sub?.tier || "free";
+
+    if (tier === "free") {
+      return NextResponse.json({ error: "AI Cover Letter generation is a Premium feature. Please upgrade to Tier 2." }, { status: 403 });
+    }
+
+    const { data: usage } = await supabase.from("usage_tracking").select("cover_letters").eq("user_id", user.id).single();
+    
+    if (tier === "tier_2" && usage && usage.cover_letters >= 5) {
+      return NextResponse.json({ error: "Tier 2 limit reached: 5 cover letters per month. Please upgrade to Tier 3." }, { status: 403 });
+    }
+
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey || apiKey === "your_openrouter_api_key_here") {
       return NextResponse.json(
@@ -116,6 +137,13 @@ ${resumeText || "(No resume text provided. Use general details for a student/ent
     const coverLetterText = data?.choices?.[0]?.message?.content?.trim() || "";
 
     console.log("[AI Cover Letter] Successfully generated cover letter. Length:", coverLetterText.length);
+
+    if (user && usage) {
+      await supabase
+        .from("usage_tracking")
+        .update({ cover_letters: usage.cover_letters + 1 })
+        .eq("user_id", user.id);
+    }
 
     return NextResponse.json({
       success: true,

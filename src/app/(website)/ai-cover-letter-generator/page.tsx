@@ -28,6 +28,8 @@ import {
 import { parseCoverLetterText, serializeCoverLetter, generateCoverLetterHtml, ParsedCoverLetter } from "@/lib/cover-letter/utils";
 import { getCoverLetterTemplateById, COVER_LETTER_TEMPLATES, CoverLetterTemplateId } from "@/lib/cover-letter/templates";
 import { generateSoftwareApplicationSchema } from "@/lib/seo";
+import { useSubscription } from "@/hooks/useSubscription";
+import UpgradeOverlay from "@/components/UpgradeOverlay";
 
 function CoverLetterContent() {
   const router = useRouter();
@@ -36,6 +38,11 @@ function CoverLetterContent() {
   const [step, setStep] = useState<"setup" | "studio">("setup");
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { tier, usage } = useSubscription();
+  const isFreeTier = tier === "free";
+  const isLimitReached = tier === "tier_2" && usage.cover_letters >= 5;
+  const isAiLocked = isFreeTier || isLimitReached;
 
   // Form setup inputs
   const [formData, setFormData] = useState({
@@ -138,6 +145,18 @@ function CoverLetterContent() {
   const searchParams = useSearchParams();
   const templateParam = searchParams?.get("template") as CoverLetterTemplateId | null;
   const actionParam = searchParams?.get("action");
+  const companyParam = searchParams?.get("company");
+  const jobTitleParam = searchParams?.get("jobTitle");
+
+  useEffect(() => {
+    if (companyParam || jobTitleParam) {
+      setFormData(prev => ({
+        ...prev,
+        companyName: companyParam || prev.companyName,
+        jobTitle: jobTitleParam || prev.jobTitle,
+      }));
+    }
+  }, [companyParam, jobTitleParam]);
 
   useEffect(() => {
     // Allow direct start for all template types, including modern-avatar
@@ -794,25 +813,42 @@ function CoverLetterContent() {
                 </div>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-4 relative">
                 <button
                   type="submit"
-                  disabled={isGenerating || !formData.userName || !formData.jobTitle}
+                  disabled={isGenerating || !formData.userName || !formData.jobTitle || isAiLocked}
                   title={getMissingFieldsMessage() || "Generate Cover Letter with AI"}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600! hover:bg-blue-700! text-white! p-4 text-sm font-extrabold transition-all active:scale-[0.99] disabled:opacity-55 disabled:cursor-not-allowed shadow-lg shadow-blue-500/30"
+                  className="w-full inline-flex flex-col items-center justify-center gap-1 rounded-2xl bg-blue-600! hover:bg-blue-700! text-white! p-4 text-sm font-extrabold transition-all active:scale-[0.99] disabled:opacity-55 disabled:cursor-not-allowed shadow-lg shadow-blue-500/30"
                 >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="h-4.5 w-4.5 animate-spin" />
-                      <span>Writing with AI...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4.5 w-4.5" />
-                      <span>Generate Cover Letter with AI</span>
-                    </>
+                  <div className="flex items-center gap-2">
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="h-4.5 w-4.5 animate-spin" />
+                        <span>Writing with AI...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4.5 w-4.5" />
+                        <span>Generate Cover Letter with AI</span>
+                      </>
+                    )}
+                  </div>
+                  {!isFreeTier && !isGenerating && (
+                    <span className="text-[10px] text-blue-200 uppercase tracking-widest font-semibold">
+                      {tier === "tier_3" ? "UNLIMITED" : `${5 - usage.cover_letters} REMAINING`}
+                    </span>
                   )}
                 </button>
+                {isAiLocked && (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200">
+                    <p className="text-sm font-bold text-gray-900 mb-1">
+                      {isFreeTier ? "AI Generation is Premium" : "Monthly Limit Reached"}
+                    </p>
+                    <Link href="/pricing" className="text-xs font-semibold text-blue-600 hover:text-blue-700 underline">
+                      {isFreeTier ? "Upgrade to Tier 2" : "Upgrade to Tier 3"}
+                    </Link>
+                  </div>
+                )}
               </div>
 
             </form>

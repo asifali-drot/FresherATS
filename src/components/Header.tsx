@@ -1,25 +1,41 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { useState, useEffect, useRef, useTransition } from "react";
-import { Menu, X, Zap, FileText, Info, Rss, LayoutDashboard, Star, User as UserIcon, LogOut, Loader2, ChevronDown, Sparkles, Layout, Linkedin } from "lucide-react";
+import { Menu, X, Zap, FileText, Info, Rss, LayoutDashboard, Star, User as UserIcon, LogOut, Loader2, ChevronDown, Sparkles, Layout, Linkedin, Briefcase } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { logoutAction } from "@/app/(website)/(auth)/actions";
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
 
+  const pathname = usePathname();
+
   // Fetch user client-side to avoid blocking server render (FCP optimization)
   useEffect(() => {
     const supabase = createClient();
+    
+    // Initial fetch
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      setIsLoading(false);
     });
-  }, []);
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [pathname]);
 
   // Prevent scrolling when menu is open
   useEffect(() => {
@@ -80,7 +96,7 @@ export default function Header() {
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-10 lg:flex">
+          <nav className="hidden items-center gap-9 lg:flex">
             <Link
               href="/"
               className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
@@ -103,8 +119,15 @@ export default function Header() {
               href="/linkedin-checker"
               className="flex items-center gap-1.5 text-sm font-bold text-zinc-600 hover:text-[#0077B5] transition-colors"
             >
-              <Linkedin className="h-3.5 w-3.5" />
+              {/* <Linkedin className="h-3.5 w-3.5" /> */}
               LinkedIn Checker
+            </Link>
+            <Link
+              href="/job-tracker"
+              className="flex items-center gap-1.5 text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
+            >
+              {/* <Briefcase className="h-3.5 w-3.5" /> */}
+              Job Tracker
             </Link>
             <div className="relative group py-2">
               <button className="flex items-center gap-1 text-sm font-bold text-zinc-600 group-hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
@@ -152,78 +175,90 @@ export default function Header() {
 
           <div className="flex items-center gap-4">
             <div className="hidden lg:flex items-center gap-6">
-              {user ? (
-                <div className="relative" ref={profileDropdownRef}>
-                  {/* Profile Image Button */}
-                  <button
-                    onClick={toggleProfileDropdown}
-                    className="relative flex items-center justify-center h-10 w-10 rounded-full border-2 border-zinc-200 hover:border-blue-400 transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-white"
-                    aria-label="Profile menu"
-                  >
-                    {avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={avatarUrl} alt="Profile" className="h-full w-full rounded-full object-cover" />
-                    ) : (
-                      <div className="h-full w-full flex items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-cyan-400 text-white text-xs font-bold">
-                        {initials}
-                      </div>
-                    )}
-                  </button>
+              {!isLoading && (
+                <>
+                  {user ? (
+                    <div className="relative" ref={profileDropdownRef}>
+                      {/* Profile Image Button */}
+                      <button
+                        onClick={toggleProfileDropdown}
+                        className="relative flex items-center justify-center h-10 w-10 rounded-full border-2 border-zinc-200 hover:border-blue-400 transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 bg-white"
+                        aria-label="Profile menu"
+                      >
+                        {avatarUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={avatarUrl} alt="Profile" className="h-full w-full rounded-full object-cover" />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-cyan-400 text-white text-xs font-bold">
+                            {initials}
+                          </div>
+                        )}
+                      </button>
 
-                  {/* Dropdown Menu */}
-                  {isProfileDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden z-1002 animate-in fade-in slide-in-from-top-2 duration-200">
-                      {/* User Info Header */}
-                      <div className="px-4 py-3 border-b border-zinc-100 bg-zinc-50">
-                        <p className="text-sm font-semibold text-zinc-900">{firstName} {lastName}</p>
-                        <p className="text-xs text-zinc-500 truncate">{user.email}</p>
-                      </div>
+                      {/* Dropdown Menu */}
+                      {isProfileDropdownOpen && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden z-1002 animate-in fade-in slide-in-from-top-2 duration-200">
+                          {/* User Info Header */}
+                          <div className="px-4 py-3 border-b border-zinc-100 bg-zinc-50">
+                            <p className="text-sm font-semibold text-zinc-900">{firstName} {lastName}</p>
+                            <p className="text-xs text-zinc-500 truncate">{user.email}</p>
+                          </div>
 
-                      {/* Menu Items */}
-                      <div className="py-2">
-                        <Link
-                          href="/profile"
-                          onClick={closeProfileDropdown}
-                          className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                        >
-                          <UserIcon className="h-4 w-4" />
-                          Edit Profile
-                        </Link>
-                        <Link
-                          href="/dashboard"
-                          onClick={closeProfileDropdown}
-                          className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                        >
-                          <LayoutDashboard className="h-4 w-4" />
-                          Dashboard
-                        </Link>
-                      </div>
+                          {/* Menu Items */}
+                          <div className="py-2">
+                            <Link
+                              href="/profile"
+                              onClick={closeProfileDropdown}
+                              className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            >
+                              <UserIcon className="h-4 w-4" />
+                              Edit Profile
+                            </Link>
+                            <Link
+                              href="/dashboard"
+                              onClick={closeProfileDropdown}
+                              className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            >
+                              <LayoutDashboard className="h-4 w-4" />
+                              Dashboard
+                            </Link>
+                            <Link
+                              href="/job-tracker"
+                              onClick={closeProfileDropdown}
+                              className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                            >
+                              <Briefcase className="h-4 w-4" />
+                              Job Tracker
+                            </Link>
+                          </div>
 
-                      {/* Logout Button */}
-                      <div className="border-t border-zinc-100 py-2">
-                        <button
-                          type="button"
-                          onClick={handleLogout}
-                          disabled={isPendingLogout}
-                          className="flex items-center gap-3 w-full px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                        >
-                          {isPendingLogout ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <LogOut className="h-4 w-4" />
-                          )}
-                          {isPendingLogout ? "Logging out…" : "Logout"}
-                        </button>
-                      </div>
+                          {/* Logout Button */}
+                          <div className="border-t border-zinc-100 py-2">
+                            <button
+                              type="button"
+                              onClick={handleLogout}
+                              disabled={isPendingLogout}
+                              className="flex items-center gap-3 w-full px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                              {isPendingLogout ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <LogOut className="h-4 w-4" />
+                              )}
+                              {isPendingLogout ? "Logging out…" : "Logout"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
+                  ) : (
+                    <Link
+                      href="/signup"
+                      className="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-2 rounded-lg px-4 py-2"                >
+                      Sign up free
+                    </Link>
                   )}
-                </div>
-              ) : (
-                <Link
-                  href="/sign-up"
-                  className="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors flex items-center gap-2 rounded-lg px-4 py-2"                >
-                  Sign up free
-                </Link>
+                </>
               )}
             </div>
 
@@ -257,6 +292,7 @@ export default function Header() {
             <MobileNavLink href="/blog" label="Blog" onClick={closeMenu} />
             <MobileNavLink href="/resume-templates" label="Templates" onClick={closeMenu} />
             <MobileNavLink href="/linkedin-checker" label="LinkedIn Checker" onClick={closeMenu} />
+            <MobileNavLink href="/job-tracker" label="Job Tracker" onClick={closeMenu} />
             <MobileNavLink href="/ai-cover-letter-generator?action=new" label="AI Cover Letter Generator" onClick={closeMenu} />
             <MobileNavLink href="/cover-letter-templates" label="Cover Letter Templates" onClick={closeMenu} />
             <MobileNavLink href="/reviews" label="Reviews" onClick={closeMenu} />
@@ -273,32 +309,36 @@ export default function Header() {
 
           <div className="mt-auto p-6 border-t border-zinc-100 flex flex-col gap-4 bg-zinc-50/50">
             <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-2">Account</p>
-            {user ? (
-              <div className="flex flex-col gap-2">
+            {!isLoading && (
+              <>
+                {user ? (
+                  <div className="flex flex-col gap-2">
 
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  disabled={isPendingLogout}
-                  className="flex items-center gap-4 w-full p-4 rounded-2xl bg-white border border-zinc-200 text-zinc-700 font-bold hover:bg-red-50 hover:text-red-600 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isPendingLogout ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <LogOut className="h-4 w-4" />
-                  )}
-                  <span className="text-sm">{isPendingLogout ? "Logging out…" : "Logout"}</span>
-                </button>
-              </div>
-            ) : (
-              <Link
-                onClick={closeMenu}
-                href="/login"
-                className="group flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-zinc-200/60 bg-white/80 p-4 text-sm font-bold text-zinc-700 shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
-              >
-                {/* <LogIn className="h-5 w-5 text-zinc-400 group-hover:text-blue-500 transition-colors" /> */}
-                <span>Login</span>
-              </Link>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      disabled={isPendingLogout}
+                      className="flex items-center gap-4 w-full p-4 rounded-2xl bg-white border border-zinc-200 text-zinc-700 font-bold hover:bg-red-50 hover:text-red-600 transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {isPendingLogout ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <LogOut className="h-4 w-4" />
+                      )}
+                      <span className="text-sm">{isPendingLogout ? "Logging out…" : "Logout"}</span>
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    onClick={closeMenu}
+                    href="/login"
+                    className="group flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-zinc-200/60 bg-white/80 p-4 text-sm font-bold text-zinc-700 shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                  >
+                    {/* <LogIn className="h-5 w-5 text-zinc-400 group-hover:text-blue-500 transition-colors" /> */}
+                    <span>Login</span>
+                  </Link>
+                )}
+              </>
             )}
 
           </div>

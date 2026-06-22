@@ -61,7 +61,7 @@ export default function Home() {
             <StatItem value="98%" label="Accuracy" />
             <StatItem value="10s" label="Analysis Time" />
             <StatItem
-              value="10k+"
+              value="1k+"
               label="Resumes Fixed"
               className="col-span-2 md:col-span-1"
             />

@@ -1,14 +1,25 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useSubscription } from "@/hooks/useSubscription";
+import Link from "next/link";
+import { Lock } from "lucide-react";
 
 export default function FooterDownloadCTA() {
   const pathname = usePathname();
   const isResultPage = pathname === "/result";
+  const { tier, usage } = useSubscription();
 
   if (!isResultPage) return null;
 
+  const isLimitReached = tier === "free" && usage.pdf_downloads >= 2;
+
   const downloadPDF = async () => {
+    if (isLimitReached) {
+      alert("You have reached your 2 free PDF downloads for this month. Please upgrade to Tier 2.");
+      return;
+    }
+
     const stored = window.sessionStorage.getItem("fresherAtsResult");
     if (!stored) return;
 
@@ -75,13 +86,34 @@ export default function FooterDownloadCTA() {
       <div className="flex flex-col gap-4 rounded-3xl bg-[#1c212e] p-6 text-center text-white shadow-xl w-full max-w-75">
         <button
           onClick={downloadPDF}
-          className="w-full rounded-xl bg-blue-600 py-3 text-sm font-bold transition-all hover:bg-blue-700 active:scale-95 flex flex-col items-center justify-center leading-tight shadow-lg shadow-blue-500/20"
+          disabled={isLimitReached}
+          className={`w-full rounded-xl py-3 text-sm font-bold transition-all active:scale-95 flex flex-col items-center justify-center leading-tight shadow-lg ${
+            isLimitReached 
+              ? "bg-gray-700 text-gray-400 cursor-not-allowed shadow-none" 
+              : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
+          }`}
         >
-          <span className="text-white">Download Resume</span>
-          <span className="text-[10px] text-white font-medium uppercase tracking-widest mt-1 opacity-90">
-            FREE - Limited Time
-          </span>
+          {isLimitReached ? (
+            <>
+              <span className="flex items-center gap-2"><Lock className="h-4 w-4" /> Download Locked</span>
+              <span className="text-[10px] text-gray-400 font-medium tracking-widest mt-1">
+                LIMIT REACHED
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-white">Download Resume</span>
+              <span className="text-[10px] text-white font-medium uppercase tracking-widest mt-1 opacity-90">
+                {tier === "free" ? `${2 - usage.pdf_downloads} REMAINING` : "UNLIMITED"}
+              </span>
+            </>
+          )}
         </button>
+        {isLimitReached && (
+          <Link href="/pricing" className="text-xs text-blue-400 hover:text-blue-300 underline underline-offset-2">
+            Upgrade to Tier 2 for Unlimited Downloads
+          </Link>
+        )}
       </div>
     </div>
   );

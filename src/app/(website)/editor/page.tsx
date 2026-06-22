@@ -26,6 +26,12 @@ function ResumeEditorContent() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
+  // Tailor mode — from Job Tracker "Tailor Resume" CTA
+  const [tailorJobTitle, setTailorJobTitle] = useState<string | null>(null);
+  const [tailorCompany, setTailorCompany] = useState<string | null>(null);
+  const [tailorKeywords, setTailorKeywords] = useState<string[]>([]);
+  const [showKeywordBanner, setShowKeywordBanner] = useState(false);
+
   const searchParams = useSearchParams();
   const templateIdParam = searchParams.get("template");
   const isTemplateMode = templateIdParam !== null;
@@ -68,6 +74,74 @@ function ResumeEditorContent() {
 
       // Resume editing for uploaded/AI-optimized resumes.
       if (typeof window !== "undefined") {
+        // ── Tailor-from-JobTracker mode ──
+        const storedTailorTitle = window.sessionStorage.getItem("tailorJobTitle");
+        const storedTailorCompany = window.sessionStorage.getItem("tailorCompany");
+        const storedTailorKeywords = window.sessionStorage.getItem("tailorKeywords");
+
+        if (storedTailorTitle) {
+          setTailorJobTitle(storedTailorTitle);
+          setTailorCompany(storedTailorCompany);
+
+          const keywords = storedTailorKeywords ? (JSON.parse(storedTailorKeywords) as string[]) : [];
+          setTailorKeywords(keywords);
+          if (keywords.length > 0) setShowKeywordBanner(true);
+
+          // Clear tailor keys so refreshing doesn't re-trigger
+          window.sessionStorage.removeItem("tailorJobTitle");
+          window.sessionStorage.removeItem("tailorCompany");
+          window.sessionStorage.removeItem("tailorKeywords");
+
+          // Try to load latest resume from Supabase analyses table
+          // NOTE: use local `currentUser` (not React state `user`) because setState is async
+          const currentUser = user;
+          if (currentUser) {
+            try {
+              const { createClient } = await import("@/lib/supabase/client");
+              const supabase = createClient();
+              const { data } = await supabase
+                .from("analyses")
+                .select("optimized_resume, id")
+                .eq("user_id", currentUser.id)
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .single();
+
+              if (data?.optimized_resume) {
+                setResumeText(data.optimized_resume);
+                setAnalysisId(data.id);
+                const { nameLines, sections } = parseResumeText(data.optimized_resume);
+                setLocalNameLines(nameLines);
+                setLocalSections(sections);
+              }
+            } catch (e) {
+              console.error("Failed to load latest resume for tailor mode", e);
+            }
+          } else {
+            // Guest: try fresherAtsResult as fallback
+            const stored = window.sessionStorage.getItem("fresherAtsResult");
+            if (stored) {
+              try {
+                const parsed = JSON.parse(stored) as AnalysisResult & { optimizedResume?: string; optimized_resume?: string };
+                const text = parsed.optimizedResume || parsed.optimized_resume || "";
+                if (text) {
+                  setResumeText(text);
+                  setAnalysisId(parsed.analysis_id || null);
+                  const { nameLines, sections } = parseResumeText(text);
+                  setLocalNameLines(nameLines);
+                  setLocalSections(sections);
+                }
+              } catch (e) {
+                console.error("Failed to parse stored results in tailor guest mode", e);
+              }
+            }
+          }
+
+          setIsLoading(false);
+          return;
+        }
+
+        // ── Standard mode: load from fresherAtsResult ──
         const stored = window.sessionStorage.getItem("fresherAtsResult");
         if (stored) {
           try {
@@ -271,7 +345,44 @@ function ResumeEditorContent() {
 
       <main className="flex flex-1 overflow-hidden">
         {/* Editor Side */}
-        <div className="w-1/2 flex border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden relative">
+        <div className="w-1/2 flex flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden relative">
+
+          {/* ── Tailor Mode: Missing Keywords Banner ── */}
+          {showKeywordBanner && tailorKeywords.length > 0 && (
+            <div className="shrink-0 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800 px-5 py-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <p className="text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1.5">
+                    🎯 Tailoring for: {tailorJobTitle}{tailorCompany ? ` @ ${tailorCompany}` : ""}
+                  </p>
+                  <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-500 mb-2">
+                    Add these missing keywords to boost your ATS match score:
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {tailorKeywords.map((kw, i) => (
+                      <span
+                        key={i}
+                        className="text-[10px] font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-md border border-amber-300/60 dark:border-amber-700/40 cursor-pointer hover:bg-amber-200 transition-colors"
+                        title="Click to copy"
+                        onClick={() => navigator.clipboard.writeText(kw)}
+                      >
+                        + {kw}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowKeywordBanner(false)}
+                  className="shrink-0 text-amber-400 hover:text-amber-700 p-1 rounded transition-colors"
+                  title="Dismiss"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-1 overflow-hidden">
 
           {editorMode === 'guided' && (
             <nav className="w-56 shrink-0 border-r border-zinc-100 dark:border-zinc-900 p-4 overflow-y-auto hidden xl:block">
@@ -514,6 +625,7 @@ function ResumeEditorContent() {
               </div>
             )}
           </div>
+          </div>{/* end flex flex-1 overflow-hidden (tailor wrapper) */}
         </div>
 
         {/* Preview Side */}

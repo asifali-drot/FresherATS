@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import JDInput from "./JDInput";
 import AnalysisLoadingScreen from "./AnalysisLoadingScreen";
 import type { AnalysisResult } from "./Suggestions";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Lock } from "lucide-react";
+import Link from "next/link";
 
 export default function ResumeUpload() {
   const [file, setFile] = useState<File | null>(null);
@@ -13,6 +16,7 @@ export default function ResumeUpload() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
+  const { tier } = useSubscription();
 
   const handleUpload = async () => {
     setError(null);
@@ -24,7 +28,12 @@ export default function ResumeUpload() {
 
     const formData = new FormData();
     formData.append("resume", file);
-    formData.append("jobDescription", jobDescription);
+    // Only append jobDescription if not on free tier
+    if (tier !== "free") {
+      formData.append("jobDescription", jobDescription);
+    } else {
+      formData.append("jobDescription", "");
+    }
 
     try {
       setLoading(true);
@@ -123,12 +132,25 @@ export default function ResumeUpload() {
         />
       </div>
 
-      <JDInput
-        value={jobDescription}
-        onChange={setJobDescription}
-        label="Job description (optional)"
-        placeholder="Paste the job description to get tailored feedback..."
-      />
+      <div className="relative">
+        <JDInput
+          value={tier === "free" ? "" : jobDescription}
+          onChange={setJobDescription}
+          label="Job description (optional)"
+          placeholder="Paste the job description to get tailored feedback..."
+        />
+        {tier === "free" && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl bg-white/70 backdrop-blur-[2px]">
+            <div className="flex flex-col items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+              <Lock className="h-5 w-5 text-purple-600 mb-2" />
+              <p className="text-sm font-medium text-gray-900">Job Description Matching is a Premium Feature</p>
+              <Link href="/pricing" className="mt-2 text-xs font-semibold text-purple-600 hover:text-purple-700 underline">
+                Upgrade to Tier 2 to unlock
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
 
       <button
         onClick={handleUpload}

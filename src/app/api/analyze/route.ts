@@ -11,10 +11,27 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
 
     const file = formData.get("resume") as File;
-    const jobDescription = formData.get("jobDescription") as string;
+    let jobDescription = formData.get("jobDescription") as string;
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    }
+
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      const { data: sub } = await supabase
+        .from("user_subscriptions")
+        .select("tier")
+        .eq("user_id", user.id)
+        .single();
+      
+      if (!sub || sub.tier === "free") {
+        jobDescription = "";
+      }
+    } else {
+      jobDescription = ""; // Guest users are free tier
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());

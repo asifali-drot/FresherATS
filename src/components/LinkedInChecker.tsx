@@ -16,6 +16,8 @@ import LinkedInScoreBar from "@/components/linkedin/LinkedInScoreBar";
 import KeywordGap from "@/components/linkedin/KeywordGap";
 import SectionBreakdown from "@/components/linkedin/SectionBreakdown";
 import type { LinkedInAnalysisResult } from "@/app/api/analyze-linkedin/route";
+import { useSubscription } from "@/hooks/useSubscription";
+import UpgradeOverlay from "@/components/UpgradeOverlay";
 
 type AnalysisState = "idle" | "analyzing" | "done" | "error";
 
@@ -27,7 +29,11 @@ export default function LinkedInChecker() {
   const [error, setError] = useState("");
   const [result, setResult] = useState<LinkedInAnalysisResult | null>(null);
 
-  const canAnalyze = profileText.trim().length >= 30;
+  const { tier, usage } = useSubscription();
+  const isLimitReached = tier === "free" && usage.linkedin_checks >= 2;
+  const isOptimizerLocked = tier !== "tier_3";
+
+  const canAnalyze = profileText.trim().length >= 30 && !isLimitReached;
 
   const handleAnalyze = async () => {
     if (!canAnalyze) return;
@@ -195,11 +201,16 @@ export default function LinkedInChecker() {
           )}
 
           {/* ── CTA Buttons ── */}
+            {isLimitReached && (
+              <p className="w-full text-center text-sm font-medium text-red-600 mb-2">
+                You have reached your free limit of 2 LinkedIn checks per month. <a href="/pricing" className="underline">Upgrade to continue.</a>
+              </p>
+            )}
           <div className="flex items-center gap-3 pt-1">
             <button
               id="li-analyze-btn"
               onClick={handleAnalyze}
-              disabled={isLoading || !canAnalyze}
+              disabled={isLoading || !canAnalyze || isLimitReached}
               className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-[#0077B5] px-6 py-3.5 text-sm font-extrabold text-white shadow-md shadow-[#0077B5]/25 hover:bg-[#005e93] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
             >
               {isLoading ? (
@@ -326,16 +337,30 @@ export default function LinkedInChecker() {
           </div>
 
           {/* Section Breakdown */}
-          <div className="rounded-3xl border border-zinc-200 bg-white shadow-sm p-6">
+          <div className="relative rounded-3xl border border-zinc-200 bg-white shadow-sm p-6 overflow-hidden">
             <SectionBreakdown sections={result.sections} />
+            {isOptimizerLocked && (
+              <UpgradeOverlay
+                title="Full LinkedIn Optimizer"
+                description="Upgrade to Tier 3 to unlock detailed section-by-section feedback and keyword gap analysis."
+                requiredTier="tier_3"
+              />
+            )}
           </div>
 
           {/* Keyword Gap */}
-          <div className="rounded-3xl border border-zinc-200 bg-white shadow-sm p-6">
+          <div className="relative rounded-3xl border border-zinc-200 bg-white shadow-sm p-6 overflow-hidden">
             <KeywordGap
               present={result.keywordsPresent}
               missing={result.keywordsMissing}
             />
+            {isOptimizerLocked && (
+              <UpgradeOverlay
+                title="Keyword Gap Analysis"
+                description="Upgrade to Tier 3 to see exactly which keywords you're missing."
+                requiredTier="tier_3"
+              />
+            )}
           </div>
 
           {/* Cross-sell CTA */}
