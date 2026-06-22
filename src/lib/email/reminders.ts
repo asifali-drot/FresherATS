@@ -1,6 +1,12 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient: Resend | null = null;
+function getResend() {
+  if (!resendClient) {
+    resendClient = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendClient;
+}
 
 /**
  * Sender email for reminders.
@@ -146,6 +152,7 @@ export async function sendReminderEmail(data: ReminderEmailData): Promise<boolea
     console.log(`[Resend] Attempting to send reminder email to: ${data.userEmail}`);
     console.log(`[Resend] Using sender: ${RESEND_FROM_EMAIL}`);
 
+    const resend = getResend();
     const { data: result, error } = await resend.emails.send({
       from: `FresherATS <${RESEND_FROM_EMAIL}>`,
       to: data.userEmail,
