@@ -331,11 +331,10 @@ export default function Header() {
                 ) : (
                   <Link
                     onClick={closeMenu}
-                    href="/login"
-                    className="group flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-zinc-200/60 bg-white/80 p-4 text-sm font-bold text-zinc-700 shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                    href="/signup"
+                    className="flex w-full items-center justify-center rounded-2xl bg-blue-600 hover:bg-blue-700 transition-colors p-4 text-sm font-bold text-white shadow-sm"
                   >
-                    {/* <LogIn className="h-5 w-5 text-zinc-400 group-hover:text-blue-500 transition-colors" /> */}
-                    <span>Login</span>
+                    Sign up free
                   </Link>
                 )}
               </>
