@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import Script from 'next/script'
 
 interface AuthFormProps {
     type: 'login' | 'signup' | 'forgot-password' | 'reset-password'
@@ -11,12 +13,58 @@ interface AuthFormProps {
 
 export default function AuthForm({ type, onSubmit }: AuthFormProps) {
     const searchParams = useSearchParams()
+    const router = useRouter()
     const claimId = searchParams.get('claim_id') || ''
     const redirectPath = searchParams.get('redirect') || ''
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
+    const [oauthLoading, setOauthLoading] = useState(false)
+    const supabase = createClient()
+
+    const handleGoogleCredentialResponse = async (response: any) => {
+        try {
+            setOauthLoading(true)
+            setError(null)
+            
+            const { data, error } = await supabase.auth.signInWithIdToken({
+                provider: 'google',
+                token: response.credential,
+            })
+
+            if (error) {
+                setError(error.message)
+                setOauthLoading(false)
+                return
+            }
+
+            // Successfully authenticated client-side
+            router.refresh()
+
+            if (claimId) {
+                const { data: { user } } = await supabase.auth.getUser()
+                if (user) {
+                    await supabase
+                        .from('analyses')
+                        .update({ user_id: user.id })
+                        .eq('id', claimId)
+                        .is('user_id', null)
+                }
+            }
+
+            let target = redirectPath || '/'
+            if (claimId && target.includes('/result')) {
+                const separator = target.includes('?') ? '&' : '?'
+                target = `${target}${separator}download=auto`
+            }
+
+            router.push(target)
+        } catch (err: any) {
+            setError(err.message || 'An error occurred during Google sign in')
+            setOauthLoading(false)
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -44,6 +92,24 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
 
     return (
         <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transition-all duration-300 hover:shadow-2xl">
+            {(type === 'login' || type === 'signup') && (
+                <Script 
+                    src="https://accounts.google.com/gsi/client" 
+                    strategy="afterInteractive"
+                    onReady={() => {
+                        if (typeof window !== 'undefined' && (window as any).google) {
+                            (window as any).google.accounts.id.initialize({
+                                client_id: "678514391868-oc98t2r9o5o8bfmcfl8k6s2057lbd8ge.apps.googleusercontent.com",
+                                callback: handleGoogleCredentialResponse
+                            });
+                            (window as any).google.accounts.id.renderButton(
+                                document.getElementById("google-signin-button"),
+                                { theme: "outline", size: "large", text: type === 'signup' ? "signup_with" : "signin_with", width: 330 } 
+                            );
+                        }
+                    }}
+                />
+            )}
             <div className="space-y-2 text-center">
                 <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
                     {type === 'login' ? 'Welcome Back' :
@@ -205,6 +271,24 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                             )}
                         </button>
                     </form>
+
+                    {(type === 'login' || type === 'signup') && (
+                        <div className="space-y-4">
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t border-zinc-200 dark:border-zinc-800" />
+                                </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-white px-2 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+                                    Or continue with
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div id="google-signin-button" className="flex justify-center w-full min-h-[44px]">
+                        </div>
+                    </div>
+                    )}
 
                     {(type === 'login' || type === 'signup' || type === 'forgot-password') && (
                         <div className="text-center text-sm">
