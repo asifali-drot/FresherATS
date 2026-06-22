@@ -835,7 +835,7 @@ function CoverLetterContent() {
                   </div>
                   {!isFreeTier && !isGenerating && (
                     <span className="text-[10px] text-blue-200 uppercase tracking-widest font-semibold">
-                      {tier === "tier_3" ? "UNLIMITED" : `${5 - usage.cover_letters} REMAINING`}
+                      {tier === "pro" ? "UNLIMITED" : `${10 - usage.cover_letters} REMAINING`}
                     </span>
                   )}
                 </button>

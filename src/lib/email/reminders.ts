@@ -122,11 +122,14 @@ function buildEmailHtml(data: ReminderEmailData): string {
           <tr>
             <td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:24px 40px;text-align:center;">
               <!-- Social Links -->
-              <div style="margin-bottom:20px;">
-                <a href="https://www.facebook.com/fresherats/" style="display:inline-block;margin:0 8px;color:#64748b;text-decoration:none;font-size:16px;text-transform:uppercase;" title="Follow us on Facebook">📘</a>
+              <div style="margin-bottom:20px; display:flex; align-items:center; justify-content:center; gap:16px;">
+                <a href="https://www.facebook.com/fresherats/" style="display:inline-block;text-decoration:none;" title="Follow us on Facebook">
+                  <img src="https://img.icons8.com/color/48/000000/facebook-new.png" width="24" height="24" alt="Facebook" style="display:block; border:none;" />
+                </a>
                 <span style="color:#cbd5e1;">|</span>
-                <a href="https://www.linkedin.com/company/fresherats" style="display:inline-block;margin:0 8px;color:#64748b;text-decoration:none;font-size:16px;text-transform:uppercase;" title="Follow us on LinkedIn">💼</a>
-                <span style="color:#cbd5e1;">|</span>
+                <a href="https://www.linkedin.com/company/fresherats" style="display:inline-block;text-decoration:none;" title="Follow us on LinkedIn">
+                  <img src="https://img.icons8.com/color/48/000000/linkedin.png" width="24" height="24" alt="LinkedIn" style="display:block; border:none;" />
+                </a>
               </div>
               <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.6;">
                 You're receiving this because you set a reminder on <strong>FresherATS Job Tracker</strong>.<br/>
