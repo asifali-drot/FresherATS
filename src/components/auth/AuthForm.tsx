@@ -27,7 +27,7 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
         try {
             setOauthLoading(true)
             setError(null)
-            
+
             const { data, error } = await supabase.auth.signInWithIdToken({
                 provider: 'google',
                 token: response.credential,
@@ -93,8 +93,8 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
     return (
         <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 transition-all duration-300 hover:shadow-2xl">
             {(type === 'login' || type === 'signup') && (
-                <Script 
-                    src="https://accounts.google.com/gsi/client" 
+                <Script
+                    src="https://accounts.google.com/gsi/client"
                     strategy="afterInteractive"
                     onReady={() => {
                         if (typeof window !== 'undefined' && (window as any).google) {
@@ -104,7 +104,7 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                             });
                             (window as any).google.accounts.id.renderButton(
                                 document.getElementById("google-signin-button"),
-                                { theme: "outline", size: "large", text: type === 'signup' ? "signup_with" : "signin_with", width: 330 } 
+                                { theme: "outline", size: "large", text: type === 'signup' ? "signup_with" : "signin_with", width: 330 }
                             );
                         }
                     }}
@@ -125,77 +125,77 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
             </div>
 
             {success ? (
-                <div className="space-y-4">
-                    <div className="p-3 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="space-y-5">
+                    <div className="p-4 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                         {success}
                     </div>
                     <Link
                         href="/login"
-                        className="flex w-full items-center justify-center rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                        className="flex w-full items-center justify-center rounded-lg border border-zinc-300 px-4 py-3 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800 transition-colors"
                     >
                         Return to Login
                     </Link>
                 </div>
             ) : (
                 <>
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-8">
                         <input type="hidden" name="claim_id" value={claimId} />
                         <input type="hidden" name="redirect" value={redirectPath} />
                         {type === 'signup' && (
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
+                            <div className="space-y-5 pb-4 border-zinc-200 dark:border-zinc-700">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2.5">
+                                        <label
+                                            htmlFor="first_name"
+                                            className="text-sm font-medium leading-none text-zinc-700 dark:text-zinc-300"
+                                        >
+                                            First Name
+                                        </label>
+                                        <input
+                                            id="first_name"
+                                            name="first_name"
+                                            type="text"
+                                            placeholder="John"
+                                            required
+                                            className="flex h-11 w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:focus-visible:ring-zinc-300 transition-colors"
+                                        />
+                                    </div>
+                                    <div className="space-y-2.5">
+                                        <label
+                                            htmlFor="last_name"
+                                            className="text-sm font-medium leading-none text-zinc-700 dark:text-zinc-300"
+                                        >
+                                            Last Name
+                                        </label>
+                                        <input
+                                            id="last_name"
+                                            name="last_name"
+                                            type="text"
+                                            placeholder="Doe"
+                                            required
+                                            className="flex h-11 w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:focus-visible:ring-zinc-300 transition-colors"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2.5">
                                     <label
-                                        htmlFor="first_name"
+                                        htmlFor="profile_picture"
                                         className="text-sm font-medium leading-none text-zinc-700 dark:text-zinc-300"
                                     >
-                                        First Name
+                                        Profile Picture (Optional)
                                     </label>
                                     <input
-                                        id="first_name"
-                                        name="first_name"
-                                        type="text"
-                                        placeholder="John"
-                                        required
-                                        className="flex h-11 w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:focus-visible:ring-zinc-300 transition-colors"
+                                        id="profile_picture"
+                                        name="profile_picture"
+                                        type="file"
+                                        accept="image/*"
+                                        className="flex h-11 w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm file:border-0 file:bg-zinc-100 file:text-zinc-900 file:font-medium file:px-2 file:py-1 file:rounded-md file:mr-3 hover:file:bg-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-50 dark:hover:file:bg-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:focus-visible:ring-zinc-300 transition-colors"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label
-                                        htmlFor="last_name"
-                                        className="text-sm font-medium leading-none text-zinc-700 dark:text-zinc-300"
-                                    >
-                                        Last Name
-                                    </label>
-                                    <input
-                                        id="last_name"
-                                        name="last_name"
-                                        type="text"
-                                        placeholder="Doe"
-                                        required
-                                        className="flex h-11 w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:focus-visible:ring-zinc-300 transition-colors"
-                                    />
-                                </div>
-                            </div>
-                        )}
-                        {type === 'signup' && (
-                            <div className="space-y-2 mb-2">
-                                <label
-                                    htmlFor="profile_picture"
-                                    className="text-sm font-medium leading-none text-zinc-700 dark:text-zinc-300"
-                                >
-                                    Profile Picture (Optional)
-                                </label>
-                                <input
-                                    id="profile_picture"
-                                    name="profile_picture"
-                                    type="file"
-                                    accept="image/*"
-                                    className="flex h-11 w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 text-sm file:border-0 file:bg-zinc-100 file:text-zinc-900 file:font-medium file:px-2 file:py-1 file:rounded-md file:mr-3 hover:file:bg-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-50 dark:hover:file:bg-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 dark:border-zinc-700 dark:focus-visible:ring-zinc-300 transition-colors"
-                                />
                             </div>
                         )}
                         {(type === 'login' || type === 'signup' || type === 'forgot-password') && (
-                            <div className="space-y-2 mb-2">
+                            <div className="space-y-2.5 pb-4 border-zinc-200 dark:border-zinc-700">
                                 <label
                                     htmlFor="email"
                                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-700 dark:text-zinc-300"
@@ -214,11 +214,11 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                         )}
 
                         {(type === 'login' || type === 'signup' || type === 'reset-password') && (
-                            <div className="space-y-2 mb-2">
+                            <div className="space-y-2.5 pb-4 border-b border-zinc-200 dark:border-zinc-700">
                                 <div className="flex items-center justify-between">
                                     <label
                                         htmlFor="password"
-                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-700 dark:text-zinc-300 mb-1"
+                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-700 dark:text-zinc-300"
                                     >
                                         {type === 'reset-password' ? 'New Password' : 'Password'}
                                     </label>
@@ -243,7 +243,7 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                         )}
 
                         {error && (
-                            <div className="p-3 text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 animate-in fade-in slide-in-from-top-1">
+                            <div className="p-4 text-sm text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 animate-in fade-in slide-in-from-top-1">
                                 {error}
                             </div>
                         )}
@@ -251,7 +251,7 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-11 px-4 py-2 w-full active:scale-[0.98] dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50/90 mb-2"
+                            className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 hover:bg-zinc-900/90 h-11 px-4 py-3 w-full active:scale-[0.98] dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50/90 mt-6"
                         >
                             {loading ? (
                                 <div className="flex items-center gap-2">
@@ -273,26 +273,26 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                     </form>
 
                     {(type === 'login' || type === 'signup') && (
-                        <div className="space-y-4">
+                        <div className="space-y-6 pt-6">
                             <div className="relative">
                                 <div className="absolute inset-0 flex items-center">
                                     <span className="w-full border-t border-zinc-200 dark:border-zinc-800" />
                                 </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-white px-2 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
-                                    Or continue with
-                                </span>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-white px-2 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+                                        Or continue with
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div id="google-signin-button" className="flex justify-center w-full min-h-[44px]">
                             </div>
                         </div>
-                        
-                        <div id="google-signin-button" className="flex justify-center w-full min-h-[44px]">
-                        </div>
-                    </div>
                     )}
 
                     {(type === 'login' || type === 'signup' || type === 'forgot-password') && (
-                        <div className="text-center text-sm">
-                            <p className="text-zinc-500 dark:text-zinc-400">
+                        <div className="pt-6 border-t border-zinc-200 dark:border-zinc-700">
+                            <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
                                 {type === 'login' ? "Don't have an account?" :
                                     type === 'signup' ? 'Already have an account?' :
                                         'Remembered your password?'}

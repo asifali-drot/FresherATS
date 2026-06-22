@@ -157,22 +157,10 @@ export default function JobTrackerPage() {
           if (res.ok) {
             const data = await res.json();
             
-            // For each job, let's fetch its contacts and reminders
-            const jobsWithExtras: JobApplication[] = [];
-            for (const j of data) {
-              const contactsRes = await fetch(`/api/jobs/${j.id}/contacts`);
-              const remindersRes = await fetch(`/api/jobs/${j.id}/reminders`);
-              
-              jobsWithExtras.push({
-                ...j,
-                contacts: contactsRes.ok ? await contactsRes.json() : [],
-                reminders: remindersRes.ok ? await remindersRes.json() : []
-              });
-            }
-
-            setJobs(jobsWithExtras);
+            // Data from API now includes contacts and reminders due to backend join
+            setJobs(data);
             setIsCloudSynced(true);
-            localStorage.setItem(`fresher_jobs_v2_${user.id}`, JSON.stringify(jobsWithExtras));
+            localStorage.setItem(`fresher_jobs_v2_${user.id}`, JSON.stringify(data));
           } else {
             // Read cache
             const cache = localStorage.getItem(`fresher_jobs_v2_${user.id}`);

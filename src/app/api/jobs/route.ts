@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await supabase
       .from("job_applications")
-      .select("*")
+      .select("*, contacts:job_contacts(*), reminders:job_reminders(*)")
       .order("updated_at", { ascending: false });
 
     if (error) {
