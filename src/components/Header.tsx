@@ -165,12 +165,12 @@ export default function Header() {
             >
               Reviews
             </Link>
-            {/* <Link
-              href="/about"
+            <Link
+              href="/pricing"
               className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
             >
-              About Us
-            </Link> */}
+              Pricing
+            </Link>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -296,7 +296,7 @@ export default function Header() {
             <MobileNavLink href="/ai-cover-letter-generator?action=new" label="AI Cover Letter Generator" onClick={closeMenu} />
             <MobileNavLink href="/cover-letter-templates" label="Cover Letter Templates" onClick={closeMenu} />
             <MobileNavLink href="/reviews" label="Reviews" onClick={closeMenu} />
-            {/* <MobileNavLink href="/about" label="About Us" onClick={closeMenu} /> */}
+            <MobileNavLink href="/pricing" label="Pricing" onClick={closeMenu} />
             {/* <MobileNavLink href="/contact" icon={<Mail className="h-5 w-5" />} label="Contact Us" onClick={closeMenu} /> */}
             {user && (
               <>

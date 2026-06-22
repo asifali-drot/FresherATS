@@ -123,11 +123,10 @@ function buildEmailHtml(data: ReminderEmailData): string {
             <td style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:24px 40px;text-align:center;">
               <!-- Social Links -->
               <div style="margin-bottom:20px;">
-                <a href="https://www.facebook.com/fresherats/" style="display:inline-block;margin:0 8px;color:#64748b;text-decoration:none;font-size:12px;font-weight:700;text-transform:uppercase;">Facebook</a>
+                <a href="https://www.facebook.com/fresherats/" style="display:inline-block;margin:0 8px;color:#64748b;text-decoration:none;font-size:16px;text-transform:uppercase;" title="Follow us on Facebook">📘</a>
                 <span style="color:#cbd5e1;">|</span>
-                <a href="https://www.linkedin.com/company/fresherats" style="display:inline-block;margin:0 8px;color:#64748b;text-decoration:none;font-size:12px;font-weight:700;text-transform:uppercase;">LinkedIn</a>
+                <a href="https://www.linkedin.com/company/fresherats" style="display:inline-block;margin:0 8px;color:#64748b;text-decoration:none;font-size:16px;text-transform:uppercase;" title="Follow us on LinkedIn">💼</a>
                 <span style="color:#cbd5e1;">|</span>
-                <a href="https://x.com/fresherats" style="display:inline-block;margin:0 8px;color:#64748b;text-decoration:none;font-size:12px;font-weight:700;text-transform:uppercase;">X (Twitter)</a>
               </div>
               <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.6;">
                 You're receiving this because you set a reminder on <strong>FresherATS Job Tracker</strong>.<br/>

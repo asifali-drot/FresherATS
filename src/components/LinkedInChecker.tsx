@@ -31,7 +31,7 @@ export default function LinkedInChecker() {
 
   const { tier, usage } = useSubscription();
   const isLimitReached = tier === "free" && usage.linkedin_checks >= 2;
-  const isOptimizerLocked = tier !== "tier_3";
+  const isOptimizerLocked = tier !== "pro";
 
   const canAnalyze = profileText.trim().length >= 30 && !isLimitReached;
 
@@ -342,8 +342,8 @@ export default function LinkedInChecker() {
             {isOptimizerLocked && (
               <UpgradeOverlay
                 title="Full LinkedIn Optimizer"
-                description="Upgrade to Tier 3 to unlock detailed section-by-section feedback and keyword gap analysis."
-                requiredTier="tier_3"
+                description="Upgrade to Pro to unlock detailed section-by-section feedback and keyword gap analysis."
+                requiredTier="pro"
               />
             )}
           </div>
@@ -357,8 +357,8 @@ export default function LinkedInChecker() {
             {isOptimizerLocked && (
               <UpgradeOverlay
                 title="Keyword Gap Analysis"
-                description="Upgrade to Tier 3 to see exactly which keywords you're missing."
-                requiredTier="tier_3"
+                description="Upgrade to Pro to see exactly which keywords you're missing."
+                requiredTier="pro"
               />
             )}
           </div>

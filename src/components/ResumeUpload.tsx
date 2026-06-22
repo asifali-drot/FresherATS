@@ -145,7 +145,7 @@ export default function ResumeUpload() {
               <Lock className="h-5 w-5 text-purple-600 mb-2" />
               <p className="text-sm font-medium text-gray-900">Job Description Matching is a Premium Feature</p>
               <Link href="/pricing" className="mt-2 text-xs font-semibold text-purple-600 hover:text-purple-700 underline">
-                Upgrade to Tier 2 to unlock
+                Upgrade to Starter to unlock
               </Link>
             </div>
           </div>

@@ -41,7 +41,7 @@ function CoverLetterContent() {
 
   const { tier, usage } = useSubscription();
   const isFreeTier = tier === "free";
-  const isLimitReached = tier === "tier_2" && usage.cover_letters >= 5;
+  const isLimitReached = tier === "starter" && usage.cover_letters >= 10;
   const isAiLocked = isFreeTier || isLimitReached;
 
   // Form setup inputs

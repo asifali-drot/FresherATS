@@ -29,13 +29,13 @@ export async function POST(req: NextRequest): Promise<Response> {
     const tier = sub?.tier || "free";
 
     if (tier === "free") {
-      return NextResponse.json({ error: "AI Cover Letter generation is a Premium feature. Please upgrade to Tier 2." }, { status: 403 });
+      return NextResponse.json({ error: "AI Cover Letter generation is a Premium feature. Please upgrade to Starter." }, { status: 403 });
     }
 
     const { data: usage } = await supabase.from("usage_tracking").select("cover_letters").eq("user_id", user.id).single();
     
-    if (tier === "tier_2" && usage && usage.cover_letters >= 5) {
-      return NextResponse.json({ error: "Tier 2 limit reached: 5 cover letters per month. Please upgrade to Tier 3." }, { status: 403 });
+    if (tier === "starter" && usage && usage.cover_letters >= 10) {
+      return NextResponse.json({ error: "Starter limit reached: 10 cover letters per month. Please upgrade to Pro." }, { status: 403 });
     }
 
     const apiKey = process.env.OPENROUTER_API_KEY;
