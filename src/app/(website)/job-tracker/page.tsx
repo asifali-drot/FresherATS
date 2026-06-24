@@ -103,17 +103,17 @@ export default function JobTrackerPage() {
   const [isCloudSynced, setIsCloudSynced] = useState(false);
   const [isScanning, setIsScanning] = useState<string | null>(null);
 
-  // Plan enforcement
-  const { tier: subscriptionTier } = useSubscription();
-  const isFree = subscriptionTier === "free";
-  const FREE_JOB_LIMIT = 5;
-  const isJobLimitReached = isFree && user && jobs.length >= FREE_JOB_LIMIT;
-
   // Core tracking states
   const [jobs, setJobs] = useState<JobApplication[]>([]);
   // Keep a stable ref in sync so the auto-send interval can read latest jobs without being a dependency
   const jobsRef = useRef<JobApplication[]>([]);
   useEffect(() => { jobsRef.current = jobs; }, [jobs]);
+
+  // Plan enforcement
+  const { tier: subscriptionTier } = useSubscription();
+  const isFree = subscriptionTier === "free";
+  const FREE_JOB_LIMIT = 5;
+  const isJobLimitReached = isFree && user && jobs.length >= FREE_JOB_LIMIT;
   const [viewMode, setViewMode] = useState<"board" | "list">("board");
   
   // Filtering & Search
