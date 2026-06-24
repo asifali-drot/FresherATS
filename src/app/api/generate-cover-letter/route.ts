@@ -138,11 +138,15 @@ ${resumeText || "(No resume text provided. Use general details for a student/ent
 
     console.log("[AI Cover Letter] Successfully generated cover letter. Length:", coverLetterText.length);
 
-    if (user && usage) {
-      await supabase
+    if (user) {
+      const { error: usageError } = await supabase
         .from("usage_tracking")
-        .update({ cover_letters: usage.cover_letters + 1 })
-        .eq("user_id", user.id);
+        .upsert({
+          user_id: user.id,
+          cover_letters: (usage?.cover_letters ?? 0) + 1,
+        }, { onConflict: "user_id", ignoreDuplicates: false });
+
+      if (usageError) console.error("Usage tracking upsert error:", usageError);
     }
 
     return NextResponse.json({

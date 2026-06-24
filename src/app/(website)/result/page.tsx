@@ -7,6 +7,7 @@ import Suggestions, { type AnalysisResult } from "@/components/Suggestions";
 import ATSScore from "@/components/ATSScore";
 import { User } from "@supabase/supabase-js";
 import Image from "next/image";
+import { useSubscription } from "@/hooks/useSubscription";
 
 function AnalyzeResultContent() {
   const [data, setData] = useState<AnalysisResult | null>(null);
@@ -18,6 +19,12 @@ function AnalyzeResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasTriggeredAuto = useRef(false);
+
+  const { tier, usage, refresh } = useSubscription();
+  const isFreePlan = tier === "free";
+  const pdfLimitReached = isFreePlan && usage.pdf_downloads >= 2;
+  const pdfRemaining = isFreePlan ? Math.max(0, 2 - usage.pdf_downloads) : null;
+
 
   useEffect(() => {
     async function checkUser() {
@@ -102,6 +109,7 @@ function AnalyzeResultContent() {
           a.click();
           document.body.removeChild(a);
           window.URL.revokeObjectURL(downloadUrl);
+          await refresh(); // Refresh the usage limit
           return;
         }
       }
@@ -116,6 +124,7 @@ function AnalyzeResultContent() {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+      await refresh(); // Refresh the usage limit
     } catch (error) {
       console.error('Download failed:', error);
       setDownloadError(
@@ -172,29 +181,45 @@ function AnalyzeResultContent() {
               <ATSScore score={data.score ?? 72} />
 
               <div className="flex flex-col items-center gap-2">
-                  <button
-                    onClick={downloadPDF}
-                    disabled={isDownloading}
-                    className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-sm font-bold text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-600 transition-all active:scale-95 shadow-lg shadow-zinc-200 w-full justify-center"
-                  >
-                    {isDownloading ? (
-                      <>
-                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  {pdfLimitReached ? (
+                    <div className="w-full text-center flex flex-col items-center">
+                      <p className="text-sm font-semibold text-red-600 mb-2">
+                        You&apos;ve used your 2 free PDF downloads this month.
+                      </p>
+                      <Link 
+                        href="/pricing" 
+                        className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-8 py-4 text-sm font-bold text-white hover:bg-amber-600 transition-all active:scale-95 shadow-lg shadow-amber-200/50 w-full justify-center"
+                      >
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
-                        Generating...
-                      </>
-                    ) : (
-                      <span className="flex flex-col items-center leading-tight">
-                        <span>Download Resume</span>
-                        <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest mt-0.5">
-                          FREE - Limited Time
+                        Upgrade to Starter for Unlimited
+                      </Link>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={downloadPDF}
+                      disabled={isDownloading}
+                      className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-sm font-bold text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-600 transition-all active:scale-95 shadow-lg shadow-zinc-200 w-full justify-center"
+                    >
+                      {isDownloading ? (
+                        <>
+                          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Generating...
+                        </>
+                      ) : (
+                        <span className="flex flex-col items-center leading-tight">
+                          <span>Download Resume</span>
+                          <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest mt-0.5">
+                            {pdfRemaining !== null ? `${pdfRemaining} of 2 downloads left (Free)` : "Unlimited"}
+                          </span>
                         </span>
-                      </span>
-                    )}
-
-                  </button>
+                      )}
+                    </button>
+                  )}
 
                 <button
                   onClick={handlePreview}
@@ -215,7 +240,33 @@ function AnalyzeResultContent() {
 
             <div className="h-px bg-zinc-100 w-full" />
 
-            <Suggestions data={data} />
+            {pdfLimitReached ? (
+              /* ── Upgrade CTA when free downloads exhausted ── */
+              <div className="flex flex-col items-center gap-5 py-6 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 border border-amber-200">
+                  <svg className="h-7 w-7 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-zinc-900">Analysis Suggestions Locked</h3>
+                  <p className="mt-1 text-sm text-zinc-500 max-w-sm">
+                    You&apos;ve used your 2 free downloads. Upgrade to Starter to unlock unlimited downloads and see detailed ATS improvement suggestions.
+                  </p>
+                </div>
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-6 py-3 text-sm font-bold text-white hover:bg-amber-600 transition-all shadow-md"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Upgrade to Starter — Unlimited Downloads
+                </Link>
+              </div>
+            ) : (
+              <Suggestions data={data} />
+            )}
 
           </div>
 

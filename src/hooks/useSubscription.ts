@@ -75,5 +75,24 @@ export function useSubscription() {
     };
   }, []);
 
-  return { user, tier, usage, loading };
+  const refresh = async () => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: usageData } = await supabase
+        .from("usage_tracking")
+        .select("pdf_downloads, linkedin_checks, cover_letters")
+        .eq("user_id", user.id)
+        .single();
+      if (usageData) {
+        setUsage({
+          pdf_downloads: usageData.pdf_downloads || 0,
+          linkedin_checks: usageData.linkedin_checks || 0,
+          cover_letters: usageData.cover_letters || 0,
+        });
+      }
+    }
+  };
+
+  return { user, tier, usage, loading, refresh };
 }

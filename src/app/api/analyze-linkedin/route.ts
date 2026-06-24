@@ -42,30 +42,16 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    // LinkedIn basic analysis is FREE for everyone — no login required, no limit.
+    // Fetch tier only to pass to the client so it can gate the Optimizer sections.
     let tier = "free";
-    let usage = null;
-
     if (user) {
       const { data: sub } = await supabase
         .from("user_subscriptions")
         .select("tier")
         .eq("user_id", user.id)
         .single();
-      if (sub) tier = sub.tier;
-
-      const { data: u } = await supabase
-        .from("usage_tracking")
-        .select("linkedin_checks")
-        .eq("user_id", user.id)
-        .single();
-      usage = u;
-    }
-
-    if (tier === "free" && usage && usage.linkedin_checks >= 2) {
-      return NextResponse.json(
-        { error: "Free tier limit reached: 2 LinkedIn checks per month. Please upgrade your plan." },
-        { status: 403 }
-      );
+      tier = sub?.tier || "free";
     }
 
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -171,14 +157,9 @@ ${
       }
     }
 
-    if (user && usage) {
-      await supabase
-        .from("usage_tracking")
-        .update({ linkedin_checks: usage.linkedin_checks + 1 })
-        .eq("user_id", user.id);
-    }
-
-    return NextResponse.json({ success: true, result });
+    // No usage tracking — LinkedIn analysis is free for everyone.
+    // Return tier so the client can gate the paid Optimizer UI sections.
+    return NextResponse.json({ success: true, result, tier });
   } catch (error) {
     console.error("LinkedIn analyze route error:", error);
     return NextResponse.json(

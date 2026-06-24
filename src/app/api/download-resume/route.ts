@@ -123,12 +123,14 @@ export async function POST(req: NextRequest): Promise<Response> {
     }
 
     // 5. Update Usage Tracking
-    if (usage) {
-      await supabase
-        .from("usage_tracking")
-        .update({ pdf_downloads: usage.pdf_downloads + 1 })
-        .eq("user_id", user.id);
-    }
+    const { error: usageError } = await supabase
+      .from("usage_tracking")
+      .upsert({
+        user_id: user.id,
+        pdf_downloads: (usage?.pdf_downloads ?? 0) + 1,
+      }, { onConflict: "user_id", ignoreDuplicates: false });
+
+    if (usageError) console.error("Usage tracking upsert error:", usageError);
 
     return NextResponse.json({
       success: true,

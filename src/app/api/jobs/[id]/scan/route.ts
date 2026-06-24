@@ -58,6 +58,21 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // JD keyword matching is a Starter+ feature
+    const { data: sub } = await supabase
+      .from("user_subscriptions")
+      .select("tier")
+      .eq("user_id", user.id)
+      .single();
+    const tier = sub?.tier || "free";
+
+    if (tier === "free") {
+      return NextResponse.json(
+        { error: "Job description keyword matching is a Starter+ feature. Upgrade to Starter to run ATS resume scans." },
+        { status: 403 }
+      );
+    }
+
     // Fetch the job description
     const { data: job, error: jobError } = await supabase
       .from("job_applications")
@@ -72,6 +87,7 @@ export async function POST(
     if (!job.jd_text || job.jd_text.trim().length === 0) {
       return NextResponse.json({ error: "Job description is empty. Cannot scan." }, { status: 400 });
     }
+
 
     // Fetch the latest resume
     const { data: resumes, error: resumeError } = await supabase

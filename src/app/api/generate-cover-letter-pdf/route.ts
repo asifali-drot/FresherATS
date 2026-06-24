@@ -9,6 +9,7 @@ import { downloadImageAsBase64 } from "@/lib/image-utils";
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest): Promise<Response> {
+
   try {
     const body = await req.json();
     const { 
@@ -26,12 +27,36 @@ export async function POST(req: NextRequest): Promise<Response> {
       return NextResponse.json({ error: "No cover letter text provided" }, { status: 400 });
     }
 
-    const data = parseCoverLetterText(coverLetterText);
-    const resolvedTemplateId = templateId || "professional";
-
     // Check if user is logged in to get avatar_url and storage access
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+
+    // Enforce Free plan PDF download limit (2/mo) — applies to ALL PDF downloads (resume + cover letter combined)
+    if (user) {
+      const { data: sub } = await supabase
+        .from("user_subscriptions")
+        .select("tier")
+        .eq("user_id", user.id)
+        .single();
+      const tier = sub?.tier || "free";
+
+      if (tier === "free") {
+        const { data: usageData } = await supabase
+          .from("usage_tracking")
+          .select("pdf_downloads")
+          .eq("user_id", user.id)
+          .single();
+        if (usageData && usageData.pdf_downloads >= 2) {
+          return NextResponse.json(
+            { error: "Free plan limit reached: 2 PDF downloads per month. Upgrade to Starter for unlimited downloads." },
+            { status: 403 }
+          );
+        }
+      }
+    }
+
+    const data = parseCoverLetterText(coverLetterText);
+    const resolvedTemplateId = templateId || "professional";
     const avatarUrl = bodyAvatarUrl || user?.user_metadata?.avatar_url || undefined;
 
     console.log("[PDF Cover Letter] Generating PDF with @react-pdf/renderer using template:", resolvedTemplateId);
@@ -79,6 +104,14 @@ export async function POST(req: NextRequest): Promise<Response> {
           .createSignedUrl(fileName, 3600);
 
         if (signedUrlData) {
+          // Increment pdf_downloads usage for free tier tracking
+          const { data: usageData } = await supabase.from("usage_tracking").select("pdf_downloads").eq("user_id", user.id).single();
+          await supabase
+            .from("usage_tracking")
+            .upsert({
+              user_id: user.id,
+              pdf_downloads: (usageData?.pdf_downloads ?? 0) + 1
+            }, { onConflict: "user_id", ignoreDuplicates: false });
           return NextResponse.json({
             success: true,
             url: signedUrlData.signedUrl,

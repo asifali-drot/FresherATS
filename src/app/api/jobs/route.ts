@@ -81,6 +81,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Fetch user tier
+    const { data: sub } = await supabase
+      .from("user_subscriptions")
+      .select("tier")
+      .eq("user_id", user.id)
+      .single();
+    const tier = sub?.tier || "free";
+
+    // Enforce Free plan: max 5 jobs
+    if (tier === "free") {
+      const { count } = await supabase
+        .from("job_applications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id);
+      if ((count ?? 0) >= 5) {
+        return NextResponse.json(
+          { error: "Free plan limit reached: 5 job applications. Upgrade to Starter for unlimited tracking." },
+          { status: 403 }
+        );
+      }
+    }
+
     const body = await req.json();
     const {
       company_name,
@@ -103,8 +125,8 @@ export async function POST(req: NextRequest) {
     let matched_keywords = [];
     let missing_keywords = [];
 
-    // Trigger auto-scan if JD is present
-    if (jd_text && jd_text.trim().length > 0) {
+    // Trigger auto-scan if JD is present — Starter+ only (Free plan has no keyword matching)
+    if (jd_text && jd_text.trim().length > 0 && tier !== "free") {
       try {
         const { data: resumes } = await supabase
           .from("analyses")

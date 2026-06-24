@@ -28,12 +28,15 @@ export default function LinkedInChecker() {
   const [state, setState] = useState<AnalysisState>("idle");
   const [error, setError] = useState("");
   const [result, setResult] = useState<LinkedInAnalysisResult | null>(null);
+  // Tier comes from API response — no login required for basic analysis
+  const [resultTier, setResultTier] = useState<string>("free");
 
-  const { tier, usage } = useSubscription();
-  const isLimitReached = tier === "free" && usage.linkedin_checks >= 2;
-  const isOptimizerLocked = tier !== "pro";
+  // Still fetch subscription for the Optimizer overlay (in case user logs in later)
+  const { tier: hookTier } = useSubscription();
+  // Use API-returned tier if we have a result; fallback to hook for live state
+  const isOptimizerLocked = (result ? resultTier : hookTier) !== "pro";
 
-  const canAnalyze = profileText.trim().length >= 30 && !isLimitReached;
+  const canAnalyze = profileText.trim().length >= 30;
 
   const handleAnalyze = async () => {
     if (!canAnalyze) return;
@@ -62,6 +65,7 @@ export default function LinkedInChecker() {
       }
 
       setResult(data.result as LinkedInAnalysisResult);
+      setResultTier(data.tier ?? "free");
       setState("done");
 
       setTimeout(() => {
@@ -78,6 +82,7 @@ export default function LinkedInChecker() {
   const handleReset = () => {
     setState("idle");
     setResult(null);
+    setResultTier("free");
     setError("");
     setProfileText("");
     setJobDescription("");
@@ -201,16 +206,12 @@ export default function LinkedInChecker() {
           )}
 
           {/* ── CTA Buttons ── */}
-            {isLimitReached && (
-              <p className="w-full text-center text-sm font-medium text-red-600 mb-2">
-                You have reached your free limit of 2 LinkedIn checks per month. <a href="/pricing" className="underline">Upgrade to continue.</a>
-              </p>
-            )}
+          {/* LinkedIn is FREE for all — no login or limit required */}
           <div className="flex items-center gap-3 pt-1">
             <button
               id="li-analyze-btn"
               onClick={handleAnalyze}
-              disabled={isLoading || !canAnalyze || isLimitReached}
+              disabled={isLoading || !canAnalyze}
               className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-[#0077B5] px-6 py-3.5 text-sm font-extrabold text-white shadow-md shadow-[#0077B5]/25 hover:bg-[#005e93] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
             >
               {isLoading ? (

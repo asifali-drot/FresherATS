@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useSubscription } from "@/hooks/useSubscription";
 import { toast } from "sonner";
 import {
   Briefcase,
@@ -101,6 +102,12 @@ export default function JobTrackerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCloudSynced, setIsCloudSynced] = useState(false);
   const [isScanning, setIsScanning] = useState<string | null>(null);
+
+  // Plan enforcement
+  const { tier: subscriptionTier } = useSubscription();
+  const isFree = subscriptionTier === "free";
+  const FREE_JOB_LIMIT = 5;
+  const isJobLimitReached = isFree && user && jobs.length >= FREE_JOB_LIMIT;
 
   // Core tracking states
   const [jobs, setJobs] = useState<JobApplication[]>([]);
@@ -265,6 +272,13 @@ export default function JobTrackerPage() {
 
   // Trigger manual scanner
   const handleRunScan = async (jobId: string) => {
+    if (isFree) {
+      toast.error("Job description keyword matching is a Starter+ feature. Upgrade to run ATS scans.", {
+        action: { label: "Upgrade", onClick: () => router.push("/pricing") }
+      });
+      return;
+    }
+
     setIsScanning(jobId);
     try {
       if (user) {
@@ -348,7 +362,14 @@ export default function JobTrackerPage() {
       return;
     }
 
+    // Enforce free plan 5-job limit client-side (server also enforces)
     const isEditing = !!editingJob;
+    if (!isEditing && isFree && user && jobs.length >= FREE_JOB_LIMIT) {
+      toast.error(`Free plan limit: ${FREE_JOB_LIMIT} jobs. Upgrade to Starter for unlimited tracking.`);
+      setIsModalOpen(false);
+      return;
+    }
+
     const nowStr = new Date().toISOString();
     
     let targetJob: JobApplication = {
@@ -1096,13 +1117,29 @@ export default function JobTrackerPage() {
                 )}
               </div>
 
-              <button
-                onClick={openAddModal}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-6 py-3.5 text-sm font-bold text-white hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 transition-all active:scale-98 shadow-md cursor-pointer"
-              >
-                <Plus className="h-5 w-5" />
-                Add New Job
-              </button>
+              {isJobLimitReached ? (
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-6 py-3.5 text-sm font-bold text-white hover:bg-amber-600 hover:shadow-lg transition-all shadow-md"
+                  title="Free plan: 5 job limit reached. Upgrade to Starter for unlimited tracking."
+                >
+                  <Plus className="h-5 w-5" />
+                  Limit Reached — Upgrade
+                </Link>
+              ) : (
+                <button
+                  onClick={openAddModal}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-6 py-3.5 text-sm font-bold text-white hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 transition-all active:scale-98 shadow-md cursor-pointer"
+                >
+                  <Plus className="h-5 w-5" />
+                  Add New Job
+                  {isFree && user && (
+                    <span className="text-[10px] font-medium opacity-70 ml-1">
+                      ({jobs.length}/{FREE_JOB_LIMIT})
+                    </span>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>

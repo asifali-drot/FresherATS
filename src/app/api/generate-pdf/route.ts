@@ -18,6 +18,34 @@ export async function POST(req: NextRequest): Promise<Response> {
       return NextResponse.json({ error: "No resume text provided" }, { status: 400 });
     }
 
+    // --- Tier + usage check ---
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Please sign in to download your resume." }, { status: 401 });
+    }
+
+    const { data: sub } = await supabase
+      .from("user_subscriptions")
+      .select("tier")
+      .eq("user_id", user.id)
+      .single();
+    const tier = sub?.tier || "free";
+
+    const { data: usageData } = await supabase
+      .from("usage_tracking")
+      .select("pdf_downloads")
+      .eq("user_id", user.id)
+      .single();
+
+    if (tier === "free" && (usageData?.pdf_downloads ?? 0) >= 2) {
+      return NextResponse.json(
+        { error: "Free plan limit reached: 2 PDF downloads per month. Upgrade to Starter for unlimited downloads." },
+        { status: 403 }
+      );
+    }
+
     const { nameLines, sections } = parseResumeText(resumeText);
     
     console.log("[PDF] Generating PDF with @react-pdf/renderer");
@@ -25,37 +53,39 @@ export async function POST(req: NextRequest): Promise<Response> {
     // @ts-expect-error - @react-pdf/renderer types can be strict with React.createElement
     const pdfBuffer = await renderToBuffer(element as React.ReactElement);
 
-    // Check if user is logged in to store it
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    // Increment usage counter
+    await supabase
+      .from("usage_tracking")
+      .upsert({
+        user_id: user.id,
+        pdf_downloads: (usageData?.pdf_downloads ?? 0) + 1,
+      }, { onConflict: "user_id", ignoreDuplicates: false });
 
-    if (user) {
-      const fileName = `${user.id}/temp-${Date.now()}.pdf`;
-      const bucketName = "resumes";
+    const fileName = `${user.id}/temp-${Date.now()}.pdf`;
+    const bucketName = "resumes";
 
-      const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(fileName, pdfBuffer, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
+
+    if (!uploadError) {
+      const { data: signedUrlData } = await supabase.storage
         .from(bucketName)
-        .upload(fileName, pdfBuffer, {
-          contentType: "application/pdf",
-          upsert: true,
+        .createSignedUrl(fileName, 3600);
+
+      if (signedUrlData) {
+        return NextResponse.json({
+          success: true,
+          url: signedUrlData.signedUrl,
+          fileName: "optimized-resume.pdf"
         });
-
-      if (!uploadError) {
-        const { data: signedUrlData } = await supabase.storage
-          .from(bucketName)
-          .createSignedUrl(fileName, 3600);
-
-        if (signedUrlData) {
-          return NextResponse.json({
-            success: true,
-            url: signedUrlData.signedUrl,
-            fileName: "optimized-resume.pdf"
-          });
-        }
       }
     }
 
-    // Fallback: Stream PDF (Guest or Storage Error)
+    // Fallback: Stream PDF directly
     return new Response(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {

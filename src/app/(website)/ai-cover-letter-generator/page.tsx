@@ -842,10 +842,10 @@ function CoverLetterContent() {
                 {isAiLocked && (
                   <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-200">
                     <p className="text-sm font-bold text-gray-900 mb-1">
-                      {isFreeTier ? "AI Generation is Premium" : "Monthly Limit Reached"}
+                      {isFreeTier ? "AI Generation is a Starter+ Feature" : "Monthly Limit Reached"}
                     </p>
                     <Link href="/pricing" className="text-xs font-semibold text-blue-600 hover:text-blue-700 underline">
-                      {isFreeTier ? "Upgrade to Tier 2" : "Upgrade to Tier 3"}
+                      {isFreeTier ? "Upgrade to Starter" : "Upgrade to Pro for Unlimited"}
                     </Link>
                   </div>
                 )}
