@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { parseResumeText } from "@/lib/resume/resumeUtils";
+import { isResumeDocumentJson, resumeDocumentToText } from "@/lib/resume/resumeDocument";
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { ResumePdfDocument } from "@/lib/resume/ResumePdfDocument";
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     // 1. Fetch optimized text from DB
     const { data: row, error } = await supabase
       .from("analyses")
-      .select("optimized_resume")
+      .select("optimized_resume, resume_document")
       .eq("id", analysisId)
       .eq("user_id", user.id)
       .single();
@@ -72,7 +73,10 @@ export async function POST(req: NextRequest): Promise<Response> {
       return NextResponse.json({ error: "Analysis not found" }, { status: 404 });
     }
 
-    const resumeText: string = row.optimized_resume;
+    let resumeText: string = row.optimized_resume ?? "";
+    if ((!resumeText || resumeText.trim().length < 5) && isResumeDocumentJson(row.resume_document)) {
+      resumeText = resumeDocumentToText(row.resume_document);
+    }
     if (!resumeText || resumeText.trim().length < 5) {
       return NextResponse.json({ error: "No optimized resume text found" }, { status: 400 });
     }

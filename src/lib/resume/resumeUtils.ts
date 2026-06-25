@@ -1,4 +1,5 @@
 import type { ResumeTemplateId } from "./templates";
+import { normalizeResumeMarkup } from "./formatting";
 
 export interface ParsedSection {
   title: string;
@@ -41,7 +42,8 @@ export function parseResumeText(text: string): {
   nameLines: string[];
   sections: ParsedSection[];
 } {
-  const lines = text.split("\n").filter((line) => line.trim());
+  const normalizedText = normalizeResumeMarkup(text);
+  const lines = normalizedText.split("\n").filter((line) => line.trim());
   const sections: ParsedSection[] = [];
   let currentSection: ParsedSection | null = null;
 
@@ -158,13 +160,31 @@ export function generateResumeHtml(
     </header>
   ` : '';
 
-  const sectionHtml = sections.map(section => `
+  const sectionHtml = sections.map(section => {
+    // SKILLS section: render as side-by-side chips/boxes (matching the editor UI)
+    if (section.title === 'SKILLS') {
+      const skills = section.content
+        .map(line => line.replace(/^[\*•\-]\s*/, '').trim())
+        .filter(Boolean);
+      const skillsHtml = skills.length > 0
+        ? `<div class="resume-skills-chips">${skills.map(skill => `<span class="resume-skill-chip">${skill}</span>`).join('')}</div>`
+        : '';
+      return `
+        <section class="resume-section">
+          <h2 class="resume-section-title">${section.title}</h2>
+          <div class="resume-section-content">${skillsHtml}</div>
+        </section>
+      `;
+    }
+
+    return `
     <section class="resume-section">
       <h2 class="resume-section-title">${section.title}</h2>
       <div class="resume-section-content">
         ${section.content.map(line => {
           // Handle bold text (markdown style)
-          let processedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          const processedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                  .replace(/_(.*?)_/g, '<em>$1</em>')
                                   .replace(/==(.*?)==/g, '<mark>$1</mark>');
           
           if (processedLine.startsWith('*') || processedLine.startsWith('•') || processedLine.startsWith('-')) {
@@ -176,7 +196,8 @@ export function generateResumeHtml(
       </div>
     </section>
 
-  `).join('');
+  `;
+  }).join('');
 
   return `
     <!DOCTYPE html>
@@ -317,6 +338,26 @@ export function generateResumeHtml(
         .resume-bullet-item .text {
           flex: 1;
           color: var(--text-color);
+        }
+
+        .resume-skills-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 4px;
+        }
+
+        .resume-skill-chip {
+          display: inline-block;
+          padding: 3px 10px;
+          font-size: 9pt;
+          font-weight: 500;
+          color: var(--accent-color);
+          background-color: color-mix(in srgb, var(--accent-color) 8%, transparent);
+          border: 1px solid color-mix(in srgb, var(--accent-color) 25%, transparent);
+          border-radius: 6px;
+          line-height: 1.4;
+          page-break-inside: avoid;
         }
 
         @media print {

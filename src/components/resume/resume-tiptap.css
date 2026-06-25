@@ -1,0 +1,52 @@
+.resume-tiptap-editor p,
+.resume-tiptap-inline p {
+  margin: 0 0 0.5rem;
+}
+
+.resume-tiptap-editor p:last-child,
+.resume-tiptap-inline p:last-child {
+  margin-bottom: 0;
+}
+
+.resume-tiptap-editor ul,
+.resume-tiptap-inline ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0 0 0.5rem;
+}
+
+.resume-tiptap-editor ul li,
+.resume-tiptap-inline ul li {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
+}
+
+.resume-tiptap-editor ul li::before,
+.resume-tiptap-inline ul li::before {
+  content: "•";
+  color: #2563eb;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.resume-tiptap-editor mark,
+.resume-tiptap-inline mark {
+  background-color: #fef9c3;
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.resume-tiptap-editor .is-editor-empty:first-child::before,
+.resume-tiptap-inline .is-editor-empty:first-child::before {
+  color: #a1a1aa;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.ProseMirror-focused {
+  outline: none;
+}

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { parsePdf } from "@/lib/resume/parsePdf";
 import { parseDocx } from "@/lib/resume/parseDocx";
 import { createClient } from "@/lib/supabase/server";
+import { textToResumeDocument } from "@/lib/resume/resumeDocument";
 
 
 export async function POST(req: NextRequest) {
@@ -259,6 +260,8 @@ EDUCATION`
         suggestionsToSave.push(`Missing Keywords: ${suggestions.missingKeywords.join(", ")}`);
       }
 
+      const resumeDocument = textToResumeDocument(finalOptimizedResume);
+
       const { data: insertedRow, error: dbError } = await supabase
         .from("analyses")
         .insert({
@@ -269,6 +272,7 @@ EDUCATION`
           summary: suggestions.summary ?? null,
           suggestions: suggestionsToSave,
           optimized_resume: finalOptimizedResume,
+          resume_document: resumeDocument,
         })
         .select("id")
         .single();

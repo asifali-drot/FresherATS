@@ -104,6 +104,24 @@ function getTemplateStyles(templateId: ResumeTemplateId) {
       flex: 1,
       textAlign: 'justify',
     },
+    skillsChips: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginTop: 4,
+    },
+    skillChip: {
+      fontSize: 9,
+      fontFamily: 'Helvetica',
+      color: vars.accentColor,
+      backgroundColor: '#eff6ff',
+      borderWidth: 1,
+      borderColor: '#dbeafe',
+      borderRadius: 4,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      marginRight: 5,
+      marginBottom: 5,
+    },
   });
 }
 
@@ -117,10 +135,15 @@ const renderRichText = (
   text: string,
   style: Style | Style[] | undefined
 ) => {
-  const parts = text.split(/(\*\*.*?\*\*|__.*?__|==.*?==)/g);
+  // Better regex to handle bold, italic, underline, and highlight markdown
+  const parts = text.split(/(\*\*[^*]+\*\*|_[^_]+_|__[^_]+__|==[^=]+==[  ]*)/g);
+  
   return (
     <Text style={style}>
       {parts.map((part, index) => {
+        if (!part) return null;
+        
+        // Check for bold (**text**)
         if (part.startsWith('**') && part.endsWith('**')) {
           return (
             <Text key={index} style={{ fontFamily: 'Helvetica-Bold' }}>
@@ -128,6 +151,15 @@ const renderRichText = (
             </Text>
           );
         }
+        // Check for italic (_text_) but not underline
+        if (part.startsWith('_') && part.endsWith('_') && !part.startsWith('__')) {
+          return (
+            <Text key={index} style={{ fontStyle: 'italic' }}>
+              {part.slice(1, -1)}
+            </Text>
+          );
+        }
+        // Check for underline (__text__)
         if (part.startsWith('__') && part.endsWith('__')) {
           return (
             <Text key={index} style={{ textDecoration: 'underline' }}>
@@ -135,6 +167,7 @@ const renderRichText = (
             </Text>
           );
         }
+        // Check for highlight (==text==)
         if (part.startsWith('==') && part.endsWith('==')) {
           return (
             <Text key={index} style={{ backgroundColor: '#fef9c3' }}>
@@ -142,7 +175,7 @@ const renderRichText = (
             </Text>
           );
         }
-        return part;
+        return part || null;
       })}
     </Text>
   );
@@ -177,8 +210,18 @@ export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({
           <View key={sIndex} style={styles.section} wrap={false}>
             <Text style={styles.sectionTitle}>{section.title}</Text>
             <View>
-              {section.content.map((line, lIndex) => {
-                let processedLine = line;
+              {section.title === 'SKILLS' ? (
+                <View style={styles.skillsChips}>
+                  {section.content
+                    .map(line => line.replace(/^[\*•\-]\s*/, '').trim())
+                    .filter(Boolean)
+                    .map((skill, lIndex) => (
+                      <Text key={lIndex} style={styles.skillChip}>{skill}</Text>
+                    ))}
+                </View>
+              ) : (
+                section.content.map((line, lIndex) => {
+                const processedLine = line;
 
                 if (processedLine.startsWith('*') || processedLine.startsWith('•') || processedLine.startsWith('-')) {
                   const pureLine = processedLine.replace(/^[\*•\-]\s*/, '');
@@ -195,6 +238,7 @@ export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({
                   </React.Fragment>
                 );
               })}
+              )}
             </View>
           </View>
         ))}

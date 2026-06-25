@@ -26,6 +26,7 @@ interface Analysis {
   job_description: string | null;
   summary: string | null;
   optimized_resume?: string | null;
+  resume_document?: Record<string, unknown> | null;
   suggestions?: string[] | null;
   missing_keywords?: string[] | null;
   user_id?: string;
@@ -632,9 +633,14 @@ export default function DashboardPage() {
 
   /* Edit resume */
   const handleEdit = useCallback((analysis: Analysis) => {
-    if (analysis.optimized_resume) {
+    if (analysis.optimized_resume || analysis.resume_document) {
       if (typeof window !== "undefined") {
-        window.sessionStorage.setItem("resumeContent", analysis.optimized_resume);
+        if (analysis.optimized_resume) {
+          window.sessionStorage.setItem("resumeContent", analysis.optimized_resume);
+        }
+        if (analysis.resume_document) {
+          window.sessionStorage.setItem("resumeDocument", JSON.stringify(analysis.resume_document));
+        }
         window.sessionStorage.setItem("analysisId", analysis.id);
       }
       router.push("/editor");

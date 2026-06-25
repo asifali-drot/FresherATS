@@ -1,22 +1,75 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import type { JSONContent } from "@tiptap/core";
 import { parseResumeText, generateResumeHtml, ParsedSection } from "@/lib/resume/resumeUtils";
+import {
+  isResumeDocumentJson,
+  resumeDocumentToParsed,
+  resumeDocumentToText,
+  textToResumeDocument,
+  type ResumeDocumentJson,
+} from "@/lib/resume/resumeDocument";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { AnalysisResult } from "@/components/Suggestions";
 import { getResumeTemplateById, type ResumeTemplateId } from "@/lib/resume/templates";
+import { normalizeResumeMarkup } from "@/lib/resume/formatting";
 import {
-  Edit3, Layout, FileText, ChevronLeft, User, Mail, MapPin, Briefcase, GraduationCap, Code, Target,
+  ResumeTipTapEditor,
+  ResumeTipTapInlineEditor,
+} from "@/components/resume/ResumeTipTapEditor";
+import {
+  Edit3,
+  Layout,
+  FileText,
+  ChevronLeft,
+  User,
+  Mail,
+  MapPin,
+  Briefcase,
+  GraduationCap,
+  Code,
+  Target,
   Award,
   List,
-  Highlighter
+  Cloud,
+  CloudOff,
 } from "lucide-react";
+
+// Skills chip editor component
+import { SkillsEditor } from "@/components/resume/SkillsEditor";
+
+function applyDocumentToState(
+  doc: ResumeDocumentJson,
+  setResumeDocument: (d: ResumeDocumentJson) => void,
+  setResumeText: (t: string) => void,
+  setLocalNameLines: (l: string[]) => void,
+  setLocalSections: (s: ParsedSection[]) => void
+) {
+  setResumeDocument(doc);
+  const text = resumeDocumentToText(doc);
+  setResumeText(text);
+  const parsed = resumeDocumentToParsed(doc);
+  setLocalNameLines(parsed.nameLines);
+  setLocalSections(parsed.sections);
+}
+
+function loadFromPlainText(
+  text: string,
+  setResumeDocument: (d: ResumeDocumentJson) => void,
+  setResumeText: (t: string) => void,
+  setLocalNameLines: (l: string[]) => void,
+  setLocalSections: (s: ParsedSection[]) => void
+) {
+  applyDocumentToState(textToResumeDocument(text), setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
+}
 
 function ResumeEditorContent() {
   const [resumeText, setResumeText] = useState("");
-  const [editorMode, setEditorMode] = useState<'guided' | 'raw'>('guided');
+  const [resumeDocument, setResumeDocument] = useState<ResumeDocumentJson>(() => textToResumeDocument(""));
+  const [editorMode, setEditorMode] = useState<"guided" | "raw">("guided");
   const [localNameLines, setLocalNameLines] = useState<string[]>([]);
   const [localSections, setLocalSections] = useState<ParsedSection[]>([]);
 
@@ -25,12 +78,15 @@ function ResumeEditorContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveReady, setSaveReady] = useState(false);
 
-  // Tailor mode — from Job Tracker "Tailor Resume" CTA
   const [tailorJobTitle, setTailorJobTitle] = useState<string | null>(null);
   const [tailorCompany, setTailorCompany] = useState<string | null>(null);
   const [tailorKeywords, setTailorKeywords] = useState<string[]>([]);
   const [showKeywordBanner, setShowKeywordBanner] = useState(false);
+
+  const skipAutoSave = useRef(true);
 
   const searchParams = useSearchParams();
   const templateIdParam = searchParams.get("template");
@@ -39,17 +95,56 @@ function ResumeEditorContent() {
     ? getResumeTemplateById(templateIdParam).id
     : undefined;
 
+  const saveResumeDocument = useCallback(
+    async (doc: ResumeDocumentJson) => {
+      if (!analysisId || !user) return false;
+      setSaveStatus("saving");
+      try {
+        const response = await fetch(`/api/analyses/${analysisId}/resume`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ resume_document: doc }),
+        });
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          const detailMsg = errData.details ? JSON.stringify(errData.details) : "";
+          throw new Error((errData.error || "Save failed") + " " + detailMsg);
+        }
+        setSaveStatus("saved");
+        return true;
+      } catch (e) {
+        console.error("Failed to save resume document", e);
+        setSaveStatus("error");
+        return false;
+      }
+    },
+    [analysisId, user]
+  );
+
   useEffect(() => {
     async function init() {
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      setUser(authUser);
 
-      // Template editing starts from a pre-filled ATS-friendly seed.
+      const applyAnalysisRow = (row: {
+        id: string;
+        optimized_resume?: string | null;
+        resume_document?: unknown;
+      }) => {
+        setAnalysisId(row.id);
+        const text = row.optimized_resume || "";
+        const doc = isResumeDocumentJson(row.resume_document)
+          ? row.resume_document
+          : textToResumeDocument(text);
+        applyDocumentToState(doc, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
+      };
+
       if (templateIdParam && typeof window !== "undefined") {
-        if (!user) {
-          // Require login to edit templates.
+        if (!authUser) {
           const params = new URLSearchParams();
           params.set("claim_id", "");
           params.set("redirect", window.location.pathname + window.location.search);
@@ -58,23 +153,14 @@ function ResumeEditorContent() {
         }
 
         const template = getResumeTemplateById(templateIdParam);
-        const text = template.seedResumeText;
-
-        setResumeText(text);
+        loadFromPlainText(template.seedResumeText, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
         setAnalysisId(null);
-
-        // Initial parse for guided mode
-        const { nameLines, sections } = parseResumeText(text);
-        setLocalNameLines(nameLines);
-        setLocalSections(sections);
-
         setIsLoading(false);
+        // Template mode has no DB row — don't enable auto-save
         return;
       }
 
-      // Resume editing for uploaded/AI-optimized resumes.
       if (typeof window !== "undefined") {
-        // ── Tailor-from-JobTracker mode ──
         const storedTailorTitle = window.sessionStorage.getItem("tailorJobTitle");
         const storedTailorCompany = window.sessionStorage.getItem("tailorCompany");
         const storedTailorKeywords = window.sessionStorage.getItem("tailorKeywords");
@@ -82,54 +168,42 @@ function ResumeEditorContent() {
         if (storedTailorTitle) {
           setTailorJobTitle(storedTailorTitle);
           setTailorCompany(storedTailorCompany);
-
           const keywords = storedTailorKeywords ? (JSON.parse(storedTailorKeywords) as string[]) : [];
           setTailorKeywords(keywords);
           if (keywords.length > 0) setShowKeywordBanner(true);
 
-          // Clear tailor keys so refreshing doesn't re-trigger
           window.sessionStorage.removeItem("tailorJobTitle");
           window.sessionStorage.removeItem("tailorCompany");
           window.sessionStorage.removeItem("tailorKeywords");
 
-          // Try to load latest resume from Supabase analyses table
-          // NOTE: use local `currentUser` (not React state `user`) because setState is async
-          const currentUser = user;
-          if (currentUser) {
+          if (authUser) {
             try {
-              const { createClient } = await import("@/lib/supabase/client");
-              const supabase = createClient();
-              const { data } = await supabase
+              const { createClient: createSb } = await import("@/lib/supabase/client");
+              const sb = createSb();
+              const { data } = await sb
                 .from("analyses")
-                .select("optimized_resume, id")
-                .eq("user_id", currentUser.id)
+                .select("optimized_resume, resume_document, id")
+                .eq("user_id", authUser.id)
                 .order("created_at", { ascending: false })
                 .limit(1)
                 .single();
 
-              if (data?.optimized_resume) {
-                setResumeText(data.optimized_resume);
-                setAnalysisId(data.id);
-                const { nameLines, sections } = parseResumeText(data.optimized_resume);
-                setLocalNameLines(nameLines);
-                setLocalSections(sections);
-              }
+              if (data) applyAnalysisRow(data);
             } catch (e) {
               console.error("Failed to load latest resume for tailor mode", e);
             }
           } else {
-            // Guest: try fresherAtsResult as fallback
             const stored = window.sessionStorage.getItem("fresherAtsResult");
             if (stored) {
               try {
-                const parsed = JSON.parse(stored) as AnalysisResult & { optimizedResume?: string; optimized_resume?: string };
+                const parsed = JSON.parse(stored) as AnalysisResult & {
+                  optimizedResume?: string;
+                  optimized_resume?: string;
+                };
                 const text = parsed.optimizedResume || parsed.optimized_resume || "";
                 if (text) {
-                  setResumeText(text);
+                  loadFromPlainText(text, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
                   setAnalysisId(parsed.analysis_id || null);
-                  const { nameLines, sections } = parseResumeText(text);
-                  setLocalNameLines(nameLines);
-                  setLocalSections(sections);
                 }
               } catch (e) {
                 console.error("Failed to parse stored results in tailor guest mode", e);
@@ -138,62 +212,117 @@ function ResumeEditorContent() {
           }
 
           setIsLoading(false);
+          skipAutoSave.current = false;
+          setSaveReady(true);
           return;
         }
 
-        // ── Standard mode: load from fresherAtsResult ──
         const stored = window.sessionStorage.getItem("fresherAtsResult");
+        const resumeContent = window.sessionStorage.getItem("resumeContent");
+        const storedAnalysisId = window.sessionStorage.getItem("analysisId");
+        const storedResumeDocument = window.sessionStorage.getItem("resumeDocument");
+
+        if (storedAnalysisId && authUser) {
+          try {
+            const response = await fetch(`/api/analyses/${storedAnalysisId}/resume`);
+            if (response.ok) {
+              const payload = await response.json();
+              if (payload?.analysis) {
+                applyAnalysisRow(payload.analysis);
+                window.sessionStorage.removeItem("resumeContent");
+                window.sessionStorage.removeItem("analysisId");
+                window.sessionStorage.removeItem("resumeDocument");
+                setIsLoading(false);
+                skipAutoSave.current = false;
+                setSaveReady(true);
+                return;
+              }
+            }
+          } catch (e) {
+            console.error("Failed to fetch resume document from API", e);
+          }
+        }
+
         if (stored) {
           try {
-            const parsed = JSON.parse(stored) as AnalysisResult & { optimizedResume?: string; optimized_resume?: string };
+            const parsed = JSON.parse(stored) as AnalysisResult & {
+              optimizedResume?: string;
+              optimized_resume?: string;
+            };
             const text = parsed.optimizedResume || parsed.optimized_resume || "";
-            setResumeText(text);
+            loadFromPlainText(text, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
             setAnalysisId(parsed.analysis_id || null);
-
-            // Initial parse for guided mode
-            const { nameLines, sections } = parseResumeText(text);
-            setLocalNameLines(nameLines);
-            setLocalSections(sections);
           } catch (e) {
             console.error("Failed to parse stored results", e);
           }
+        } else if (storedResumeDocument) {
+          try {
+            const doc = JSON.parse(storedResumeDocument) as ResumeDocumentJson;
+            if (isResumeDocumentJson(doc)) {
+              applyDocumentToState(doc, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
+            }
+          } catch (e) {
+            console.error("Failed to parse stored resume document", e);
+          }
+          setAnalysisId(storedAnalysisId || null);
+          window.sessionStorage.removeItem("resumeDocument");
+          window.sessionStorage.removeItem("resumeContent");
+          window.sessionStorage.removeItem("analysisId");
+        } else if (resumeContent) {
+          loadFromPlainText(resumeContent, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
+          setAnalysisId(storedAnalysisId || null);
+          window.sessionStorage.removeItem("resumeContent");
+          window.sessionStorage.removeItem("analysisId");
         }
       }
 
       setIsLoading(false);
+      // Defer enabling auto-save by one tick so React has flushed the initial
+      // state updates (resumeDocument, analysisId, user) before the watcher fires.
+      setTimeout(() => {
+        skipAutoSave.current = false;
+        setSaveReady(true);
+      }, 0);
     }
     init();
   }, [templateIdParam]);
 
-  // Sync resumeText when in guided mode
-  const syncToText = useCallback((nameLines: string[], sections: ParsedSection[]) => {
-    const newText = [
-      ...nameLines,
-      "", // Empty line after contact info
-      ...sections.flatMap(s => [`${s.title}`, ...s.content, ""])
-    ].join("\n");
-    setResumeText(newText);
-  }, []);
+  useEffect(() => {
+    if (!saveReady || !analysisId || !user || editorMode !== "guided") return;
+    const timer = setTimeout(() => {
+      saveResumeDocument(resumeDocument);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [resumeDocument, analysisId, user, editorMode, saveResumeDocument, saveReady]);
 
-  const handlePersonalUpdate = (idx: number, val: string) => {
-    const updated = [...localNameLines];
-    updated[idx] = val;
-    setLocalNameLines(updated);
-    if (editorMode === 'guided') syncToText(updated, localSections);
+  const handlePersonalDocUpdate = (idx: number, content: JSONContent) => {
+    setResumeDocument((prev) => {
+      const nameLines = [...prev.nameLines];
+      nameLines[idx] = content;
+      const next = { ...prev, nameLines };
+      const text = resumeDocumentToText(next);
+      setResumeText(text);
+      setLocalNameLines(resumeDocumentToParsed(next).nameLines);
+      return next;
+    });
   };
 
-  const handleSectionUpdate = (sIdx: number, val: string) => {
-    const updated = [...localSections];
-    updated[sIdx] = { ...updated[sIdx], content: val.split("\n") };
-    setLocalSections(updated);
-    if (editorMode === 'guided') syncToText(localNameLines, updated);
+  const handleSectionDocUpdate = (idx: number, content: JSONContent) => {
+    setResumeDocument((prev) => {
+      const sections = [...prev.sections];
+      sections[idx] = { ...sections[idx], content };
+      const next = { ...prev, sections };
+      const text = resumeDocumentToText(next);
+      setResumeText(text);
+      setLocalSections(resumeDocumentToParsed(next).sections);
+      return next;
+    });
   };
 
-  const handleModeChange = (mode: 'guided' | 'raw') => {
-    if (mode === 'guided') {
-      const { nameLines, sections } = parseResumeText(resumeText);
-      setLocalNameLines(nameLines);
-      setLocalSections(sections);
+  const handleModeChange = (mode: "guided" | "raw") => {
+    if (mode === "guided") {
+      const doc = textToResumeDocument(resumeText);
+      applyDocumentToState(doc, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
     }
     setEditorMode(mode);
   };
@@ -202,7 +331,6 @@ function ResumeEditorContent() {
     if (isDownloading || !resumeText.trim()) return;
 
     if (!user) {
-      // Redirect to login to claim this analysis
       const params = new URLSearchParams();
       params.set("claim_id", analysisId || "");
       params.set("redirect", window.location.pathname + window.location.search);
@@ -213,18 +341,24 @@ function ResumeEditorContent() {
     setDownloadError(null);
     setIsDownloading(true);
     try {
-      const response = await fetch('/api/generate-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText: resumeText, templateId: resolvedTemplateId }),
+      if (analysisId && editorMode === "guided") {
+        await saveResumeDocument(resumeDocument);
+      }
+
+      const response = await fetch("/api/generate-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resumeText, templateId: resolvedTemplateId }),
       });
 
       if (!response.ok) {
-        let errorMsg = 'Failed to generate PDF';
+        let errorMsg = "Failed to generate PDF";
         try {
           const errData = await response.json();
           if (errData?.error) errorMsg = errData.error;
-        } catch { }
+        } catch {
+          /* ignore */
+        }
         throw new Error(errorMsg);
       }
 
@@ -232,13 +366,12 @@ function ResumeEditorContent() {
       if (contentType && contentType.includes("application/json")) {
         const { url } = await response.json();
         if (url) {
-          // Fetch the signed URL to get the blob and force download
           const pdfRes = await fetch(url);
           const blob = await pdfRes.blob();
           const downloadUrl = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
+          const a = document.createElement("a");
           a.href = downloadUrl;
-          a.download = 'updated-resume.pdf';
+          a.download = "updated-resume.pdf";
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -249,20 +382,29 @@ function ResumeEditorContent() {
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = 'updated-resume.pdf';
+      a.download = "updated-resume.pdf";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error(error);
-      setDownloadError(error instanceof Error ? error.message : 'Failed to generate PDF');
+      setDownloadError(error instanceof Error ? error.message : "Failed to generate PDF");
     } finally {
       setIsDownloading(false);
     }
-  }, [isDownloading, resumeText, user, analysisId, resolvedTemplateId]);
+  }, [
+    isDownloading,
+    resumeText,
+    user,
+    analysisId,
+    resolvedTemplateId,
+    editorMode,
+    resumeDocument,
+    saveResumeDocument,
+  ]);
 
   if (isLoading) {
     return (
@@ -272,11 +414,11 @@ function ResumeEditorContent() {
     );
   }
 
-  const previewHtml = generateResumeHtml(localNameLines, localSections, resolvedTemplateId);
+  const previewParsed = parseResumeText(resumeText);
+  const previewHtml = generateResumeHtml(previewParsed.nameLines, previewParsed.sections, resolvedTemplateId);
 
   return (
     <div className="flex flex-col h-screen bg-zinc-50 dark:bg-zinc-950 overflow-hidden font-sans">
-      {/* Dynamic Header */}
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200 px-6 dark:border-zinc-800 bg-white dark:bg-zinc-950 z-20 shadow-sm">
         <div className="flex items-center gap-4">
           <Link
@@ -291,20 +433,38 @@ function ResumeEditorContent() {
             <Edit3 className="h-4 w-4 text-blue-600" />
             <h1 className="text-base font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">Resume Studio</h1>
           </div>
+          {analysisId && user && (
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-zinc-400">
+              {saveStatus === "saving" && (
+                <>
+                  <Cloud className="h-3 w-3 animate-pulse" /> Saving…
+                </>
+              )}
+              {saveStatus === "saved" && (
+                <>
+                  <Cloud className="h-3 w-3 text-green-500" /> Saved
+                </>
+              )}
+              {saveStatus === "error" && (
+                <>
+                  <CloudOff className="h-3 w-3 text-red-500" /> Save failed
+                </>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Mode Switcher */}
         <div className="flex bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
           <button
-            onClick={() => handleModeChange('guided')}
-            className={`flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${editorMode === 'guided' ? 'bg-white dark:bg-zinc-800 text-blue-600 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'}`}
+            onClick={() => handleModeChange("guided")}
+            className={`flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${editorMode === "guided" ? "bg-white dark:bg-zinc-800 text-blue-600 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
           >
             <Layout className="h-3.5 w-3.5" />
             Guided
           </button>
           <button
-            onClick={() => handleModeChange('raw')}
-            className={`flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${editorMode === 'raw' ? 'bg-white dark:bg-zinc-800 text-blue-600 shadow-sm' : 'text-zinc-500 hover:text-zinc-700'}`}
+            onClick={() => handleModeChange("raw")}
+            className={`flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${editorMode === "raw" ? "bg-white dark:bg-zinc-800 text-blue-600 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
           >
             <FileText className="h-3.5 w-3.5" />
             Raw Text
@@ -312,26 +472,25 @@ function ResumeEditorContent() {
         </div>
 
         <div className="flex items-center gap-3">
-            <button
-              onClick={downloadPDF}
-              disabled={isDownloading || !resumeText.trim()}
-              className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 px-6 py-2.5 text-sm font-bold text-white hover:opacity-90 disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-zinc-200 dark:shadow-none"
-            >
-              {isDownloading ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  <span>Generating...</span>
-                </div>
-              ) : (
-                <span className="flex flex-col items-center leading-tight">
-                  <span>Download Resume</span>
-                  <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest mt-0.5">
-                    FREE - Limited Time
-                  </span>
+          <button
+            onClick={downloadPDF}
+            disabled={isDownloading || !resumeText.trim()}
+            className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 px-6 py-2.5 text-sm font-bold text-white hover:opacity-90 disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-zinc-200 dark:shadow-none"
+          >
+            {isDownloading ? (
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                <span>Generating...</span>
+              </div>
+            ) : (
+              <span className="flex flex-col items-center leading-tight">
+                <span>Download Resume</span>
+                <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest mt-0.5">
+                  FREE - Limited Time
                 </span>
-              )}
-
-            </button>
+              </span>
+            )}
+          </button>
         </div>
 
         {downloadError && (
@@ -344,16 +503,14 @@ function ResumeEditorContent() {
       </header>
 
       <main className="flex flex-1 overflow-hidden">
-        {/* Editor Side */}
         <div className="w-1/2 flex flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden relative">
-
-          {/* ── Tailor Mode: Missing Keywords Banner ── */}
           {showKeywordBanner && tailorKeywords.length > 0 && (
             <div className="shrink-0 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800 px-5 py-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <p className="text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1.5">
-                    🎯 Tailoring for: {tailorJobTitle}{tailorCompany ? ` @ ${tailorCompany}` : ""}
+                    🎯 Tailoring for: {tailorJobTitle}
+                    {tailorCompany ? ` @ ${tailorCompany}` : ""}
                   </p>
                   <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-500 mb-2">
                     Add these missing keywords to boost your ATS match score:
@@ -376,259 +533,142 @@ function ResumeEditorContent() {
                   className="shrink-0 text-amber-400 hover:text-amber-700 p-1 rounded transition-colors"
                   title="Dismiss"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
             </div>
           )}
 
           <div className="flex flex-1 overflow-hidden">
-
-          {editorMode === 'guided' && (
-            <nav className="w-56 shrink-0 border-r border-zinc-100 dark:border-zinc-900 p-4 overflow-y-auto hidden xl:block">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-4 block">Navigation</span>
-              <div className="space-y-1">
-                <a href="#personal-info" className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg bg-zinc-50 dark:bg-zinc-900 text-blue-600 border border-blue-100 dark:border-blue-900/50">
-                  <User className="h-3.5 w-3.5" />
-                  Personal Info
-                </a>
-                {localSections.map((s, idx) => (
-                  <a key={idx} href={`#section-${idx}`} className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors">
-                    <List className="h-3.5 w-3.5 opacity-50" />
-                    {s.title}
+            {editorMode === "guided" && (
+              <nav className="w-56 shrink-0 border-r border-zinc-100 dark:border-zinc-900 p-4 overflow-y-auto hidden xl:block">
+                <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-4 block">Navigation</span>
+                <div className="space-y-1">
+                  <a href="#personal-info" className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg bg-zinc-50 dark:bg-zinc-900 text-blue-600 border border-blue-100 dark:border-blue-900/50">
+                    <User className="h-3.5 w-3.5" />
+                    Personal Info
                   </a>
-                ))}
-              </div>
-            </nav>
-          )}
-
-          <div className="flex-1 flex flex-col overflow-y-auto bg-zinc-50/50 dark:bg-zinc-950">
-            {editorMode === 'raw' ? (
-              <div className="flex-1 flex flex-col p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-zinc-400" />
-                    Bulk Editor
-                  </h2>
+                  {localSections.map((s, idx) => (
+                    <a key={idx} href={`#section-${idx}`} className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors">
+                      <List className="h-3.5 w-3.5 opacity-50" />
+                      {s.title}
+                    </a>
+                  ))}
                 </div>
-                <textarea
-                  value={resumeText}
-                  onChange={(e) => setResumeText(e.target.value)}
-                  className="flex-1 w-full p-8 font-mono text-xs leading-relaxed border border-zinc-200 dark:border-zinc-800 rounded-2xl resize-none focus:outline-none bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300 shadow-sm"
-                  spellCheck="false"
-                  placeholder="Paste or edit your full resume here..."
-                />
-              </div>
-            ) : (
-              <div className="p-8 space-y-8 max-w-3xl mx-auto w-full">
+              </nav>
+            )}
 
-                {/* Personal Info Section */}
-                <section id="personal-info" className="space-y-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                      <User className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">Personal Details</h3>
+            <div className="flex-1 flex flex-col bg-zinc-50/50 dark:bg-zinc-950 overflow-auto">
+              {editorMode === "raw" ? (
+                <div className="flex-1 flex flex-col p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-zinc-400" />
+                      Bulk Editor
+                    </h2>
                   </div>
-                  <div className="grid grid-cols-1 gap-4 bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                    {localNameLines.map((line, idx) => (
-                      <div key={idx} className="space-y-1.5">
-                        <div className="flex items-center justify-between">
+                  <textarea
+                    value={resumeText}
+                    onChange={(e) => setResumeText(e.target.value)}
+                    onPaste={(e) => {
+                      const pasted = e.clipboardData.getData("text/plain");
+                      const html = e.clipboardData.getData("text/html");
+                      const raw = html || pasted;
+                      if (!raw || !/<[^>]+>/.test(raw)) return;
+
+                      e.preventDefault();
+                      const el = e.currentTarget;
+                      const start = el.selectionStart;
+                      const end = el.selectionEnd;
+                      const normalized = normalizeResumeMarkup(raw);
+                      const newText = resumeText.substring(0, start) + normalized + resumeText.substring(end);
+                      setResumeText(newText);
+                      setTimeout(() => {
+                        el.focus();
+                        el.setSelectionRange(start + normalized.length, start + normalized.length);
+                      }, 0);
+                    }}
+                    className="flex-1 w-full p-8 font-mono text-xs leading-relaxed border border-zinc-200 dark:border-zinc-800 rounded-2xl resize-none focus:outline-none bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-300 shadow-sm"
+                    spellCheck={false}
+                    placeholder="Paste or edit your full resume here..."
+                  />
+                </div>
+              ) : (
+                <div className="p-8 space-y-8 max-w-3xl mx-auto w-full h-full flex flex-col overflow-y-auto">
+                  <section id="personal-info" className="space-y-4 shrink-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                        <User className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">Personal Details</h3>
+                    </div>
+                    <div className="grid grid-cols-1 gap-6 bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+                      {resumeDocument.nameLines.map((lineDoc, idx) => (
+                        <div key={idx} className="space-y-1.5">
                           <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-1.5">
                             {idx === 0 ? <User className="h-2.5 w-2.5" /> : idx === 1 ? <Mail className="h-2.5 w-2.5" /> : <MapPin className="h-2.5 w-2.5" />}
-                            {idx === 0 ? 'Full Name' : idx === 1 ? 'Contact/Email' : `Link/Location ${idx - 1}`}
+                            {idx === 0 ? "Full Name" : idx === 1 ? "Contact/Email" : `Link/Location ${idx - 1}`}
                           </label>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => {
-                                const textarea = document.getElementById(`personal-${idx}`) as HTMLInputElement;
-                                if (!textarea) return;
-                                const start = textarea.selectionStart || 0;
-                                const end = textarea.selectionEnd || 0;
-                                const text = textarea.value;
-                                const selected = text.substring(start, end);
-
-                                let replacement = "";
-                                if (selected.startsWith('**') && selected.endsWith('**')) {
-                                  replacement = selected.slice(2, -2);
-                                } else {
-                                  replacement = `**${selected}**`;
-                                }
-
-                                handlePersonalUpdate(idx, text.substring(0, start) + replacement + text.substring(end));
-                                setTimeout(() => {
-                                  textarea.focus();
-                                  textarea.setSelectionRange(start, start + replacement.length);
-                                }, 0);
-                              }}
-                              title="Toggle Bold"
-                              className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                            >
-                              <span className="text-[10px] font-bold">B</span>
-                            </button>
-                            <button
-                              onClick={() => {
-                                const textarea = document.getElementById(`personal-${idx}`) as HTMLInputElement;
-                                if (!textarea) return;
-                                const start = textarea.selectionStart || 0;
-                                const end = textarea.selectionEnd || 0;
-                                const text = textarea.value;
-                                const selected = text.substring(start, end);
-
-                                let replacement = "";
-                                if (selected.startsWith('==') && selected.endsWith('==')) {
-                                  replacement = selected.slice(2, -2);
-                                } else {
-                                  replacement = `==${selected}==`;
-                                }
-
-                                handlePersonalUpdate(idx, text.substring(0, start) + replacement + text.substring(end));
-                                setTimeout(() => {
-                                  textarea.focus();
-                                  textarea.setSelectionRange(start, start + replacement.length);
-                                }, 0);
-                              }}
-                              title="Toggle Highlight"
-                              className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                            >
-                              <Highlighter className="h-2.5 w-2.5" />
-                            </button>
-                          </div>
+                          <ResumeTipTapInlineEditor
+                            content={lineDoc}
+                            onChange={(content) => handlePersonalDocUpdate(idx, content)}
+                            placeholder={idx === 0 ? "Your full name" : "Contact detail"}
+                            maxHeight="120px"
+                          />
                         </div>
-                        <input
-                          id={`personal-${idx}`}
-                          type="text"
-                          value={line}
-                          onChange={(e) => handlePersonalUpdate(idx, e.target.value)}
-                          className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </section>
+                      ))}
+                    </div>
+                  </section>
 
-                {/* Content Sections */}
-                {localSections.map((section, idx) => (
-                  <section key={idx} id={`section-${idx}`} className="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-900">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
+                  {resumeDocument.sections.map((section, idx) => (
+                    <section key={idx} id={`section-${idx}`} className="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-900 shrink-0 flex flex-col">
+                      <div className="flex items-center gap-2 mb-2">
                         <div className="h-8 w-8 rounded-lg bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
-                          {section.title === 'EXPERIENCE' ? <Briefcase className="h-4 w-4" /> :
-                            section.title === 'EDUCATION' ? <GraduationCap className="h-4 w-4" /> :
-                              section.title === 'SKILLS' ? <Code className="h-4 w-4" /> :
-                                section.title === 'SUMMARY' ? <Target className="h-4 w-4" /> :
-                                  section.title === 'PROJECTS' ? <Award className="h-4 w-4" /> : <List className="h-4 w-4" />}
+                          {section.title === "EXPERIENCE" ? (
+                            <Briefcase className="h-4 w-4" />
+                          ) : section.title === "EDUCATION" ? (
+                            <GraduationCap className="h-4 w-4" />
+                          ) : section.title === "SKILLS" ? (
+                            <Code className="h-4 w-4" />
+                          ) : section.title === "SUMMARY" ? (
+                            <Target className="h-4 w-4" />
+                          ) : section.title === "PROJECTS" ? (
+                            <Award className="h-4 w-4" />
+                          ) : (
+                            <List className="h-4 w-4" />
+                          )}
                         </div>
                         <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">{section.title}</h3>
                       </div>
-
-                      {/* Formatting Toolbar */}
-                      <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                        <button
-                          onClick={() => {
-                            const textarea = document.getElementById(`section-textarea-${idx}`) as HTMLTextAreaElement;
-                            if (!textarea) return;
-                            const start = textarea.selectionStart;
-                            const end = textarea.selectionEnd;
-                            const text = textarea.value;
-                            const selected = text.substring(start, end);
-
-                            let replacement = "";
-                            if (selected.startsWith('**') && selected.endsWith('**')) {
-                              replacement = selected.slice(2, -2);
-                            } else {
-                              replacement = `**${selected}**`;
-                            }
-
-                            handleSectionUpdate(idx, text.substring(0, start) + replacement + text.substring(end));
-                            setTimeout(() => {
-                              textarea.focus();
-                              textarea.setSelectionRange(start, start + replacement.length);
-                            }, 0);
-                          }}
-                          className="p-1 px-2 hover:bg-white dark:hover:bg-zinc-800 rounded flex items-center gap-1 text-[10px] font-bold text-zinc-500 hover:text-blue-600 transition-all"
-                          title="Toggle bold"
-                        >
-                          <span className="font-bold">B</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            const textarea = document.getElementById(`section-textarea-${idx}`) as HTMLTextAreaElement;
-                            if (!textarea) return;
-                            const start = textarea.selectionStart;
-                            const end = textarea.selectionEnd;
-                            const text = textarea.value;
-                            const selected = text.substring(start, end);
-
-                            let replacement = "";
-                            if (selected.startsWith('==') && selected.endsWith('==')) {
-                              replacement = selected.slice(2, -2);
-                            } else {
-                              replacement = `==${selected}==`;
-                            }
-
-                            handleSectionUpdate(idx, text.substring(0, start) + replacement + text.substring(end));
-                            setTimeout(() => {
-                              textarea.focus();
-                              textarea.setSelectionRange(start, start + replacement.length);
-                            }, 0);
-                          }}
-                          className="p-1 px-2 hover:bg-white dark:hover:bg-zinc-800 rounded flex items-center gap-1 text-[10px] font-bold text-zinc-500 hover:text-blue-600 transition-all"
-                          title="Toggle highlight"
-                        >
-                          <Highlighter className="h-3 w-3" />
-                        </button>
-                        <div className="w-px h-3 bg-zinc-300 dark:bg-zinc-700" />
-                        <button
-                          onClick={() => {
-                            const textarea = document.getElementById(`section-textarea-${idx}`) as HTMLTextAreaElement;
-                            if (!textarea) return;
-                            const start = textarea.selectionStart;
-                            const end = textarea.selectionEnd;
-                            const text = textarea.value;
-                            const selected = text.substring(start, end);
-
-                            let replacement = "";
-                            // Check for common bullet prefixes
-                            if (/^[•\-\*]\s/.test(selected)) {
-                              replacement = selected.replace(/^[•\-\*]\s/, '');
-                            } else {
-                              replacement = `• ${selected}`;
-                            }
-
-                            handleSectionUpdate(idx, text.substring(0, start) + replacement + text.substring(end));
-                            setTimeout(() => {
-                              textarea.focus();
-                              textarea.setSelectionRange(start, start + replacement.length);
-                            }, 0);
-                          }}
-                          className="p-1 px-2 hover:bg-white dark:hover:bg-zinc-800 rounded flex items-center gap-1 text-[10px] font-bold text-zinc-500 hover:text-blue-600 transition-all"
-                          title="Toggle bullet point"
-                        >
-                          <List className="h-3 w-3" />
-                          Bullet
-                        </button>
+                      <div className="flex-1">
+                        {section.title === "SKILLS" ? (
+                          <SkillsEditor
+                            content={section.content}
+                            onChange={(content) => handleSectionDocUpdate(idx, content)}
+                            placeholder="Add skills (comma separated)..."
+                            maxHeight="360px"
+                          />
+                        ) : (
+                          <ResumeTipTapEditor
+                            content={section.content}
+                            onChange={(content) => handleSectionDocUpdate(idx, content)}
+                            placeholder={`Update your ${section.title.toLowerCase()}...`}
+                            hint="Formatting is saved as JSON and synced to the preview automatically."
+                            minHeight={`${Math.max(160, (localSections[idx]?.content.length ?? 4) * 28)}px`}
+                            maxHeight="360px"
+                          />
+                        )}
                       </div>
-                    </div>
-                    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
-                      <textarea
-                        id={`section-textarea-${idx}`}
-                        value={section.content.join("\n")}
-                        onChange={(e) => handleSectionUpdate(idx, e.target.value)}
-                        rows={Math.max(4, section.content.length + 1)}
-                        className="w-full p-6 text-sm leading-relaxed resize-none focus:outline-none bg-transparent"
-                        placeholder={`Update your ${section.title.toLowerCase()}...`}
-                      />
-                    </div>
-                  </section>
-                ))}
-              </div>
-            )}
+                    </section>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          </div>{/* end flex flex-1 overflow-hidden (tailor wrapper) */}
         </div>
 
-        {/* Preview Side */}
         <div className="w-1/2 flex flex-col bg-zinc-100 dark:bg-zinc-900/50">
           <div className="flex items-center justify-between px-6 py-3 bg-zinc-50/50 dark:bg-zinc-900/50 border-b border-zinc-200 dark:border-zinc-800">
             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">High-Fidelity Preview</span>
@@ -642,11 +682,7 @@ function ResumeEditorContent() {
           </div>
           <div className="flex-1 p-8 overflow-y-auto flex justify-center bg-zinc-200/20 dark:bg-zinc-950/20 scrollbar-hide">
             <div className="w-full max-w-200 h-fit min-h-275 bg-white shadow-2xl rounded-sm overflow-hidden transition-all duration-300">
-              <iframe
-                title="Resume Preview"
-                className="w-full h-275 border-none"
-                srcDoc={previewHtml}
-              />
+              <iframe title="Resume Preview" className="w-full h-275 border-none" srcDoc={previewHtml} />
             </div>
           </div>
         </div>
@@ -657,7 +693,13 @@ function ResumeEditorContent() {
 
 export default function ResumeEditorPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950"><div className="text-zinc-500 animate-pulse font-medium">Loading Editor...</div></div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+          <div className="text-zinc-500 animate-pulse font-medium">Loading Editor...</div>
+        </div>
+      }
+    >
       <ResumeEditorContent />
     </Suspense>
   );
