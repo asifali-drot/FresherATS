@@ -237,7 +237,7 @@ export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({
                     {renderRichText(processedLine, styles.paragraph)}
                   </React.Fragment>
                 );
-              })}
+              })
               )}
             </View>
           </View>
