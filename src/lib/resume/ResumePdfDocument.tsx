@@ -10,16 +10,16 @@ function getTemplateStyles(templateId: ResumeTemplateId) {
   const vars =
     template === 'minimal'
       ? {
-          padding: 30,
-          fontSize: 10,
-          primaryColor: '#0f172a',
-          accentColor: '#334155',
-          nameFontSize: 22,
-          sectionTitleFontSize: 11,
-          sectionTitleBorderColor: '#cbd5e1',
-        }
+        padding: 30,
+        fontSize: 10,
+        primaryColor: '#0f172a',
+        accentColor: '#334155',
+        nameFontSize: 22,
+        sectionTitleFontSize: 11,
+        sectionTitleBorderColor: '#cbd5e1',
+      }
       : template === 'program-manager'
-      ? {
+        ? {
           padding: 40,
           fontSize: 11,
           primaryColor: '#064e3b',
@@ -28,7 +28,7 @@ function getTemplateStyles(templateId: ResumeTemplateId) {
           sectionTitleFontSize: 13,
           sectionTitleBorderColor: '#064e3b',
         }
-      : {
+        : {
           padding: 40,
           fontSize: 10,
           primaryColor: '#0f172a',
@@ -135,47 +135,58 @@ const renderRichText = (
   text: string,
   style: Style | Style[] | undefined
 ) => {
-  // Better regex to handle bold, italic, underline, and highlight markdown
-  const parts = text.split(/(\*\*[^*]+\*\*|_[^_]+_|__[^_]+__|==[^=]+==[  ]*)/g);
-  
+  // Tokenize inline markdown: **bold**, _italic_, __underline__, ==highlight==
+  // Using non-greedy .*? so multiple spans on the same line are handled correctly
+  const TOKEN_RE = /(\*\*.*?\*\*|__.*?__|_.*?_|==.*?==)/g;
+  const parts: string[] = [];
+  let lastIndex = 0;
+  let m: RegExpExecArray | null;
+
+  while ((m = TOKEN_RE.exec(text)) !== null) {
+    if (m.index > lastIndex) parts.push(text.slice(lastIndex, m.index));
+    parts.push(m[0]);
+    lastIndex = m.index + m[0].length;
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+
   return (
     <Text style={style}>
       {parts.map((part, index) => {
         if (!part) return null;
-        
-        // Check for bold (**text**)
-        if (part.startsWith('**') && part.endsWith('**')) {
+
+        // Bold: **text**
+        if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
           return (
             <Text key={index} style={{ fontFamily: 'Helvetica-Bold' }}>
               {part.slice(2, -2)}
             </Text>
           );
         }
-        // Check for italic (_text_) but not underline
-        if (part.startsWith('_') && part.endsWith('_') && !part.startsWith('__')) {
-          return (
-            <Text key={index} style={{ fontStyle: 'italic' }}>
-              {part.slice(1, -1)}
-            </Text>
-          );
-        }
-        // Check for underline (__text__)
-        if (part.startsWith('__') && part.endsWith('__')) {
+        // Underline: __text__ (must check before italic _)
+        if (part.startsWith('__') && part.endsWith('__') && part.length > 4) {
           return (
             <Text key={index} style={{ textDecoration: 'underline' }}>
               {part.slice(2, -2)}
             </Text>
           );
         }
-        // Check for highlight (==text==)
-        if (part.startsWith('==') && part.endsWith('==')) {
+        // Italic: _text_
+        if (part.startsWith('_') && part.endsWith('_') && part.length > 2) {
+          return (
+            <Text key={index} style={{ fontStyle: 'italic' }}>
+              {part.slice(1, -1)}
+            </Text>
+          );
+        }
+        // Highlight: ==text==
+        if (part.startsWith('==') && part.endsWith('==') && part.length > 4) {
           return (
             <Text key={index} style={{ backgroundColor: '#fef9c3' }}>
               {part.slice(2, -2)}
             </Text>
           );
         }
-        return part || null;
+        return <React.Fragment key={index}>{part}</React.Fragment>;
       })}
     </Text>
   );
@@ -205,7 +216,7 @@ export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({
             )}
           </View>
         )}
-        
+
         {sections.map((section, sIndex) => (
           <View key={sIndex} style={styles.section} wrap={false}>
             <Text style={styles.sectionTitle}>{section.title}</Text>
@@ -221,23 +232,23 @@ export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({
                 </View>
               ) : (
                 section.content.map((line, lIndex) => {
-                const processedLine = line;
+                  const processedLine = line;
 
-                if (processedLine.startsWith('*') || processedLine.startsWith('•') || processedLine.startsWith('-')) {
-                  const pureLine = processedLine.replace(/^[\*•\-]\s*/, '');
+                  if (processedLine.startsWith('*') || processedLine.startsWith('•') || processedLine.startsWith('-')) {
+                    const pureLine = processedLine.replace(/^[\*•\-]\s*/, '');
+                    return (
+                      <View key={lIndex} style={styles.bulletContainer}>
+                        <Text style={styles.bullet}>•</Text>
+                        {renderRichText(pureLine, styles.bulletText)}
+                      </View>
+                    );
+                  }
                   return (
-                    <View key={lIndex} style={styles.bulletContainer}>
-                      <Text style={styles.bullet}>•</Text>
-                      {renderRichText(pureLine, styles.bulletText)}
-                    </View>
+                    <React.Fragment key={lIndex}>
+                      {renderRichText(processedLine, styles.paragraph)}
+                    </React.Fragment>
                   );
-                }
-                return (
-                  <React.Fragment key={lIndex}>
-                    {renderRichText(processedLine, styles.paragraph)}
-                  </React.Fragment>
-                );
-              })}
+                })
               )}
             </View>
           </View>

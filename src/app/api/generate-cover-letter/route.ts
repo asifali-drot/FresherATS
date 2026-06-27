@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getEffectiveTier } from "@/lib/adminUtils";
 
 export const runtime = "nodejs";
 
@@ -26,7 +27,8 @@ export async function POST(req: NextRequest): Promise<Response> {
     }
 
     const { data: sub } = await supabase.from("user_subscriptions").select("tier").eq("user_id", user.id).single();
-    const tier = sub?.tier || "free";
+    const tier = await getEffectiveTier(supabase, user.id);
+    void sub; // sub no longer needed directly
 
     if (tier === "free") {
       return NextResponse.json({ error: "AI Cover Letter generation is a Premium feature. Please upgrade to Starter." }, { status: 403 });
@@ -125,10 +127,9 @@ ${resumeText || "(No resume text provided. Use general details for a student/ent
     });
 
     if (!aiResponse.ok) {
-      const errorData = await aiResponse.json();
-      console.error("[AI Cover Letter] Error:", errorData);
+      console.error("[AI Cover Letter] Error: non-OK response");
       return NextResponse.json(
-        { error: `AI Generation Error: ${errorData?.error?.message || "Failed"}` },
+        { error: "AI Error: Try again shortly." },
         { status: 502 }
       );
     }

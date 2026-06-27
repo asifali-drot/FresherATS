@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { ResumePdfDocument } from "@/lib/resume/ResumePdfDocument";
+import { getEffectiveTier } from "@/lib/adminUtils";
 
 export const runtime = "nodejs";
 
@@ -31,7 +32,8 @@ export async function POST(req: NextRequest): Promise<Response> {
       .select("tier")
       .eq("user_id", user.id)
       .single();
-    const tier = sub?.tier || "free";
+    const tier = await getEffectiveTier(supabase, user.id);
+    void sub; // sub no longer needed directly
 
     const { data: usageData } = await supabase
       .from("usage_tracking")

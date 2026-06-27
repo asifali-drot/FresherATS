@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useSubscription } from "@/hooks/useSubscription";
 import type { JSONContent } from "@tiptap/core";
 import { parseResumeText, generateResumeHtml, ParsedSection } from "@/lib/resume/resumeUtils";
 import {
@@ -87,6 +88,8 @@ function ResumeEditorContent() {
   const [showKeywordBanner, setShowKeywordBanner] = useState(false);
 
   const skipAutoSave = useRef(true);
+
+  const { tier, usage, refresh: refreshSubscription } = useSubscription();
 
   const searchParams = useSearchParams();
   const templateIdParam = searchParams.get("template");
@@ -376,6 +379,7 @@ function ResumeEditorContent() {
           a.click();
           document.body.removeChild(a);
           window.URL.revokeObjectURL(downloadUrl);
+          refreshSubscription();
           return;
         }
       }
@@ -389,6 +393,7 @@ function ResumeEditorContent() {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+      refreshSubscription();
     } catch (error) {
       console.error(error);
       setDownloadError(error instanceof Error ? error.message : "Failed to generate PDF");
@@ -486,7 +491,7 @@ function ResumeEditorContent() {
               <span className="flex flex-col items-center leading-tight">
                 <span>Download Resume</span>
                 <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest mt-0.5">
-                  FREE - Limited Time
+                  {tier === "free" ? `${usage.pdf_downloads}/2 Free Downloads` : "Unlimited Downloads"}
                 </span>
               </span>
             )}

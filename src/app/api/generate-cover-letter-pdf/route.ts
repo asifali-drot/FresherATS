@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseCoverLetterText } from "@/lib/cover-letter/utils";
 import { createClient } from "@/lib/supabase/server";
+import { getEffectiveTier } from "@/lib/adminUtils";
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { CoverLetterPdfDocument } from "@/lib/cover-letter/CoverLetterPdfDocument";
@@ -38,7 +39,8 @@ export async function POST(req: NextRequest): Promise<Response> {
         .select("tier")
         .eq("user_id", user.id)
         .single();
-      const tier = sub?.tier || "free";
+      const tier = await getEffectiveTier(supabase, user.id);
+      void sub; // sub no longer needed directly
 
       if (tier === "free") {
         const { data: usageData } = await supabase

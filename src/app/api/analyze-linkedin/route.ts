@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getEffectiveTier } from "@/lib/adminUtils";
 export interface LinkedInAnalysisResult {
   overallScore: number;
   keywordScore: number;
@@ -46,12 +47,7 @@ export async function POST(req: NextRequest) {
     // Fetch tier only to pass to the client so it can gate the Optimizer sections.
     let tier = "free";
     if (user) {
-      const { data: sub } = await supabase
-        .from("user_subscriptions")
-        .select("tier")
-        .eq("user_id", user.id)
-        .single();
-      tier = sub?.tier || "free";
+      tier = await getEffectiveTier(supabase, user.id);
     }
 
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -122,13 +118,8 @@ ${
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
       return NextResponse.json(
-        {
-          error: `AI Error: ${
-            errorData?.error?.message || "Failed to analyze profile."
-          }`,
-        },
+        { error: "AI Error: Try again shortly." },
         { status: 502 }
       );
     }

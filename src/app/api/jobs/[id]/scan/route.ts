@@ -2,6 +2,7 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getEffectiveTier } from "@/lib/adminUtils";
 
 async function performAtsScan(resumeText: string, jdText: string) {
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -36,8 +37,7 @@ async function performAtsScan(resumeText: string, jdText: string) {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData?.error?.message || "Failed to scan resume");
+    throw new Error("AI Error: Try again shortly.");
   }
 
   const result = await response.json();
@@ -64,7 +64,8 @@ export async function POST(
       .select("tier")
       .eq("user_id", user.id)
       .single();
-    const tier = sub?.tier || "free";
+    const tier = await getEffectiveTier(supabase, user.id);
+    void sub; // sub no longer needed directly
 
     if (tier === "free") {
       return NextResponse.json(

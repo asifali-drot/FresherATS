@@ -15,9 +15,9 @@ const tiers = [
     features: [
       { name: "Basic ATS analysis", included: true },
       { name: "Editable cover letter templates", included: true },
+      { name: "Unlimited LinkedIn checks", included: true },
       { name: "Job tracker — up to 5 jobs", included: true },
-      { name: "2 PDF downloads / mo", included: true },
-      { name: "2 LinkedIn checks / mo", included: true },
+      { name: "2 PDF downloads / mo", included: true }
     ],
     buttonText: "Start free",
     tierKey: "free",
@@ -121,9 +121,11 @@ export default function PricingPage() {
           {tiers.map((t) => (
             <div
               key={t.name}
-              className={`flex flex-col rounded-3xl bg-white p-8 shadow-xl ring-1 ${currentTier === t.tierKey || t.name === "Starter"
+              className={`flex flex-col rounded-3xl bg-white p-8 shadow-xl ring-1 ${currentTier === t.tierKey
                 ? "ring-purple-600 ring-2 scale-105 transform z-10"
-                : "ring-gray-200"
+                : t.name === "Starter"
+                  ? "ring-purple-600 ring-2 scale-105 transform z-10"
+                  : "ring-gray-200"
                 }`}
             >
               <div className="mb-6">

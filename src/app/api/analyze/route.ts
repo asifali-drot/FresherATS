@@ -5,6 +5,7 @@ import { parsePdf } from "@/lib/resume/parsePdf";
 import { parseDocx } from "@/lib/resume/parseDocx";
 import { createClient } from "@/lib/supabase/server";
 import { textToResumeDocument } from "@/lib/resume/resumeDocument";
+import { getEffectiveTier } from "@/lib/adminUtils";
 
 
 export async function POST(req: NextRequest) {
@@ -22,13 +23,8 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     
     if (user) {
-      const { data: sub } = await supabase
-        .from("user_subscriptions")
-        .select("tier")
-        .eq("user_id", user.id)
-        .single();
-      
-      if (!sub || sub.tier === "free") {
+      const tier = await getEffectiveTier(supabase, user.id);
+      if (tier === "free") {
         jobDescription = "";
       }
     } else {
@@ -113,9 +109,8 @@ export async function POST(req: NextRequest) {
     );
 
     if (!stage1Response.ok) {
-      const errorData = await stage1Response.json();
       return NextResponse.json(
-        { error: `Stage 1 AI Error: ${errorData?.error?.message || "Failed"}` },
+        { error: "AI Error: Try again shortly." },
         { status: 502 }
       );
     }

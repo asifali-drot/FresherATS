@@ -37,8 +37,7 @@ async function performAtsScan(resumeText: string, jdText: string) {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData?.error?.message || "Failed to scan resume");
+    throw new Error("AI Error: Try again shortly.");
   }
 
   const result = await response.json();
