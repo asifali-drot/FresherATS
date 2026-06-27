@@ -138,17 +138,7 @@ export default async function ReviewsPage() {
 
           {/* Review form */}
           <div className="lg:col-span-2">
-            <ReviewForm
-              isLoggedIn={!!user}
-              existingReview={
-                existingReview
-                  ? {
-                    rating: existingReview.rating,
-                    comment: existingReview.comment,
-                  }
-                  : null
-              }
-            />
+            <ReviewForm isLoggedIn={!!user} />
           </div>
         </div>
 
@@ -168,11 +158,13 @@ export default async function ReviewsPage() {
               {allReviews.map((review) => (
                 <ReviewCard
                   key={review.id}
+                  id={review.id}
                   rating={review.rating}
                   comment={review.comment}
                   userName={review.user_name}
                   createdAt={review.created_at}
                   avatarUrl={review.avatar_url}
+                  isOwner={user?.id === review.user_id}
                 />
               ))}
             </div>

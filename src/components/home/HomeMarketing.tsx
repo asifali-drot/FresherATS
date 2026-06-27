@@ -19,44 +19,44 @@ const FEATURES: {
   description: string;
   className: string;
 }[] = [
-  {
-    icon: ScanSearch,
-    title: "Deep content scan",
-    description:
-      "We read your resume text—not just the file name—so feedback reflects what recruiters and ATS actually see.",
-    className: "md:col-span-2",
-  },
-  {
-    icon: Tags,
-    title: "Keyword gap finder",
-    description: "Paste a job description and see which skills you’re missing before you hit submit.",
-    className: "md:col-span-1",
-  },
-  {
-    icon: FileCheck,
-    title: "Format sanity checks",
-    description: "Headings, bullets, and section order tuned for parsers—not graphics that break scans.",
-    className: "md:col-span-1",
-  },
-  {
-    icon: Sparkles,
-    title: "AI rewrite suggestions",
-    description: "Actionable bullet improvements without inventing experience you don’t have.",
-    className: "md:col-span-1",
-  },
-  {
-    icon: Timer,
-    title: "Results in seconds",
-    description: "Upload, analyze, and get a clear score while your coffee is still hot.",
-    className: "md:col-span-1",
-  },
-  {
-    icon: GraduationCap,
-    title: "Built for freshers",
-    description: "Projects, internships, and campus roles—our prompts match early-career resumes.",
-    className: "md:col-span-2",
-  },
-];
+    {
+      icon: ScanSearch,
+      title: "Deep content scan",
+      description:
+        "We read your resume text—not just the file name—so feedback reflects what recruiters and ATS actually see.",
+      className: "md:col-span-2",
+    },
+    {
+      icon: Tags,
+      title: "Keyword gap finder",
+      description: "Paste a job description and see which skills you’re missing before you hit submit.",
+      className: "md:col-span-1",
+    },
+    {
+      icon: FileCheck,
+      title: "Format sanity checks",
+      description: "Headings, bullets, and section order tuned for parsers—not graphics that break scans.",
+      className: "md:col-span-1",
+    },
+    {
+      icon: Sparkles,
+      title: "AI rewrite suggestions",
+      description: "Actionable bullet improvements without inventing experience you don’t have.",
+      className: "md:col-span-1",
+    },
+    {
+      icon: Timer,
+      title: "Results in seconds",
+      description: "Upload, analyze, and get a clear score while your coffee is still hot.",
+      className: "md:col-span-1",
+    },
+    {
+      icon: GraduationCap,
+      title: "Built for new grads",
+      description: "Projects, internships, and campus roles—our prompts match early-career resumes.",
+      className: "md:col-span-2",
+    },
+  ];
 
 export default function HomeMarketing() {
   return (

@@ -7,26 +7,30 @@ import StarRating from "./StarRating";
 
 interface ReviewFormProps {
   isLoggedIn: boolean;
-  existingReview?: {
-    rating: number;
-    comment: string;
-  } | null;
 }
 
-export default function ReviewForm({ isLoggedIn, existingReview }: ReviewFormProps) {
-  const [rating, setRating] = useState(existingReview?.rating ?? 0);
-  const [comment, setComment] = useState(existingReview?.comment ?? "");
+export default function ReviewForm({ isLoggedIn }: ReviewFormProps) {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
-  const isEditing = !!existingReview;
+  const [isEditing, setIsEditing] = useState(false);
 
-  // Sync if existingReview changes
   useEffect(() => {
-    if (existingReview) {
-      setRating(existingReview.rating);
-      setComment(existingReview.comment);
-    }
-  }, [existingReview]);
+    const handleEdit = (e: any) => {
+      setRating(e.detail.rating);
+      setComment(e.detail.comment);
+      setIsEditing(true);
+      
+      const formEl = document.getElementById("review-form");
+      if (formEl) {
+        formEl.scrollIntoView({ behavior: "smooth" });
+      }
+    };
+    
+    window.addEventListener("edit-review", handleEdit as EventListener);
+    return () => window.removeEventListener("edit-review", handleEdit as EventListener);
+  }, []);
 
   // Not logged in state
   if (!isLoggedIn) {
@@ -87,6 +91,11 @@ export default function ReviewForm({ isLoggedIn, existingReview }: ReviewFormPro
           : "Thank you for your review!",
       });
 
+      // Clear the form after successful submit
+      setRating(0);
+      setComment("");
+      setIsEditing(false);
+
       // Reload after a short delay to show the new review
       setTimeout(() => {
         window.location.reload();
@@ -100,6 +109,7 @@ export default function ReviewForm({ isLoggedIn, existingReview }: ReviewFormPro
 
   return (
     <form
+      id="review-form"
       onSubmit={handleSubmit}
       className="rounded-3xl border border-zinc-100 bg-white p-6 sm:p-8 shadow-sm"
     >

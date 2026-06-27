@@ -1,13 +1,16 @@
 "use client";
 
+import { Pencil, Trash2 } from "lucide-react";
 import StarRating from "./StarRating";
 
 interface ReviewCardProps {
+  id?: string;
   rating: number;
   comment: string;
   userName: string;
   createdAt: string;
   avatarUrl?: string;
+  isOwner?: boolean;
 }
 
 const GRADIENT_PAIRS = [
@@ -61,14 +64,38 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 export default function ReviewCard({
+  id,
   rating,
   comment,
   userName,
   createdAt,
   avatarUrl,
+  isOwner,
 }: ReviewCardProps) {
   const initials = getInitials(userName);
   const gradient = getGradient(userName);
+
+  const handleEdit = () => {
+    window.dispatchEvent(
+      new CustomEvent("edit-review", {
+        detail: { id, rating, comment },
+      })
+    );
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this review?")) return;
+    try {
+      const res = await fetch(`/api/reviews${id ? `?id=${id}` : ""}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        window.location.reload();
+      }
+    } catch (e) {
+      console.error("Failed to delete review", e);
+    }
+  };
 
   return (
     <article className="group relative rounded-3xl border border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm hover:shadow-lg hover:border-purple-100 dark:hover:border-purple-900/50 transition-all duration-300 flex flex-col">
@@ -106,6 +133,24 @@ export default function ReviewCard({
           <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{userName}</p>
           <p className="text-xs text-zinc-400">{formatRelativeTime(createdAt)}</p>
         </div>
+        {isOwner && (
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleEdit}
+              className="p-2 text-zinc-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+              aria-label="Edit review"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button
+              onClick={handleDelete}
+              className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              aria-label="Delete review"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Stars */}

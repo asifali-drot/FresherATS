@@ -139,3 +139,55 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    if (id) {
+      // Delete specific review if it belongs to the user
+      const { error } = await supabase
+        .from("reviews")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) {
+        return NextResponse.json({ error: "Failed to delete review" }, { status: 500 });
+      }
+    } else {
+       // Delete by user_id if no id provided (fallback)
+       const { error } = await supabase
+        .from("reviews")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (error) {
+        return NextResponse.json({ error: "Failed to delete review" }, { status: 500 });
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Something went wrong" },
+      { status: 500 }
+    );
+  }
+}
+

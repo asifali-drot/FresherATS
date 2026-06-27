@@ -52,7 +52,7 @@ export default function Home() {
           </h1>
 
           <p className="max-w-2xl text-lg md:text-xl text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
-            Empowering fresh graduates to land their dream jobs. Analyze resume
+            Empowering recent graduates to land their dream jobs. Analyze resume
             with our free ATS resume checker, uncover missing keywords, and
             transform your career path in seconds.
           </p>
@@ -148,19 +148,6 @@ function StatItem({
     </div>
   );
 }
-
-// function AnalyzeHeader() {
-//     return (
-//         <div className="mb-8 text-center">
-//             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900">
-//                 Free ATS Resume Checker
-//             </h2>
-//             <p className="mt-3 text-zinc-600 leading-relaxed">
-//                 Upload your resume (PDF or DOCX) and optionally add a job description to get ATS-style feedback and improvement suggestions.
-//             </p>
-//         </div>
-//     );
-// }
 
 const HOME_FAQS = [
   {

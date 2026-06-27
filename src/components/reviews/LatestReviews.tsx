@@ -108,6 +108,7 @@ export default async function LatestReviews() {
         {reviews.map((review: any) => (
           <ReviewCard
             key={review.id}
+            id={review.id}
             rating={review.rating}
             comment={review.comment}
             userName={review.user_name}
