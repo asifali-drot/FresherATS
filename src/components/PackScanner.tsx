@@ -19,11 +19,11 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
   const [resumeText, setResumeText] = useState<string>(initialResumeText || "");
   const [analysisId, setAnalysisId] = useState<string | undefined>(initialAnalysisId);
   const [useSavedResume, setUseSavedResume] = useState<boolean>(!!initialAnalysisId);
-  
+
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<(Partial<PackScanResult> & { gated?: boolean }) | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { tier, user } = useSubscription();
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
     setLoading(true);
     setError(null);
     setResult(null);
-    
+
     track("pack_scan_started", { packId: selectedPackId });
 
     try {
@@ -67,12 +67,12 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
       }
 
       setResult(data.result);
-      
+
       let scoreBucket = "0-25";
       if (data.result.overall > 75) scoreBucket = "76-100";
       else if (data.result.overall > 50) scoreBucket = "51-75";
       else if (data.result.overall > 25) scoreBucket = "26-50";
-      
+
       track("pack_scan_completed", { packId: selectedPackId, scoreBucket });
 
     } catch (err: any) {
@@ -91,7 +91,7 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
       {/* Input Section */}
       <div className="bg-white rounded-3xl border border-zinc-200 p-6 md:p-8 shadow-sm">
         <h2 className="text-xl font-bold text-zinc-900 mb-6">Target a Specific Company</h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="flex flex-col gap-3">
             <label className="text-sm font-semibold text-zinc-700">Select Company Pack</label>
@@ -120,7 +120,7 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
             <label className="text-sm font-semibold text-zinc-700 flex justify-between">
               <span>Resume Source</span>
               {analysisId && (
-                <button 
+                <button
                   onClick={() => setUseSavedResume(!useSavedResume)}
                   className="text-blue-600 hover:text-blue-700 text-xs font-semibold"
                 >
@@ -128,7 +128,7 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
                 </button>
               )}
             </label>
-            
+
             {useSavedResume && analysisId ? (
               <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-800">
                 <FileText className="h-5 w-5 text-blue-500" />
@@ -170,7 +170,7 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
       {/* Results Section */}
       {result && (
         <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Overall Score */}
             <div className="bg-white rounded-3xl border border-zinc-200 p-8 shadow-sm flex flex-col items-center justify-center text-center">
@@ -189,8 +189,8 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
                   <span className="text-2xl font-black text-zinc-900">{result.hardScore}%</span>
                 </div>
                 <div className="w-full bg-zinc-100 rounded-full h-3 overflow-hidden">
-                  <div 
-                    className="bg-blue-500 h-full rounded-full transition-all duration-1000" 
+                  <div
+                    className="bg-blue-500 h-full rounded-full transition-all duration-1000"
                     style={{ width: `${result.hardScore || 0}%` }}
                   />
                 </div>
@@ -205,8 +205,8 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
                   <span className="text-2xl font-black text-zinc-900">{result.valuesScore}%</span>
                 </div>
                 <div className="w-full bg-zinc-100 rounded-full h-3 overflow-hidden">
-                  <div 
-                    className="bg-purple-500 h-full rounded-full transition-all duration-1000" 
+                  <div
+                    className="bg-purple-500 h-full rounded-full transition-all duration-1000"
                     style={{ width: `${result.valuesScore || 0}%` }}
                   />
                 </div>
@@ -216,7 +216,7 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
                 <div className="bg-red-50 text-red-700 px-4 py-3 rounded-xl text-sm border border-red-100 flex items-start gap-3">
                   <AlertTriangle className="h-5 w-5 shrink-0 text-red-600" />
                   <p>
-                    <strong>Red flags detected (-{result.redFlagPenalty} penalty).</strong> 
+                    <strong>Red flags detected (-{result.redFlagPenalty} penalty).</strong>
                     You used words that indicate lack of confidence or ownership.
                   </p>
                 </div>
@@ -226,20 +226,20 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
 
           {/* Detailed Breakdown */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative">
-            
+
             {result.gated && (
               <div onClick={handleUpgradeClick}>
-                <UpgradeOverlay 
-                  title="Unlock Detailed Breakdown" 
-                  description="Upgrade to Starter to see exactly which keywords you're missing, view sample rewrites, and get detailed ATS formatting tips." 
+                <UpgradeOverlay
+                  title="Unlock Detailed Breakdown"
+                  description="Upgrade to Starter to see exactly which keywords you're missing, view sample rewrites, and get detailed ATS formatting tips."
                 />
               </div>
             )}
-            
+
             {/* Hard Skills Details */}
             <div className={`bg-white rounded-3xl border border-zinc-200 p-8 shadow-sm flex flex-col gap-6 ${result.gated ? 'blur-sm select-none' : ''}`}>
               <h3 className="font-bold text-zinc-900 text-lg border-b border-zinc-100 pb-4">Hard Skills Breakdown</h3>
-              
+
               <div className="flex flex-col gap-4">
                 <div>
                   <h4 className="text-sm font-semibold text-zinc-700 mb-3 flex items-center gap-2">
@@ -274,7 +274,7 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
                     )}
                   </div>
                 </div>
-                
+
                 {result.matchedNiceToHave && result.matchedNiceToHave.length > 0 && (
                   <div>
                     <h4 className="text-sm font-semibold text-zinc-700 mb-3 flex items-center gap-2">
@@ -295,7 +295,7 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
             {/* Values & Formatting */}
             <div className={`bg-white rounded-3xl border border-zinc-200 p-8 shadow-sm flex flex-col gap-6 ${result.gated ? 'blur-sm select-none' : ''}`}>
               <h3 className="font-bold text-zinc-900 text-lg border-b border-zinc-100 pb-4">Values & ATS Formatting</h3>
-              
+
               <div className="flex flex-col gap-6">
                 <div>
                   <h4 className="text-sm font-semibold text-zinc-700 mb-3 flex items-center gap-2">
@@ -339,13 +339,13 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
                 )}
               </div>
             </div>
-            
+
             {/* Suggested Verbs & Rewrites */}
             <div className={`lg:col-span-2 bg-zinc-900 rounded-3xl p-8 shadow-sm text-zinc-100 flex flex-col gap-6 ${result.gated ? 'blur-sm select-none' : ''}`}>
               <h3 className="font-bold text-white text-xl border-b border-zinc-800 pb-4 flex items-center gap-2">
                 <SparklesIcon className="h-5 w-5 text-purple-400" /> Resume Upgrade Tips
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                   <h4 className="text-sm font-semibold text-zinc-400 mb-4 uppercase tracking-widest">Recommended Action Verbs</h4>
@@ -357,7 +357,7 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
                     ))}
                   </div>
                 </div>
-                
+
                 <div>
                   <h4 className="text-sm font-semibold text-zinc-400 mb-4 uppercase tracking-widest">New Grad Emphasis</h4>
                   <ul className="space-y-2">

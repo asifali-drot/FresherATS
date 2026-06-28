@@ -477,6 +477,14 @@ function ResumeEditorContent() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Link
+            href={`/keyword-packs${analysisId ? `?analysis_id=${analysisId}` : ''}`}
+            target="_blank"
+            className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-2.5 text-sm font-bold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all active:scale-95 shadow-sm"
+          >
+            <Target className="h-4 w-4 text-blue-500" />
+            <span className="hidden sm:inline">Company Match</span>
+          </Link>
           <button
             onClick={downloadPDF}
             disabled={isDownloading || !resumeText.trim()}

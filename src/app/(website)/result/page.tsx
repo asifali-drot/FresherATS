@@ -270,9 +270,12 @@ function AnalyzeResultContent() {
 
           </div>
 
-          <div className="flex items-center justify-between px-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between px-2 gap-4">
             <Link href="/#analyze" className="text-sm font-semibold text-zinc-500 hover:text-zinc-900 transition-colors flex items-center gap-2">
               <span>←</span> Analyze another resume
+            </Link>
+            <Link href={`/keyword-packs${data.analysis_id ? `?analysis_id=${data.analysis_id}` : ''}`} className="text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-2">
+              Match against a specific company <span>→</span>
             </Link>
           </div>
         </div>

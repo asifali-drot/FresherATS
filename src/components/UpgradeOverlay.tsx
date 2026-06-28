@@ -27,7 +27,7 @@ export default function UpgradeOverlay({
         </div>
         <h3 className="mb-2 text-lg font-bold text-gray-900">{title}</h3>
         <p className="mb-6 text-sm text-gray-500">{description}</p>
-        
+
         <div className="flex flex-col w-full gap-3">
           <a
             href={`https://fresherats.lemonsqueezy.com/checkout/buy/6d1923db-5c3b-4551-a3d6-2cb374a8891a?embed=1${customDataUserId}`}
