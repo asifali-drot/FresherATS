@@ -34,6 +34,7 @@ export async function POST(req: Request) {
       planId,
       student,
       customerId,
+      email: user.email,
       successUrl: `${baseUrl}/pricing/success`,
       cancelUrl: `${baseUrl}/pricing`,
     });

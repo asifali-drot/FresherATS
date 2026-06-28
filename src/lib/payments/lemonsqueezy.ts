@@ -43,6 +43,17 @@ export class LemonSqueezyProvider implements PaymentProvider {
       }
     }
 
+    if (options.email) {
+      url.searchParams.append("checkout[email]", options.email);
+      if (options.email.toLowerCase().endsWith(".edu")) {
+        if (options.planId === "pro_monthly") {
+          url.searchParams.append("checkout[discount_code]", "I5NJU2MA");
+        } else if (options.planId === "pro_quarterly") {
+          url.searchParams.append("checkout[discount_code]", "Q2NTKZNW");
+        }
+      }
+    }
+
     // Optional redirects (LemonSqueezy usually handles via dashboard, but API supports it)
     // url.searchParams.append("checkout[success_url]", options.successUrl || "");
 

@@ -89,6 +89,23 @@ export default function PricingTable({ plans }: PricingTableProps) {
         <p className="mx-auto max-w-2xl text-lg text-gray-600 mb-8">
           Choose the plan that best fits your job search needs. Upgrade anytime to unlock advanced AI features.
         </p>
+
+        {/* Student Discount Info Banner */}
+        <div className="mx-auto max-w-2xl p-5 rounded-3xl bg-purple-50/70 border border-purple-100/80 shadow-xs flex flex-col items-center gap-2.5 backdrop-blur-xs">
+          <div className="flex items-center gap-2">
+            <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full uppercase tracking-wider">
+              Student Discount
+            </span>
+          </div>
+          <p className="text-sm text-gray-700 font-medium">
+            Sign up with a <strong className="font-semibold text-purple-700">.edu</strong> email address to get automatic student discounts at checkout.
+          </p>
+          {user?.email?.toLowerCase().endsWith(".edu") && (
+            <div className="mt-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full shadow-xs">
+              🎉 Student email detected ({user.email}) — discount will be automatically applied!
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto mb-16 items-stretch">

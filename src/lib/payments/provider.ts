@@ -7,6 +7,7 @@ export interface CheckoutOptions {
   customerId?: string;
   successUrl?: string;
   cancelUrl?: string;
+  email?: string;
 }
 
 export interface WebhookEvent {
