@@ -15,7 +15,8 @@ export default function UpgradeOverlay({
   const { user } = useSubscription();
 
   // We append the user_id to the custom data so webhooks know who purchased
-  const customData = user?.id ? `&checkout[custom][user_id]=${user.id}` : "";
+  // Must URL encode brackets [] for Lemon Squeezy to accept them
+  const customDataUserId = user?.id ? `&checkout%5Bcustom%5D%5Buser_id%5D=${encodeURIComponent(user.id)}` : "";
 
   return (
     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-xl bg-white/60 backdrop-blur-sm">
@@ -29,13 +30,13 @@ export default function UpgradeOverlay({
         
         <div className="flex flex-col w-full gap-3">
           <a
-            href={`https://fresherats.lemonsqueezy.com/checkout/buy/6d1923db-5c3b-4551-a3d6-2cb374a8891a?embed=1${customData}`}
+            href={`https://fresherats.lemonsqueezy.com/checkout/buy/6d1923db-5c3b-4551-a3d6-2cb374a8891a?embed=1${customDataUserId}`}
             className="lemonsqueezy-button rounded-full bg-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-700 w-full"
           >
             Buy Pro
           </a>
           <a
-            href={`https://fresherats.lemonsqueezy.com/checkout/buy/0042cfdd-e34d-4a12-9938-97274d150ea3?embed=1${customData}`}
+            href={`https://fresherats.lemonsqueezy.com/checkout/buy/0042cfdd-e34d-4a12-9938-97274d150ea3?embed=1${customDataUserId}`}
             className="lemonsqueezy-button rounded-full bg-zinc-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 w-full"
           >
             Buy Single Resume Pack
