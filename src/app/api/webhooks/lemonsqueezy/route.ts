@@ -39,16 +39,39 @@ export async function POST(req: Request) {
     // Begin processing based on event name
     if (eventName === "order_created") {
       // Handles one-time payments (pass, pack)
-      const grant = customData.grant;
+      let grant = customData.grant;
+      let durationDays = parseInt(customData.duration_days || "90", 10);
+      
+      const variantId = String(
+        attributes.first_order_item?.variant_id || 
+        attributes.variant_id || 
+        event.data.relationships?.order_items?.data?.[0]?.variant_id || 
+        ""
+      );
+
+      // Fallback mappings if customData is missing
+      if (!grant && variantId) {
+        if (variantId === "1829055") {
+          grant = "pass";
+          durationDays = 30;
+        } else if (variantId === "1829062") {
+          grant = "pass";
+          durationDays = 90;
+        } else if (variantId === "1828941") {
+          grant = "pass";
+          durationDays = 30;
+        } else if (variantId === "1169210") {
+          grant = "pack";
+        }
+      }
       
       if (grant === "pass") {
-        const durationDays = parseInt(customData.duration_days || "90", 10);
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + durationDays);
 
         const { error } = await supabase.from("pass_grants").insert({
           user_id: userId,
-          source: `lemonsqueezy_${event.data.id}`,
+          source: `lemonsqueezy_${event.data.id || variantId}`,
           access_expires_at: expiresAt.toISOString(),
         });
 

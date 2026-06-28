@@ -111,7 +111,7 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
             </div>
             {selectedPackId && (
               <p className="text-xs text-zinc-500 mt-1">
-                Optimizes for {packs.find(p => p.id === selectedPackId)?.ats} ATS logic and company values.
+                Optimizes for specific ATS logic and company values.
               </p>
             )}
           </div>

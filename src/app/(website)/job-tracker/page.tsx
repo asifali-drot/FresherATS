@@ -27,6 +27,7 @@ import {
   ArrowRight,
   TrendingUp,
   Award,
+  Target,
   X,
   PlusCircle,
   HelpCircle,
@@ -2137,27 +2138,52 @@ export default function JobTrackerPage() {
               </Link>
               
               {/* Tailor Resume Deep Link */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (typeof window !== "undefined") {
-                    // Set tailor variables
-                    window.sessionStorage.setItem("tailorJobTitle", selectedJob.job_title);
-                    window.sessionStorage.setItem("tailorCompany", selectedJob.company_name);
-                    
-                    if (selectedJob.missing_keywords && selectedJob.missing_keywords.length > 0) {
-                      window.sessionStorage.setItem("tailorKeywords", JSON.stringify(selectedJob.missing_keywords));
+              <div className="flex flex-col sm:flex-row flex-1 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.sessionStorage.setItem("tailorJobTitle", selectedJob.job_title);
+                      window.sessionStorage.setItem("tailorCompany", selectedJob.company_name);
+                      
+                      if (selectedJob.missing_keywords && selectedJob.missing_keywords.length > 0) {
+                        window.sessionStorage.setItem("tailorKeywords", JSON.stringify(selectedJob.missing_keywords));
+                      }
+                      
+                      router.push("/editor");
                     }
-                    
-                    router.push("/editor");
-                  }
-                }}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-blue-600 hover:bg-blue-700 px-4 py-3 text-xs font-bold text-white transition-all cursor-pointer"
-              >
-                <FileText className="h-4 w-4" />
-                Tailor Resume
-                <ChevronRight className="h-4 w-4" />
-              </button>
+                  }}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-blue-600 hover:bg-blue-700 px-4 py-3 text-xs font-bold text-white transition-all cursor-pointer"
+                >
+                  <FileText className="h-4 w-4" />
+                  Tailor Resume
+                </button>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    // Quick fetch to check if pack exists
+                    try {
+                      const res = await fetch("/api/keyword-packs");
+                      const packs = await res.json();
+                      const pack = packs.find((p: any) => p.company.toLowerCase() === selectedJob.company_name.toLowerCase());
+                      if (pack) {
+                        router.push(`/keyword-packs?pack=${pack.id}`);
+                      } else {
+                        router.push("/keyword-packs");
+                      }
+                    } catch (e) {
+                      router.push("/keyword-packs");
+                    }
+                  }}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl border border-blue-200 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 hover:text-blue-800 px-4 py-3 text-xs font-bold transition-all cursor-pointer"
+                >
+                  <Target className="h-4 w-4" />
+                  Company Match
+                  <ChevronRight className="h-4 w-4 ml-auto sm:ml-1" />
+                </button>
+              </div>
+
             </div>
 
           </div>
