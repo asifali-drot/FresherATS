@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSubscription } from "@/hooks/useSubscription";
 import { ClientPlan } from "@/lib/pricing/plans";
 import { toast } from "sonner";
+import { track } from "@vercel/analytics";
 
 interface PricingTableProps {
   plans: ClientPlan[];
@@ -32,6 +33,7 @@ export default function PricingTable({ plans }: PricingTableProps) {
     if (planId === "free") return;
 
     setLoadingCheckout(planId);
+    track("checkout_started", { planId, isStudent });
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
