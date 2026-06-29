@@ -8,6 +8,7 @@ import { ClientPlan } from "@/lib/pricing/plans";
 import { toast } from "sonner";
 import { track } from "@vercel/analytics";
 import Script from "next/script";
+import { isAcademicEmail } from "@/lib/pricing/student";
 
 // Extend window to include the LemonSqueezy JS SDK
 declare global {
@@ -97,12 +98,13 @@ export default function PricingTable({ plans }: PricingTableProps) {
               Student Discount
             </span>
           </div>
-          <p className="text-sm text-gray-700 font-medium">
-            Sign up with a <strong className="font-semibold text-purple-700">.edu</strong> email address to get automatic student discounts at checkout.
-          </p>
-          {user?.email?.toLowerCase().endsWith(".edu") && (
+          {!isAcademicEmail(user?.email) ? (
+            <p className="text-sm text-gray-700 font-medium">
+              Sign up with an <strong className="font-semibold text-purple-700">academic (.edu, .ac, etc.)</strong> email address to get automatic student discounts at checkout.
+            </p>
+          ) : (
             <div className="mt-1 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full shadow-xs">
-              🎉 Student email detected ({user.email}) — discount will be automatically applied!
+              🎉 Student email detected ({user?.email}) — discount will be automatically applied!
             </div>
           )}
         </div>
@@ -111,7 +113,8 @@ export default function PricingTable({ plans }: PricingTableProps) {
       <div className="grid gap-8 md:grid-cols-3 max-w-6xl mx-auto mb-16 items-stretch">
         {planRow.map((t) => {
           if (!t) return null;
-          const isHighlighted = t.id === "pro_monthly" || t.id === "pro_quarterly";
+          const isHighlighted = t.id === "pro_monthly";
+          const isQuarterly = t.id === "pro_quarterly";
 
           return (
             <div
@@ -129,9 +132,26 @@ export default function PricingTable({ plans }: PricingTableProps) {
                       Most Popular
                     </span>
                   )}
+                  {isQuarterly && (
+                    <span className="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
+                      Best Value
+                    </span>
+                  )}
                 </div>
-                <div className="mt-4 flex items-baseline text-5xl font-extrabold">
-                  {t.priceLabel}
+                <div className="mt-4 flex flex-col items-start gap-1">
+                  <div className="flex items-baseline text-5xl font-extrabold">
+                    {t.priceLabel}
+                  </div>
+                  {t.id === "pro_monthly" && (
+                    <div className="text-sm font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 mt-2">
+                      Students pay $5.99
+                    </div>
+                  )}
+                  {t.id === "pro_quarterly" && (
+                    <div className="text-sm font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 mt-2">
+                      Students pay $11.99
+                    </div>
+                  )}
                 </div>
                 {t.billingType === "pass" && <p className="text-sm text-gray-500 mt-2 font-medium">One-time payment</p>}
               </div>

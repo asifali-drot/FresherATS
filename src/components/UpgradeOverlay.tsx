@@ -2,6 +2,8 @@ import { useSubscription } from "@/hooks/useSubscription";
 import Script from "next/script";
 import { Lock } from "lucide-react";
 
+import { isAcademicEmail } from "@/lib/pricing/student";
+
 interface UpgradeOverlayProps {
   title?: string;
   description?: string;
@@ -13,7 +15,7 @@ export default function UpgradeOverlay({
   description = "Upgrade your plan to access this feature.",
 }: UpgradeOverlayProps) {
   const { user } = useSubscription();
-  const isEdu = user?.email?.toLowerCase().endsWith(".edu");
+  const isEdu = isAcademicEmail(user?.email);
 
   // We append the user_id to the custom data so webhooks know who purchased
   // Must URL encode brackets [] for Lemon Squeezy to accept them

@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { PaymentProvider, CheckoutOptions, WebhookEvent } from "./provider";
 import { getPlan } from "../pricing/plans";
+import { isAcademicEmail } from "../pricing/student";
 
 // The Lemon Squeezy implementation
 export class LemonSqueezyProvider implements PaymentProvider {
@@ -45,7 +46,7 @@ export class LemonSqueezyProvider implements PaymentProvider {
 
     if (options.email) {
       url.searchParams.append("checkout[email]", options.email);
-      if (options.email.toLowerCase().endsWith(".edu")) {
+      if (isAcademicEmail(options.email)) {
         if (options.planId === "pro_monthly") {
           url.searchParams.append("checkout[discount_code]", "I5NJU2MA");
         } else if (options.planId === "pro_quarterly") {
