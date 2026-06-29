@@ -87,7 +87,7 @@ export default async function ReviewsPage() {
               </div>
               <div>
                 <p className="text-sm font-bold text-zinc-900">Overall Rating</p>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-zinc-600 dark:text-zinc-400">
                   {totalReviews} {totalReviews === 1 ? "review" : "reviews"}
                 </p>
               </div>
@@ -127,7 +127,7 @@ export default async function ReviewsPage() {
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
-                    <span className="text-xs text-zinc-400 w-6 text-right font-medium">
+                    <span className="text-xs text-zinc-600 dark:text-zinc-400 w-6 text-right font-medium">
                       {count}
                     </span>
                   </div>

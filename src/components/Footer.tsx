@@ -12,7 +12,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 gap-12 md:grid-cols-4 lg:grid-cols-5">
           {/* Company */}
           <div className="flex flex-col gap-4">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-900">Company</h4>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-900">Company</h3>
             <nav className="flex flex-col gap-2.5">
               <Link href="/about" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">About Us</Link>
               <Link href="/contact" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">Contact Us</Link>
@@ -21,7 +21,7 @@ export default function Footer() {
 
           {/* Support */}
           <div className="flex flex-col gap-4">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-900">Support</h4>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-900">Support</h3>
             <nav className="flex flex-col gap-2.5">
               <Link href="/privacy" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">Privacy Policy</Link>
               <Link href="/terms" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">Terms of Service</Link>
@@ -30,7 +30,7 @@ export default function Footer() {
 
           {/* Resources */}
           <div className="flex flex-col gap-4">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-900">Resources</h4>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-900">Resources</h3>
             <nav className="flex flex-col gap-2.5">
               <Link href="/tips" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">ATS Tips</Link>
               <Link href="/guides" className="text-sm text-zinc-600 hover:text-blue-600 transition-colors">Resume Guides</Link>

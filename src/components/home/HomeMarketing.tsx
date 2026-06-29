@@ -117,7 +117,7 @@ function FeaturesBento() {
   return (
     <section className="mx-auto max-w-6xl px-6 pb-20 sm:pb-28">
       <div className="text-center max-w-2xl mx-auto mb-12">
-        <p className="text-xs font-black uppercase tracking-[0.25em] text-zinc-400 mb-3">What you get</p>
+        <p className="text-xs font-black uppercase tracking-[0.25em] text-zinc-600 dark:text-zinc-400 mb-3">What you get</p>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
           One workflow, every check that matters
         </h2>
@@ -248,8 +248,8 @@ function ScoreMockPanel() {
       <div className="absolute -inset-px rounded-3xl bg-linear-to-br from-purple-200/40 to-pink-200/30 -z-10 blur-sm pointer-events-none" />
       <div className="rounded-2xl bg-white border border-zinc-100 p-6">
         <div className="flex items-center justify-between mb-6">
-          <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">ATS Report</span>
-          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Good</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">ATS Report</span>
+          <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">Good</span>
         </div>
         <ScoreBodyContent />
       </div>
@@ -349,7 +349,7 @@ function EditorMockPanel() {
         <span className="h-2.5 w-2.5 rounded-full bg-red-300" />
         <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
         <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
-        <span className="ml-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Resume Studio</span>
+        <span className="ml-2 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-widest">Resume Studio</span>
       </div>
       <div className="grid grid-cols-2 min-h-55">
         <div className="border-r border-zinc-100 bg-white p-4 space-y-3">

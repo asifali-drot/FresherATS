@@ -142,7 +142,7 @@ function StatItem({
   return (
     <div className={`flex flex-col items-center space-y-2.5 ${className}`}>
       <span className="text-3xl font-extrabold text-zinc-900 dark:text-white">{value}</span>
-      <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold uppercase tracking-[0.2em]">
+      <span className="text-[10px] text-zinc-700 dark:text-zinc-300 font-bold uppercase tracking-[0.2em]">
         {label}
       </span>
     </div>

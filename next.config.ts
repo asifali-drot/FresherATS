@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseHost = supabaseUrl ? new URL(supabaseUrl).hostname : undefined;
+
 const nextConfig: NextConfig = {
   compress: true,
   serverExternalPackages: ["pdfkit"],
@@ -57,6 +60,9 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'cdn.sanity.io',
       },
+      ...(supabaseHost
+        ? [{ protocol: 'https' as const, hostname: supabaseHost }]
+        : []),
     ],
   },
 };
