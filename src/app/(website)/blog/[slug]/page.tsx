@@ -119,16 +119,16 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </div>
       </div>
 
-      {/* Main Image - Natural fit without distortion or cutting */}
+      {/* Main Image - Fully visible in one frame */}
       {post.mainImage && (
-        <div className="max-w-7xl mx-auto px-6 mb-16">
-          <div className="rounded-3xl shadow-xl overflow-hidden bg-zinc-50 leading-0">
+        <div className="max-w-6xl mx-auto px-6 mb-16">
+          <div className="rounded-3xl shadow-xl overflow-hidden bg-zinc-50 leading-0 max-h-[80vh]">
             <Image
               src={urlFor(post.mainImage).width(2000).quality(95).url()}
               alt={post.title}
               width={2000}
               height={1000}
-              className="w-full h-auto"
+              className="w-full h-full object-cover"
               priority
             />
           </div>
@@ -242,8 +242,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       {/* FAQ Section */}
       {post.faqs && post.faqs.length > 0 && (
         <div className="max-w-7xl mx-auto px-6 mt-16">
-          <FAQSection 
-            faqs={post.faqs} 
+          <FAQSection
+            faqs={post.faqs}
             title="Questions About This Topic"
           />
         </div>
