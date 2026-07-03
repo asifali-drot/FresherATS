@@ -14,6 +14,7 @@ import TableOfContents from "@/components/blog/TableOfContents";
 import { createSlugger, extractToc } from "@/lib/blog/toc";
 import { Suspense } from "react";
 import LatestArticles from "@/components/blog/LatestArticles";
+import ResumeUpload from "@/components/ResumeUpload";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -135,15 +136,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </div>
       )}
 
-      {/* Layout Grid: TOC (left), Content (center) */}
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-10 gap-12">
+      {/* Layout Grid: TOC (left), Content (center), Resume Analysis (right) */}
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12">
         {/* Left: Table of Contents */}
         <aside className="lg:col-span-3 lg:pr-2 lg:sticky lg:top-28 lg:h-fit lg:self-start z-20">
           <TableOfContents items={toc} />
         </aside>
 
         {/* Center: Article Content */}
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-6">
           <article className="prose-blog">
             {post.body ? (
               <PortableText
@@ -236,7 +237,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </article>
         </div>
 
-        {/* Right: Empty for now */}
+        {/* Right: Resume Analysis Tool */}
+        <aside className="lg:col-span-3 lg:sticky lg:top-28 lg:h-fit lg:self-start z-20">
+          <div className="mb-6 flex items-center gap-2">
+            <div className="w-1.5 h-6 bg-purple-600 rounded-full" />
+            <h3 className="text-sm font-black uppercase tracking-wider text-zinc-400">Analyze Resume</h3>
+          </div>
+          <ResumeUpload />
+        </aside>
       </div>
 
       {/* FAQ Section */}

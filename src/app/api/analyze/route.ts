@@ -5,7 +5,6 @@ import { parsePdf } from "@/lib/resume/parsePdf";
 import { parseDocx } from "@/lib/resume/parseDocx";
 import { createClient } from "@/lib/supabase/server";
 import { textToResumeDocument } from "@/lib/resume/resumeDocument";
-import { getEffectiveTier } from "@/lib/adminUtils";
 
 
 export async function POST(req: NextRequest) {
@@ -13,22 +12,10 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
 
     const file = formData.get("resume") as File;
-    let jobDescription = formData.get("jobDescription") as string;
+    const jobDescription = formData.get("jobDescription") as string;
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
-    }
-
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (user) {
-      const tier = await getEffectiveTier(supabase, user.id);
-      if (tier === "free") {
-        jobDescription = "";
-      }
-    } else {
-      jobDescription = ""; // Guest users are free tier
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
