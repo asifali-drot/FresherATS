@@ -2,7 +2,8 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getEffectiveTier } from "@/lib/adminUtils";
+import { getEffectiveTier, getModelForTier } from "@/lib/adminUtils";
+
 export interface LinkedInAnalysisResult {
   overallScore: number;
   keywordScore: number;
@@ -49,6 +50,9 @@ export async function POST(req: NextRequest) {
     if (user) {
       tier = await getEffectiveTier(supabase, user.id);
     }
+
+    const model = getModelForTier(tier);
+    console.log(`[AI] Using model: ${model} (tier: ${tier})`);
 
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey || apiKey === "your_openrouter_api_key_here") {
@@ -107,7 +111,7 @@ ${
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "openai/gpt-4o-mini",
+          model,
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userMessage },

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { useState, useEffect, useRef, useTransition } from "react";
-import { Menu, X, Zap, FileText, Info, Rss, LayoutDashboard, Star, User as UserIcon, LogOut, Loader2, ChevronDown, Sparkles, Layout, Linkedin, Briefcase } from "lucide-react";
+import { Menu, X, Zap, LayoutDashboard, User as UserIcon, LogOut, Loader2, ChevronDown, Sparkles, Layout, Linkedin, Briefcase } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { logoutAction } from "@/app/(website)/(auth)/actions";
 
@@ -13,6 +13,8 @@ export default function Header() {
   const [isLoading, setIsLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isMobileToolsOpen, setIsMobileToolsOpen] = useState(false);
+  const [isMobileCoverLetterOpen, setIsMobileCoverLetterOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   const pathname = usePathname();
@@ -66,9 +68,23 @@ export default function Header() {
   const [isPendingLogout, startLogoutTransition] = useTransition();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const closeMenu = () => setIsMenuOpen(false);
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+    setIsMobileToolsOpen(false);
+    setIsMobileCoverLetterOpen(false);
+  };
   const toggleProfileDropdown = () => setIsProfileDropdownOpen(!isProfileDropdownOpen);
   const closeProfileDropdown = () => setIsProfileDropdownOpen(false);
+
+  const toggleMobileDropdown = (dropdown: "tools" | "coverLetter") => {
+    if (dropdown === "tools") {
+      setIsMobileToolsOpen((prev) => !prev);
+      setIsMobileCoverLetterOpen(false);
+    } else {
+      setIsMobileCoverLetterOpen((prev) => !prev);
+      setIsMobileToolsOpen(false);
+    }
+  };
 
   const handleLogout = () => {
     closeProfileDropdown();
@@ -109,26 +125,45 @@ export default function Header() {
             >
               Blog
             </Link>
-            <Link
-              href="/resume-templates"
-              className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
-            >
-              Templates
-            </Link>
-            <Link
-              href="/linkedin-checker"
-              className="flex items-center gap-1.5 text-sm font-bold text-zinc-600 hover:text-[#0077B5] transition-colors"
-            >
-              {/* <Linkedin className="h-3.5 w-3.5" /> */}
-              LinkedIn Checker
-            </Link>
-            <Link
-              href="/job-tracker"
-              className="flex items-center gap-1.5 text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
-            >
-              {/* <Briefcase className="h-3.5 w-3.5" /> */}
-              Job Tracker
-            </Link>
+            <div className="relative group py-2">
+              <button className="flex items-center gap-1 text-sm font-bold text-zinc-600 group-hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
+                Tools
+                <ChevronDown className="h-4 w-4 text-zinc-400 group-hover:text-blue-500 transition-colors" />
+              </button>
+
+              <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white p-3 shadow-xl border border-zinc-100 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-1002">
+                <Link
+                  href="/resume-templates"
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-blue-50/50 hover:text-blue-600 transition-colors"
+                >
+                  <Layout className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-xs font-extrabold text-zinc-900">Resume Templates</div>
+                    <div className="text-[10px] text-zinc-500 mt-0.5 leading-relaxed font-medium">Browse ATS-friendly resume templates and layouts.</div>
+                  </div>
+                </Link>
+                <Link
+                  href="/linkedin-checker"
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-blue-50/50 hover:text-[#0077B5] transition-colors mt-1"
+                >
+                  <Linkedin className="h-5 w-5 text-[#0077B5] shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-xs font-extrabold text-zinc-900">LinkedIn Checker</div>
+                    <div className="text-[10px] text-zinc-500 mt-0.5 leading-relaxed font-medium">Analyze and improve your LinkedIn profile for recruiters.</div>
+                  </div>
+                </Link>
+                <Link
+                  href="/job-tracker"
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-blue-50/50 hover:text-blue-600 transition-colors mt-1"
+                >
+                  <Briefcase className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-xs font-extrabold text-zinc-900">Job Tracker</div>
+                    <div className="text-[10px] text-zinc-500 mt-0.5 leading-relaxed font-medium">Track applications, follow-ups, and interview stages.</div>
+                  </div>
+                </Link>
+              </div>
+            </div>
             <div className="relative group py-2">
               <button className="flex items-center gap-1 text-sm font-bold text-zinc-600 group-hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
                 Cover Letter
@@ -160,12 +195,6 @@ export default function Header() {
               </div>
             </div>
             <Link
-              href="/reviews"
-              className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
-            >
-              Reviews
-            </Link>
-            <Link
               href="/pricing"
               className="text-sm font-bold text-zinc-600 hover:text-blue-600 transition-colors"
             >
@@ -174,7 +203,15 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-4">
-            <div className="hidden lg:flex items-center gap-6">
+            <div className="hidden lg:flex items-center gap-3">
+              {!isLoading && !user && (
+                <Link
+                  href="/#analyze"
+                  className="inline-flex items-center rounded-lg bg-blue-50 px-4 py-2 text-sm font-bold text-blue-600 transition-colors hover:bg-blue-100"
+                >
+                  Analyze My Resume
+                </Link>
+              )}
               {!isLoading && (
                 <>
                   {user ? (
@@ -283,19 +320,37 @@ export default function Header() {
 
       {/* Mobile Navigation Drawer */}
       < div
-        className={`fixed right-0 top-18.25 max-h-[80vh] z-999 w-[50vw] sm:w-1/2 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-l border-zinc-100 overflow-y-auto ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed left-0 top-18.25 max-h-[80vh] z-999 w-[75vw] sm:w-96 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-r border-zinc-100 overflow-y-auto ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex flex-col bg-white">
           <div className="flex flex-col gap-1 p-6">
             <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-2">Main Menu</p>
             <MobileNavLink href="/" label="Home" onClick={closeMenu} />
             <MobileNavLink href="/blog" label="Blog" onClick={closeMenu} />
-            <MobileNavLink href="/resume-templates" label="Templates" onClick={closeMenu} />
-            <MobileNavLink href="/linkedin-checker" label="LinkedIn Checker" onClick={closeMenu} />
-            <MobileNavLink href="/job-tracker" label="Job Tracker" onClick={closeMenu} />
-            <MobileNavLink href="/ai-cover-letter-generator?action=new" label="AI Cover Letter Generator" onClick={closeMenu} />
-            <MobileNavLink href="/cover-letter-templates" label="Cover Letter Templates" onClick={closeMenu} />
-            <MobileNavLink href="/reviews" label="Reviews" onClick={closeMenu} />
+            
+            <button onClick={() => toggleMobileDropdown("tools")} className="flex items-center justify-between px-4 py-4 rounded-2xl text-base font-bold text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-all border border-transparent hover:border-blue-100 w-full">
+              Tools
+              <ChevronDown className={`h-4 w-4 transition-transform ${isMobileToolsOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {isMobileToolsOpen && (
+              <div className="flex flex-col gap-1 pl-4">
+                <MobileNavLink href="/resume-templates" label="Templates" onClick={closeMenu} />
+                <MobileNavLink href="/linkedin-checker" label="LinkedIn Checker" onClick={closeMenu} />
+                <MobileNavLink href="/job-tracker" label="Job Tracker" onClick={closeMenu} />
+              </div>
+            )}
+
+            <button onClick={() => toggleMobileDropdown("coverLetter")} className="flex items-center justify-between px-4 py-4 rounded-2xl text-base font-bold text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-all border border-transparent hover:border-blue-100 w-full">
+              Cover Letter
+              <ChevronDown className={`h-4 w-4 transition-transform ${isMobileCoverLetterOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {isMobileCoverLetterOpen && (
+              <div className="flex flex-col gap-1 pl-4">
+                <MobileNavLink href="/ai-cover-letter-generator?action=new" label="AI Cover Letter Generator" onClick={closeMenu} />
+                <MobileNavLink href="/cover-letter-templates" label="Cover Letter Templates" onClick={closeMenu} />
+              </div>
+            )}
+
             <MobileNavLink href="/pricing" label="Pricing" onClick={closeMenu} />
             {/* <MobileNavLink href="/contact" icon={<Mail className="h-5 w-5" />} label="Contact Us" onClick={closeMenu} /> */}
             {user && (
@@ -329,13 +384,22 @@ export default function Header() {
                     </button>
                   </div>
                 ) : (
-                  <Link
-                    onClick={closeMenu}
-                    href="/signup"
-                    className="flex w-full items-center justify-center rounded-2xl bg-blue-600 hover:bg-blue-700 transition-colors p-4 text-sm font-bold text-white shadow-sm"
-                  >
-                    Sign up free
-                  </Link>
+                  <div className="flex flex-col gap-3">
+                    <Link
+                      href="/#analyze"
+                      onClick={closeMenu}
+                      className="flex w-full items-center justify-center rounded-2xl bg-blue-50 hover:bg-blue-100 text-blue-600 transition-colors p-4 text-sm font-bold shadow-sm"
+                    >
+                      Analyze My Resume
+                    </Link>
+                    <Link
+                      onClick={closeMenu}
+                      href="/signup"
+                      className="flex w-full items-center justify-center rounded-2xl bg-blue-600 hover:bg-blue-700 transition-colors p-4 text-sm font-bold text-white shadow-sm"
+                    >
+                      Sign up free
+                    </Link>
+                  </div>
                 )}
               </>
             )}

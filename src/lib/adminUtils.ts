@@ -32,6 +32,18 @@ export async function getEffectiveTier(
 }
 
 /**
+ * Returns the OpenRouter model ID for a given user tier.
+ * - Paid users (starter / pro / admin) get Claude Sonnet 4.6.
+ * - Free and guest users get gpt-4o-mini.
+ */
+export function getModelForTier(tier: string): string {
+  if (tier === "starter" || tier === "pro") {
+    return "anthropic/claude-sonnet-4.6";
+  }
+  return "openai/gpt-4o-mini";
+}
+
+/**
  * Returns true if the given user ID is in the ADMIN_USER_IDS env variable.
  */
 export function isAdmin(userId: string | null | undefined): boolean {

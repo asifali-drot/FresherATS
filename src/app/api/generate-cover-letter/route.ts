@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getEffectiveTier } from "@/lib/adminUtils";
+import { getEffectiveTier, getModelForTier } from "@/lib/adminUtils";
 
 export const runtime = "nodejs";
 
@@ -33,6 +33,9 @@ export async function POST(req: NextRequest): Promise<Response> {
     if (tier === "free") {
       return NextResponse.json({ error: "AI Cover Letter generation is a Premium feature. Please upgrade to Starter." }, { status: 403 });
     }
+
+    const model = getModelForTier(tier);
+    console.log(`[AI] Using model: ${model} (tier: ${tier})`);
 
     const { data: usage } = await supabase.from("usage_tracking").select("cover_letters").eq("user_id", user.id).single();
     
@@ -117,7 +120,7 @@ ${resumeText || "(No resume text provided. Use general details for a student/ent
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
