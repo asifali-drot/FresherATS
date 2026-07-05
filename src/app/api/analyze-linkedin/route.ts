@@ -133,9 +133,11 @@ ${
 
     let result: LinkedInAnalysisResult;
     try {
-      result = JSON.parse(raw);
+      let cleanedJson = raw.trim();
+      cleanedJson = cleanedJson.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+      result = JSON.parse(cleanedJson);
     } catch {
-      console.error("Failed to parse LinkedIn analysis JSON:", raw);
+      console.error("Failed to parse LinkedIn analysis JSON. Raw response was:", raw);
       return NextResponse.json(
         { error: "Failed to parse AI response. Please try again." },
         { status: 500 }

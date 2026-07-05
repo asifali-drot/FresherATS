@@ -6,7 +6,7 @@ export interface ParsedSection {
   content: string[];
 }
 
-export const SECTION_PATTERNS = [
+export const SECTION_PATTERNS: { pattern: RegExp; title: string | null }[] = [
   { pattern: /^[#\*\s]*contact\b/i, title: "CONTACT" },
   { pattern: /^[#\*\s]*summary\b/i, title: "SUMMARY" },
   { pattern: /^[#\*\s]*objective\b/i, title: "OBJECTIVE" },
@@ -27,12 +27,17 @@ export const SECTION_PATTERNS = [
   { pattern: /^[#\*\s]*volunteer\b/i, title: "VOLUNTEER" },
   { pattern: /^[#\*\s]*interests\b/i, title: "INTERESTS" },
   { pattern: /^[#\*\s]*references\b/i, title: "REFERENCES" },
+  // Catch-all: any short, all-caps line is treated as a custom section heading.
+  // This ensures sections added via the guided editor (e.g. "NEW SECTION",
+  // "ACHIEVEMENTS") still render with a bold heading + divider in the preview.
+  { pattern: /^[A-Z][A-Z\s&\/\-]{1,38}[A-Z]$/, title: null },
 ];
 
 export function detectSection(line: string): string | null {
   for (const { pattern, title } of SECTION_PATTERNS) {
     if (pattern.test(line.trim())) {
-      return title;
+      // title is null for the catch-all pattern — use the raw line as the section title
+      return (title ?? line.trim().replace(/^[#*\s]+/, "").trim()) || null;
     }
   }
   return null;
@@ -61,7 +66,8 @@ export function parseResumeText(text: string): {
       !trimmed.startsWith("•") &&
       !trimmed.startsWith("-")
     ) {
-      nameLines.push(trimmed);
+      const cleaned = trimmed.replace(/^#+\s*/, "");
+      nameLines.push(cleaned);
       startIdx = i + 1;
     } else {
       break;
@@ -70,6 +76,12 @@ export function parseResumeText(text: string): {
 
   for (let i = startIdx; i < lines.length; i++) {
     const trimmedLine = lines[i].trim();
+    
+    // Skip empty bullets
+    if (/^[•\-\*]+$/.test(trimmedLine)) {
+      continue;
+    }
+
     const sectionTitle = detectSection(trimmedLine);
 
     if (sectionTitle) {
@@ -187,7 +199,11 @@ export function generateResumeHtml(
                                   .replace(/_(.*?)_/g, '<em>$1</em>')
                                   .replace(/==(.*?)==/g, '<mark>$1</mark>');
           
-          if (processedLine.startsWith('*') || processedLine.startsWith('•') || processedLine.startsWith('-')) {
+          const isBullet = processedLine.startsWith('•') || 
+                           /^\*\s/.test(processedLine) || 
+                           /^-\s/.test(processedLine);
+          
+          if (isBullet) {
             const pureLine = processedLine.replace(/^[\*•\-]\s*/, '');
             return `<div class="resume-bullet-item"><span class="bullet"></span><span class="text">${pureLine}</span></div>`;
           }
@@ -385,6 +401,15 @@ export function generateResumeHtml(
         ${nameHeader}
         ${sectionHtml}
       </div>
+      <script>
+        window.onload = () => {
+          const scrollY = sessionStorage.getItem('resumeScrollY');
+          if (scrollY) window.scrollTo(0, parseInt(scrollY, 10));
+        };
+        window.onscroll = () => {
+          sessionStorage.setItem('resumeScrollY', window.scrollY);
+        };
+      </script>
     </body>
     </html>
   `;

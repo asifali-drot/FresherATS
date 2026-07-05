@@ -37,6 +37,8 @@ import {
   List,
   Cloud,
   CloudOff,
+  Plus,
+  Trash2,
 } from "lucide-react";
 
 // Skills chip editor component
@@ -46,32 +48,39 @@ function applyDocumentToState(
   doc: ResumeDocumentJson,
   setResumeDocument: (d: ResumeDocumentJson) => void,
   setResumeText: (t: string) => void,
-  setLocalNameLines: (l: string[]) => void,
   setLocalSections: (s: ParsedSection[]) => void
 ) {
   setResumeDocument(doc);
   const text = resumeDocumentToText(doc);
   setResumeText(text);
   const parsed = resumeDocumentToParsed(doc);
-  setLocalNameLines(parsed.nameLines);
   setLocalSections(parsed.sections);
+}
+
+function createEmptyLineDoc(): JSONContent {
+  return { type: "doc", content: [{ type: "paragraph" }] };
+}
+
+function createEmptySectionDoc(title = "NEW SECTION") {
+  return {
+    title,
+    content: { type: "doc", content: [{ type: "paragraph" }] } as JSONContent,
+  };
 }
 
 function loadFromPlainText(
   text: string,
   setResumeDocument: (d: ResumeDocumentJson) => void,
   setResumeText: (t: string) => void,
-  setLocalNameLines: (l: string[]) => void,
   setLocalSections: (s: ParsedSection[]) => void
 ) {
-  applyDocumentToState(textToResumeDocument(text), setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
+  applyDocumentToState(textToResumeDocument(text), setResumeDocument, setResumeText, setLocalSections);
 }
 
 function ResumeEditorContent() {
   const [resumeText, setResumeText] = useState("");
   const [resumeDocument, setResumeDocument] = useState<ResumeDocumentJson>(() => textToResumeDocument(""));
   const [editorMode, setEditorMode] = useState<"guided" | "raw">("guided");
-  const [localNameLines, setLocalNameLines] = useState<string[]>([]);
   const [localSections, setLocalSections] = useState<ParsedSection[]>([]);
 
   const [analysisId, setAnalysisId] = useState<string | null>(null);
@@ -143,7 +152,7 @@ function ResumeEditorContent() {
         const doc = isResumeDocumentJson(row.resume_document)
           ? row.resume_document
           : textToResumeDocument(text);
-        applyDocumentToState(doc, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
+        applyDocumentToState(doc, setResumeDocument, setResumeText, setLocalSections);
       };
 
       if (templateIdParam && typeof window !== "undefined") {
@@ -156,7 +165,7 @@ function ResumeEditorContent() {
         }
 
         const template = getResumeTemplateById(templateIdParam);
-        loadFromPlainText(template.seedResumeText, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
+        loadFromPlainText(template.seedResumeText, setResumeDocument, setResumeText, setLocalSections);
         setAnalysisId(null);
         setIsLoading(false);
         // Template mode has no DB row — don't enable auto-save
@@ -205,7 +214,7 @@ function ResumeEditorContent() {
                 };
                 const text = parsed.optimizedResume || parsed.optimized_resume || "";
                 if (text) {
-                  loadFromPlainText(text, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
+                  loadFromPlainText(text, setResumeDocument, setResumeText, setLocalSections);
                   setAnalysisId(parsed.analysis_id || null);
                 }
               } catch (e) {
@@ -253,7 +262,7 @@ function ResumeEditorContent() {
               optimized_resume?: string;
             };
             const text = parsed.optimizedResume || parsed.optimized_resume || "";
-            loadFromPlainText(text, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
+            loadFromPlainText(text, setResumeDocument, setResumeText, setLocalSections);
             setAnalysisId(parsed.analysis_id || null);
           } catch (e) {
             console.error("Failed to parse stored results", e);
@@ -262,7 +271,7 @@ function ResumeEditorContent() {
           try {
             const doc = JSON.parse(storedResumeDocument) as ResumeDocumentJson;
             if (isResumeDocumentJson(doc)) {
-              applyDocumentToState(doc, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
+              applyDocumentToState(doc, setResumeDocument, setResumeText, setLocalSections);
             }
           } catch (e) {
             console.error("Failed to parse stored resume document", e);
@@ -272,7 +281,7 @@ function ResumeEditorContent() {
           window.sessionStorage.removeItem("resumeContent");
           window.sessionStorage.removeItem("analysisId");
         } else if (resumeContent) {
-          loadFromPlainText(resumeContent, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
+          loadFromPlainText(resumeContent, setResumeDocument, setResumeText, setLocalSections);
           setAnalysisId(storedAnalysisId || null);
           window.sessionStorage.removeItem("resumeContent");
           window.sessionStorage.removeItem("analysisId");
@@ -305,9 +314,78 @@ function ResumeEditorContent() {
       const next = { ...prev, nameLines };
       const text = resumeDocumentToText(next);
       setResumeText(text);
-      setLocalNameLines(resumeDocumentToParsed(next).nameLines);
       return next;
     });
+  };
+
+  const handleAddPersonalField = (idx: number) => {
+    setResumeDocument((prev) => {
+      const nameLines = [...prev.nameLines];
+      nameLines.splice(idx + 1, 0, createEmptyLineDoc());
+      const next = { ...prev, nameLines };
+      const text = resumeDocumentToText(next);
+      setResumeText(text);
+      return next;
+    });
+  };
+
+  const handleRemovePersonalField = (idx: number) => {
+    setResumeDocument((prev) => {
+      if (prev.nameLines.length <= 1) return prev;
+
+      const nameLines = [...prev.nameLines];
+      nameLines.splice(idx, 1);
+      const next = { ...prev, nameLines };
+      const text = resumeDocumentToText(next);
+      setResumeText(text);
+      return next;
+    });
+  };
+
+  const handleAddSection = (idx: number) => {
+    setResumeDocument((prev) => {
+      const sections = [...prev.sections];
+      sections.splice(idx + 1, 0, createEmptySectionDoc());
+      const next = { ...prev, sections };
+      const text = resumeDocumentToText(next);
+      setResumeText(text);
+      setLocalSections(resumeDocumentToParsed(next).sections);
+      return next;
+    });
+  };
+
+  const handleRemoveSection = (idx: number) => {
+    setResumeDocument((prev) => {
+      if (prev.sections.length <= 1) return prev;
+
+      const sections = [...prev.sections];
+      sections.splice(idx, 1);
+      const next = { ...prev, sections };
+      const text = resumeDocumentToText(next);
+      setResumeText(text);
+      setLocalSections(resumeDocumentToParsed(next).sections);
+      return next;
+    });
+  };
+
+  const handleSectionTitleUpdate = (idx: number, title: string) => {
+    // Allow empty value while typing — do not apply fallback on every keystroke
+    setResumeDocument((prev) => {
+      const sections = [...prev.sections];
+      sections[idx] = { ...sections[idx], title };
+      const next = { ...prev, sections };
+      const text = resumeDocumentToText(next);
+      setResumeText(text);
+      setLocalSections(resumeDocumentToParsed(next).sections);
+      return next;
+    });
+  };
+
+  const handleSectionTitleBlur = (idx: number, title: string) => {
+    // On blur, enforce a non-empty title
+    if (!title.trim()) {
+      handleSectionTitleUpdate(idx, "SECTION");
+    }
   };
 
   const handleSectionDocUpdate = (idx: number, content: JSONContent) => {
@@ -325,7 +403,7 @@ function ResumeEditorContent() {
   const handleModeChange = (mode: "guided" | "raw") => {
     if (mode === "guided") {
       const doc = textToResumeDocument(resumeText);
-      applyDocumentToState(doc, setResumeDocument, setResumeText, setLocalNameLines, setLocalSections);
+      applyDocumentToState(doc, setResumeDocument, setResumeText, setLocalSections);
     }
     setEditorMode(mode);
   };
@@ -351,7 +429,11 @@ function ResumeEditorContent() {
       const response = await fetch("/api/generate-pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeText, templateId: resolvedTemplateId }),
+        body: JSON.stringify({
+          resumeText,
+          resumeDocument: editorMode === "guided" ? resumeDocument : undefined,
+          templateId: resolvedTemplateId,
+        }),
       });
 
       if (!response.ok) {
@@ -409,6 +491,7 @@ function ResumeEditorContent() {
     editorMode,
     resumeDocument,
     saveResumeDocument,
+    refreshSubscription,
   ]);
 
   if (isLoading) {
@@ -419,7 +502,9 @@ function ResumeEditorContent() {
     );
   }
 
-  const previewParsed = parseResumeText(resumeText);
+  const previewParsed = editorMode === "guided"
+    ? resumeDocumentToParsed(resumeDocument)
+    : parseResumeText(resumeText);
   const previewHtml = generateResumeHtml(previewParsed.nameLines, previewParsed.sections, resolvedTemplateId);
 
   return (
@@ -559,12 +644,12 @@ function ResumeEditorContent() {
               <nav className="w-56 shrink-0 border-r border-zinc-100 dark:border-zinc-900 p-4 overflow-y-auto hidden xl:block">
                 <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-4 block">Navigation</span>
                 <div className="space-y-1">
-                  <a href="#personal-info" className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg bg-zinc-50 dark:bg-zinc-900 text-blue-600 border border-blue-100 dark:border-blue-900/50">
+                  <a href="#personal-info" className="flex items-center gap-2 px-3 py-2 text-xs font-medium uppercase tracking-wider rounded-lg bg-zinc-50 dark:bg-zinc-900 text-blue-600 border border-blue-100 dark:border-blue-900/50">
                     <User className="h-3.5 w-3.5" />
                     Personal Info
                   </a>
                   {localSections.map((s, idx) => (
-                    <a key={idx} href={`#section-${idx}`} className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors">
+                    <a key={idx} href={`#section-${idx}`} className="flex items-center gap-2 px-3 py-2 text-xs font-medium uppercase tracking-wider rounded-lg text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors">
                       <List className="h-3.5 w-3.5 opacity-50" />
                       {s.title}
                     </a>
@@ -611,19 +696,43 @@ function ResumeEditorContent() {
               ) : (
                 <div className="p-8 space-y-8 max-w-3xl mx-auto w-full h-full flex flex-col overflow-y-auto">
                   <section id="personal-info" className="space-y-4 shrink-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                        <User className="h-4 w-4 text-blue-600" />
+                    <div className="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                          <User className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-[0.2em]">Personal Details</h3>
                       </div>
-                      <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">Personal Details</h3>
                     </div>
                     <div className="grid grid-cols-1 gap-6 bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
                       {resumeDocument.nameLines.map((lineDoc, idx) => (
-                        <div key={idx} className="space-y-1.5">
-                          <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-1.5">
-                            {idx === 0 ? <User className="h-2.5 w-2.5" /> : idx === 1 ? <Mail className="h-2.5 w-2.5" /> : <MapPin className="h-2.5 w-2.5" />}
-                            {idx === 0 ? "Full Name" : idx === 1 ? "Contact/Email" : `Link/Location ${idx - 1}`}
-                          </label>
+                        <div key={idx} className="space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-1.5">
+                              {idx === 0 ? <User className="h-2.5 w-2.5" /> : idx === 1 ? <Mail className="h-2.5 w-2.5" /> : <MapPin className="h-2.5 w-2.5" />}
+                              {idx === 0 ? "Full Name" : idx === 1 ? "Contact/Email" : `Link/Location ${idx - 1}`}
+                            </label>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleAddPersonalField(idx)}
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition hover:border-blue-200 hover:text-blue-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                                title="Add field"
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                              </button>
+                              {resumeDocument.nameLines.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemovePersonalField(idx)}
+                                  className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-500 transition hover:border-red-200 hover:text-red-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
+                                  title="Remove field"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
                           <ResumeTipTapInlineEditor
                             content={lineDoc}
                             onChange={(content) => handlePersonalDocUpdate(idx, content)}
@@ -637,23 +746,51 @@ function ResumeEditorContent() {
 
                   {resumeDocument.sections.map((section, idx) => (
                     <section key={idx} id={`section-${idx}`} className="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-900 shrink-0 flex flex-col">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="h-8 w-8 rounded-lg bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
-                          {section.title === "EXPERIENCE" ? (
-                            <Briefcase className="h-4 w-4" />
-                          ) : section.title === "EDUCATION" ? (
-                            <GraduationCap className="h-4 w-4" />
-                          ) : section.title === "SKILLS" ? (
-                            <Code className="h-4 w-4" />
-                          ) : section.title === "SUMMARY" ? (
-                            <Target className="h-4 w-4" />
-                          ) : section.title === "PROJECTS" ? (
-                            <Award className="h-4 w-4" />
-                          ) : (
-                            <List className="h-4 w-4" />
+                      <div className="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-lg bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center">
+                            {section.title === "EXPERIENCE" ? (
+                              <Briefcase className="h-4 w-4" />
+                            ) : section.title === "EDUCATION" ? (
+                              <GraduationCap className="h-4 w-4" />
+                            ) : section.title === "SKILLS" ? (
+                              <Code className="h-4 w-4" />
+                            ) : section.title === "SUMMARY" ? (
+                              <Target className="h-4 w-4" />
+                            ) : section.title === "PROJECTS" ? (
+                              <Award className="h-4 w-4" />
+                            ) : (
+                              <List className="h-4 w-4" />
+                            )}
+                          </div>
+                          <input
+                            value={section.title}
+                            onChange={(e) => handleSectionTitleUpdate(idx, e.target.value)}
+                            onBlur={(e) => handleSectionTitleBlur(idx, e.target.value)}
+                            className="w-full max-w-55 border-none bg-transparent px-0 py-0 text-sm font-black uppercase tracking-[0.2em] text-zinc-900 outline-none dark:text-zinc-100"
+                            placeholder="Section title"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleAddSection(idx)}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition hover:border-blue-200 hover:text-blue-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
+                            title="Add section"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                          </button>
+                          {resumeDocument.sections.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSection(idx)}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-500 transition hover:border-red-200 hover:text-red-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
+                              title="Remove section"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
                           )}
                         </div>
-                        <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">{section.title}</h3>
                       </div>
                       <div className="flex-1">
                         {section.title === "SKILLS" ? (

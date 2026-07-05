@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseResumeText } from "@/lib/resume/resumeUtils";
+import { parseResumeText, ParsedSection } from "@/lib/resume/resumeUtils";
 import { createClient } from "@/lib/supabase/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { ResumePdfDocument } from "@/lib/resume/ResumePdfDocument";
 import { getEffectiveTier } from "@/lib/adminUtils";
+import { isResumeDocumentJson, resumeDocumentToParsed } from "@/lib/resume/resumeDocument";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest): Promise<Response> {
   try {
     const body = await req.json();
-    const { resumeText, templateId } = body;
+    const { resumeText, resumeDocument, templateId } = body;
 
-    console.log("[PDF] Generation request received. Length:", resumeText?.length);
+    console.log("[PDF] Generation request received. Length:", resumeText?.length, "Has document:", !!resumeDocument);
 
     if (!resumeText || resumeText.trim().length === 0) {
       return NextResponse.json({ error: "No resume text provided" }, { status: 400 });
@@ -48,7 +49,18 @@ export async function POST(req: NextRequest): Promise<Response> {
       );
     }
 
-    const { nameLines, sections } = parseResumeText(resumeText);
+    let nameLines: string[];
+    let sections: ParsedSection[];
+
+    if (resumeDocument && isResumeDocumentJson(resumeDocument)) {
+      const parsed = resumeDocumentToParsed(resumeDocument);
+      nameLines = parsed.nameLines;
+      sections = parsed.sections;
+    } else {
+      const parsed = parseResumeText(resumeText);
+      nameLines = parsed.nameLines;
+      sections = parsed.sections;
+    }
     
     console.log("[PDF] Generating PDF with @react-pdf/renderer");
     const element = React.createElement(ResumePdfDocument, { nameLines, sections, templateId });

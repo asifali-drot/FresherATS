@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { parseResumeText } from "@/lib/resume/resumeUtils";
-import { isResumeDocumentJson, resumeDocumentToText } from "@/lib/resume/resumeDocument";
+import { isResumeDocumentJson, resumeDocumentToText, resumeDocumentToParsed } from "@/lib/resume/resumeDocument";
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { ResumePdfDocument } from "@/lib/resume/ResumePdfDocument";
 import { getEffectiveTier } from "@/lib/adminUtils";
+import { ParsedSection } from "@/lib/resume/resumeUtils";
 
 export const runtime = "nodejs";
 
-async function buildPdf(resumeText: string): Promise<Buffer> {
-  const { nameLines, sections } = parseResumeText(resumeText);
-
+async function buildPdf(nameLines: string[], sections: ParsedSection[]): Promise<Buffer> {
   try {
     console.log("[PDF] Generating PDF with @react-pdf/renderer");
     const element = React.createElement(ResumePdfDocument, { nameLines, sections });
@@ -75,16 +74,25 @@ export async function POST(req: NextRequest): Promise<Response> {
       return NextResponse.json({ error: "Analysis not found" }, { status: 404 });
     }
 
-    let resumeText: string = row.optimized_resume ?? "";
-    if ((!resumeText || resumeText.trim().length < 5) && isResumeDocumentJson(row.resume_document)) {
-      resumeText = resumeDocumentToText(row.resume_document);
-    }
-    if (!resumeText || resumeText.trim().length < 5) {
-      return NextResponse.json({ error: "No optimized resume text found" }, { status: 400 });
+    let nameLines: string[] = [];
+    let sections: ParsedSection[] = [];
+
+    if (isResumeDocumentJson(row.resume_document)) {
+      const parsed = resumeDocumentToParsed(row.resume_document);
+      nameLines = parsed.nameLines;
+      sections = parsed.sections;
+    } else {
+      const resumeText = row.optimized_resume ?? "";
+      if (!resumeText || resumeText.trim().length < 5) {
+        return NextResponse.json({ error: "No optimized resume text found" }, { status: 400 });
+      }
+      const parsed = parseResumeText(resumeText);
+      nameLines = parsed.nameLines;
+      sections = parsed.sections;
     }
 
     // 2. Generate PDF Buffer
-    const pdfBuffer = await buildPdf(resumeText);
+    const pdfBuffer = await buildPdf(nameLines, sections);
     
     if (!pdfBuffer || pdfBuffer.length < 100) {
       throw new Error("Generated PDF is invalid or empty");

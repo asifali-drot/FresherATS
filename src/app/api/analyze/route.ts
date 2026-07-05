@@ -128,21 +128,15 @@ Return ONLY valid JSON matching this schema. Do not include any text, explanatio
         headers: {
           Authorization: authHeader,
           "Content-Type": "application/json",
+          // Enable Anthropic prompt caching via OpenRouter (no-op for OpenAI models)
+          "anthropic-beta": "prompt-caching-2024-07-31",
         },
         body: JSON.stringify({
           model,
           messages: [
             {
               role: "system",
-              // cache_control marks this large static prompt for Anthropic prompt caching.
-              // OpenRouter forwards it to Anthropic; ignored silently by OpenAI models.
-              content: [
-                {
-                  type: "text",
-                  text: STAGE1_SYSTEM_PROMPT,
-                  cache_control: { type: "ephemeral" },
-                },
-              ],
+              content: STAGE1_SYSTEM_PROMPT,
             },
             {
               role: "user",
@@ -186,7 +180,9 @@ Return ONLY valid JSON matching this schema. Do not include any text, explanatio
     } = {};
 
     try {
-      const parsed = JSON.parse(stage1Raw);
+      let cleanedJson = stage1Raw.trim();
+      cleanedJson = cleanedJson.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+      const parsed = JSON.parse(cleanedJson);
       analysis = {
         ats_score: parsed.ats_score ?? 0,
         score_breakdown: parsed.score_breakdown ?? { formatting: 0, keyword_match: 0, impact_language: 0, structure: 0 },
@@ -202,7 +198,7 @@ Return ONLY valid JSON matching this schema. Do not include any text, explanatio
         missingKeywords: parsed.missing_keywords ?? [],
       };
     } catch (e) {
-      console.error("Failed to parse Stage 1 JSON:", stage1Raw);
+      console.error("Failed to parse Stage 1 JSON. Raw response was:", stage1Raw);
       return NextResponse.json({ error: "Failed to parse resume analysis." }, { status: 500 });
     }
 

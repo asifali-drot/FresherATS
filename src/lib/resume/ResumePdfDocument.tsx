@@ -218,7 +218,7 @@ export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({
         )}
 
         {sections.map((section, sIndex) => (
-          <View key={sIndex} style={styles.section} wrap={false}>
+          <View key={sIndex} style={styles.section}>
             <Text style={styles.sectionTitle}>{section.title}</Text>
             <View>
               {section.title === 'SKILLS' ? (
@@ -234,7 +234,11 @@ export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({
                 section.content.map((line, lIndex) => {
                   const processedLine = line;
 
-                  if (processedLine.startsWith('*') || processedLine.startsWith('•') || processedLine.startsWith('-')) {
+                  const isBullet = processedLine.startsWith('•') || 
+                                   /^\*\s/.test(processedLine) || 
+                                   /^-\s/.test(processedLine);
+
+                  if (isBullet) {
                     const pureLine = processedLine.replace(/^[\*•\-]\s*/, '');
                     return (
                       <View key={lIndex} style={styles.bulletContainer}>

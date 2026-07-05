@@ -35,7 +35,9 @@ function plainLinesToHtml(lines: string[]): string {
     .map((line) => {
       const bulletMatch = line.match(/^[•\-\*]\s(.*)$/);
       if (bulletMatch) {
-        return `<ul><li><p>${inlineMarkdownToHtml(bulletMatch[1]) || "<br>"}</p></li></ul>`;
+        const text = bulletMatch[1].trim();
+        if (!text) return ""; // Skip empty bullets
+        return `<ul><li><p>${inlineMarkdownToHtml(text)}</p></li></ul>`;
       }
       if (!line.trim()) return "<p><br></p>";
       return `<p>${inlineMarkdownToHtml(line)}</p>`;
@@ -84,8 +86,10 @@ export function tiptapDocToPlainLines(doc: JSONContent): string[] {
       for (const item of block.content ?? []) {
         if (item.type !== "listItem") continue;
         const paragraph = item.content?.find((n) => n.type === "paragraph");
-        const text = serializeInline(paragraph?.content);
-        lines.push(`• ${text}`.trimEnd());
+        const text = serializeInline(paragraph?.content).trim();
+        if (text) {
+          lines.push(`• ${text}`);
+        }
       }
     }
   }
@@ -105,7 +109,10 @@ export function resumeDocumentToText(doc: ResumeDocumentJson): string {
   const nameLines = doc.nameLines.map((lineDoc) => tiptapDocToPlainText(lineDoc)).filter(Boolean);
   const sectionBlocks = doc.sections.flatMap((section) => {
     const contentLines = tiptapDocToPlainLines(section.content);
-    return [section.title, ...contentLines, ""];
+    // Use a placeholder title when empty (user is mid-rename) so parseResumeText
+    // still treats this as its own section and doesn't merge content into the previous one.
+    const titleLine = section.title.trim() || "NEW SECTION";
+    return [titleLine, ...contentLines, ""];
   });
 
   return [...nameLines, "", ...sectionBlocks].join("\n").replace(/\n{3,}/g, "\n\n").trimEnd();
