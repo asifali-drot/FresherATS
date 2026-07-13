@@ -33,6 +33,16 @@ export async function getEntitlement(userId: string): Promise<EntitlementState> 
     .limit(1)
     .single();
 
+  // Fetch tier from user_subscriptions
+  const { data: userSub } = await supabase
+    .from("user_subscriptions")
+    .select("tier")
+    .eq("user_id", userId)
+    .single();
+
+  const userTier = userSub?.tier || "free";
+  const hasPaidTier = userTier === "admin" || userTier === "pro" || userTier === "starter";
+
   // Aggregate total credits
   const { data: creditsData } = await supabase
     .from("purchases")
@@ -45,11 +55,12 @@ export async function getEntitlement(userId: string): Promise<EntitlementState> 
 
   const hasActiveSub = !!subData;
   const hasActivePass = !!passData;
-  const isPro = hasActiveSub || hasActivePass;
+  const isPro = hasActiveSub || hasActivePass || hasPaidTier;
 
   let plan: "free" | "pro_monthly" | "pass" = "free";
   if (hasActiveSub) plan = "pro_monthly";
   else if (hasActivePass) plan = "pass";
+  else if (hasPaidTier) plan = "pro_monthly"; // admin, pro, and starter all get full pro_monthly access
 
   return {
     isPro,

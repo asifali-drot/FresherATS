@@ -27,7 +27,7 @@ export default function Suggestions({ data }: SuggestionsProps) {
   const isProUser = tier === "pro";
 
   const suggestions = data.suggestions ?? [];
-  const missingKeywords = data.missingKeywords ?? []; 
+  const missingKeywords = data.missingKeywords ?? [];
 
   return (
     <div className="flex flex-col gap-10">
@@ -84,17 +84,17 @@ export default function Suggestions({ data }: SuggestionsProps) {
               ))
             ) : (
               <div className="group flex items-center justify-between rounded-2xl border border-zinc-100 bg-white p-5 shadow-sm">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 text-white">
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <span className="font-semibold text-zinc-700">Add technical skills like Python, Excel.</span>
+                <div className="flex items-center gap-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-900 text-white">
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                   </div>
-                  <svg className="h-5 w-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                  <span className="font-semibold text-zinc-700">Add technical skills like Python, Excel.</span>
+                </div>
+                <svg className="h-5 w-5 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             )}
           </div>

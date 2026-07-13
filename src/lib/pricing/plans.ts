@@ -55,8 +55,12 @@ export const PLANS: Record<PlanId, Plan> = {
     features: [
       "Everything in Free",
       "Unlimited AI cover letters",
-      "Full LinkedIn optimizer",
+      "Resume Missing Keywords Checker",
       "Advanced ATS formatting analysis",
+      "Unlimited resume PDF downloads",
+      "Company specific keyword pack analysis",
+      "Full LinkedIn optimizer",
+      "Job tracker — up to 20 jobs",
       "Priority processing",
     ],
     highlighted: true,

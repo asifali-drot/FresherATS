@@ -33,8 +33,8 @@ export default function LinkedInChecker() {
 
   // Still fetch subscription for the Optimizer overlay (in case user logs in later)
   const { tier: hookTier } = useSubscription();
-  // Use API-returned tier if we have a result; fallback to hook for live state
-  const isOptimizerLocked = (result ? resultTier : hookTier) !== "pro";
+  const currentTier = result ? resultTier : hookTier;
+  const isOptimizerLocked = currentTier !== "pro" && currentTier !== "admin";
 
   const canAnalyze = profileText.trim().length >= 30;
 

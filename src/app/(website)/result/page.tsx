@@ -13,6 +13,7 @@ function AnalyzeResultContent() {
   const [data, setData] = useState<AnalysisResult | null>(null);
 
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingWord, setIsDownloadingWord] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const [user, setUser] = useState<User | null>(null);
@@ -134,6 +135,76 @@ function AnalyzeResultContent() {
       setIsDownloading(false);
     }
   }, [isDownloading, user, data]);
+
+  const downloadWord = useCallback(async () => {
+    if (isDownloadingWord) return;
+
+    if (!user) {
+      const params = new URLSearchParams();
+      params.set("claim_id", data?.analysis_id || "");
+      params.set("redirect", window.location.pathname);
+      window.location.href = `/login?${params.toString()}`;
+      return;
+    }
+
+    if (!data?.optimizedResume && !data?.result) return;
+
+    setIsDownloadingWord(true);
+    setDownloadError(null);
+    try {
+      const response = await fetch('/api/generate-word', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resumeText: data.optimizedResume || data.result }),
+      });
+
+      if (!response.ok) {
+        let errorMsg = 'Failed to generate Word document';
+        try {
+          const errData = await response.json();
+          if (errData?.error) errorMsg = errData.error;
+        } catch { }
+        throw new Error(errorMsg);
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const { url } = await response.json();
+        if (url) {
+          const wordRes = await fetch(url);
+          const blob = await wordRes.blob();
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = 'optimized-resume.docx';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(downloadUrl);
+          await refresh();
+          return;
+        }
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'optimized-resume.docx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      await refresh();
+    } catch (error) {
+      console.error('Word download failed:', error);
+      setDownloadError(
+        error instanceof Error ? error.message : 'Failed to download Word document'
+      );
+    } finally {
+      setIsDownloadingWord(false);
+    }
+  }, [isDownloadingWord, user, data, refresh]);
   
   const handlePreview = useCallback(() => {
     if (!user) {
@@ -197,28 +268,56 @@ function AnalyzeResultContent() {
                       </Link>
                     </div>
                   ) : (
-                    <button
-                      onClick={downloadPDF}
-                      disabled={isDownloading}
-                      className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-sm font-bold text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-600 transition-all active:scale-95 shadow-lg shadow-zinc-200 w-full justify-center"
-                    >
-                      {isDownloading ? (
-                        <>
-                          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Generating...
-                        </>
-                      ) : (
-                        <span className="flex flex-col items-center leading-tight">
-                          <span>Download Resume</span>
-                          <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest mt-0.5">
-                            {pdfRemaining !== null ? `${pdfRemaining} of 2 downloads left (Free)` : "Unlimited"}
+                    <div className="flex flex-col gap-2 w-full">
+                      {/* PDF Download */}
+                      <button
+                        onClick={downloadPDF}
+                        disabled={isDownloading || isDownloadingWord}
+                        className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-8 py-4 text-sm font-bold text-white hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-600 transition-all active:scale-95 shadow-lg shadow-zinc-200 w-full justify-center"
+                      >
+                        {isDownloading ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Generating PDF...
+                          </>
+                        ) : (
+                          <span className="flex flex-col items-center leading-tight">
+                            <span className="flex items-center gap-2">
+                              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                              Download as PDF
+                            </span>
+                            <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest mt-0.5">
+                              {pdfRemaining !== null ? `${pdfRemaining} of 2 downloads left (Free)` : "Unlimited"}
+                            </span>
                           </span>
-                        </span>
-                      )}
-                    </button>
+                        )}
+                      </button>
+
+                      {/* Word Download */}
+                      <button
+                        onClick={downloadWord}
+                        disabled={isDownloading || isDownloadingWord || (!data?.optimizedResume && !data?.result)}
+                        className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-4 text-sm font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400 transition-all active:scale-95 shadow-lg shadow-blue-200 w-full justify-center"
+                      >
+                        {isDownloadingWord ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Generating Word...
+                          </>
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            Download as Word (.docx)
+                          </span>
+                        )}
+                      </button>
+                    </div>
                   )}
 
                 <button

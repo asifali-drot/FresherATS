@@ -217,46 +217,49 @@ export const ResumePdfDocument: React.FC<ResumePdfDocumentProps> = ({
           </View>
         )}
 
-        {sections.map((section, sIndex) => (
-          <View key={sIndex} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            <View>
-              {section.title === 'SKILLS' ? (
-                <View style={styles.skillsChips}>
-                  {section.content
-                    .map(line => line.replace(/^[\*•\-]\s*/, '').trim())
-                    .filter(Boolean)
-                    .map((skill, lIndex) => (
-                      <Text key={lIndex} style={styles.skillChip}>{skill}</Text>
-                    ))}
-                </View>
-              ) : (
-                section.content.map((line, lIndex) => {
-                  const processedLine = line;
+        {sections.map((section, sIndex) => {
+          const isTargetSection = section.title === 'SKILLS' || section.title === 'PROJECTS';
+          return (
+            <View key={sIndex} style={isTargetSection ? [styles.section, { marginBottom: 0 }] : styles.section}>
+              <Text style={styles.sectionTitle}>{section.title}</Text>
+              <View>
+                {section.title === 'SKILLS' ? (
+                  <View style={styles.skillsChips}>
+                    {section.content
+                      .map(line => line.replace(/^[\*•\-]\s*/, '').trim())
+                      .filter(Boolean)
+                      .map((skill, lIndex) => (
+                        <Text key={lIndex} style={styles.skillChip}>{skill}</Text>
+                      ))}
+                  </View>
+                ) : (
+                  section.content.map((line, lIndex) => {
+                    const processedLine = line;
 
-                  const isBullet = processedLine.startsWith('•') || 
-                                   /^\*\s/.test(processedLine) || 
-                                   /^-\s/.test(processedLine);
+                    const isBullet = processedLine.startsWith('•') || 
+                                     /^\*\s/.test(processedLine) || 
+                                     /^-\s/.test(processedLine);
 
-                  if (isBullet) {
-                    const pureLine = processedLine.replace(/^[\*•\-]\s*/, '');
+                    if (isBullet) {
+                      const pureLine = processedLine.replace(/^[\*•\-]\s*/, '');
+                      return (
+                        <View key={lIndex} style={styles.bulletContainer}>
+                          <Text style={styles.bullet}>•</Text>
+                          {renderRichText(pureLine, styles.bulletText)}
+                        </View>
+                      );
+                    }
                     return (
-                      <View key={lIndex} style={styles.bulletContainer}>
-                        <Text style={styles.bullet}>•</Text>
-                        {renderRichText(pureLine, styles.bulletText)}
-                      </View>
+                      <React.Fragment key={lIndex}>
+                        {renderRichText(processedLine, styles.paragraph)}
+                      </React.Fragment>
                     );
-                  }
-                  return (
-                    <React.Fragment key={lIndex}>
-                      {renderRichText(processedLine, styles.paragraph)}
-                    </React.Fragment>
-                  );
-                })
-              )}
+                  })
+                )}
+              </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
       </Page>
     </Document>
   );

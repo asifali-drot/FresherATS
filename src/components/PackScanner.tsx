@@ -298,18 +298,18 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
 
               <div className="flex flex-col gap-6">
                 <div>
-                  <h4 className="text-sm font-semibold text-zinc-700 mb-3 flex items-center gap-2">
+                  <h4 className="text-sm font-semibold text-zinc-700 mb-3 flex items-center">
                     Culture & Values
                   </h4>
-                  <div className="space-y-3">
+                  <div className="space-y-3 flex flex-col gap-2">
                     {result.missingValues?.map((val, i) => (
-                      <div key={`m-${i}`} className="bg-amber-50 border border-amber-100 p-3 rounded-xl">
+                      <div key={`m-${i}`} className="bg-amber-50 border border-amber-100 p-3 rounded-xl flex flex-col">
                         <p className="text-xs font-bold text-amber-800 mb-1">Missing: {val.label}</p>
                         <p className="text-xs text-amber-700">{val.description}</p>
                       </div>
                     ))}
                     {result.matchedValues?.map((val, i) => (
-                      <div key={`y-${i}`} className="bg-emerald-50 border border-emerald-100 p-3 rounded-xl flex items-center justify-between">
+                      <div key={`y-${i}`} className="bg-emerald-50 border border-emerald-100 p-3 rounded-xl flex items-center justify-between space=2">
                         <div>
                           <p className="text-xs font-bold text-emerald-800 mb-1">Matched: {val.label}</p>
                           <p className="text-xs text-emerald-700">{val.description}</p>
@@ -327,7 +327,7 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
                     <h4 className="text-sm font-semibold text-zinc-700 mb-3 flex items-center gap-2">
                       ATS Format Checklist ({result.ats})
                     </h4>
-                    <div className="space-y-2">
+                    <div className="space-y-2 flex flex-col gap-2">
                       {result.formattingChecklist.map((item, i) => (
                         <div key={i} className={`flex items-start gap-2 p-3 rounded-xl text-sm ${item.severity === 'warn' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-blue-50 text-blue-700 border border-blue-100'}`}>
                           {item.severity === 'warn' ? <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" /> : <Info className="h-4 w-4 shrink-0 mt-0.5" />}

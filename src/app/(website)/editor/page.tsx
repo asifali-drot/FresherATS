@@ -11,6 +11,8 @@ import {
   resumeDocumentToParsed,
   resumeDocumentToText,
   textToResumeDocument,
+  tiptapDocToPlainText,
+  sanitizeResumeDocument,
   type ResumeDocumentJson,
 } from "@/lib/resume/resumeDocument";
 import { User as SupabaseUser } from "@supabase/supabase-js";
@@ -39,6 +41,9 @@ import {
   CloudOff,
   Plus,
   Trash2,
+  Link2,
+  Phone,
+  Eye,
 } from "lucide-react";
 
 // Skills chip editor component
@@ -50,10 +55,12 @@ function applyDocumentToState(
   setResumeText: (t: string) => void,
   setLocalSections: (s: ParsedSection[]) => void
 ) {
-  setResumeDocument(doc);
-  const text = resumeDocumentToText(doc);
+  // Sanitize: absorb any CONTACT/PERSONAL section into nameLines
+  const cleanDoc = sanitizeResumeDocument(doc);
+  setResumeDocument(cleanDoc);
+  const text = resumeDocumentToText(cleanDoc);
   setResumeText(text);
-  const parsed = resumeDocumentToParsed(doc);
+  const parsed = resumeDocumentToParsed(cleanDoc);
   setLocalSections(parsed.sections);
 }
 
@@ -87,6 +94,7 @@ function ResumeEditorContent() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingWord, setIsDownloadingWord] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveReady, setSaveReady] = useState(false);
@@ -494,6 +502,74 @@ function ResumeEditorContent() {
     refreshSubscription,
   ]);
 
+  const downloadWord = useCallback(async () => {
+    if (isDownloadingWord || !resumeText.trim()) return;
+
+    if (!user) {
+      const params = new URLSearchParams();
+      params.set("claim_id", analysisId || "");
+      params.set("redirect", window.location.pathname + window.location.search);
+      window.location.href = `/login?${params.toString()}`;
+      return;
+    }
+
+    setDownloadError(null);
+    setIsDownloadingWord(true);
+    try {
+      const response = await fetch("/api/generate-word", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resumeText }),
+      });
+
+      if (!response.ok) {
+        let errorMsg = "Failed to generate Word document";
+        try {
+          const errData = await response.json();
+          if (errData?.error) errorMsg = errData.error;
+        } catch {
+          /* ignore */
+        }
+        throw new Error(errorMsg);
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const { url } = await response.json();
+        if (url) {
+          const wordRes = await fetch(url);
+          const blob = await wordRes.blob();
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = downloadUrl;
+          a.download = "updated-resume.docx";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(downloadUrl);
+          refreshSubscription();
+          return;
+        }
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "updated-resume.docx";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      refreshSubscription();
+    } catch (error) {
+      console.error(error);
+      setDownloadError(error instanceof Error ? error.message : "Failed to generate Word document");
+    } finally {
+      setIsDownloadingWord(false);
+    }
+  }, [isDownloadingWord, resumeText, user, analysisId, refreshSubscription]);
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
@@ -572,20 +648,37 @@ function ResumeEditorContent() {
           </Link>
           <button
             onClick={downloadPDF}
-            disabled={isDownloading || !resumeText.trim()}
+            disabled={isDownloading || isDownloadingWord || !resumeText.trim()}
             className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 px-6 py-2.5 text-sm font-bold text-white hover:opacity-90 disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-zinc-200 dark:shadow-none"
           >
             {isDownloading ? (
               <div className="flex items-center gap-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                <span>Generating...</span>
+                <span>Generating PDF...</span>
               </div>
             ) : (
               <span className="flex flex-col items-center leading-tight">
-                <span>Download Resume</span>
+                <span>Download PDF</span>
                 <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest mt-0.5">
                   {tier === "free" ? `${usage.pdf_downloads}/2 Free Downloads` : "Unlimited Downloads"}
                 </span>
+              </span>
+            )}
+          </button>
+          <button
+            onClick={downloadWord}
+            disabled={isDownloading || isDownloadingWord || !resumeText.trim()}
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-blue-200 dark:shadow-none"
+          >
+            {isDownloadingWord ? (
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                <span>Generating...</span>
+              </div>
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                Word
               </span>
             )}
           </button>
@@ -703,44 +796,73 @@ function ResumeEditorContent() {
                         </div>
                         <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-[0.2em]">Personal Details</h3>
                       </div>
+                      <span className="flex items-center gap-1 text-[10px] font-semibold text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-full">
+                        <Eye className="h-2.5 w-2.5" />
+                        Appears at top of resume
+                      </span>
                     </div>
-                    <div className="grid grid-cols-1 gap-6 bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-                      {resumeDocument.nameLines.map((lineDoc, idx) => (
-                        <div key={idx} className="space-y-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <label className="text-[10px] font-bold text-zinc-400 uppercase flex items-center gap-1.5">
-                              {idx === 0 ? <User className="h-2.5 w-2.5" /> : idx === 1 ? <Mail className="h-2.5 w-2.5" /> : <MapPin className="h-2.5 w-2.5" />}
-                              {idx === 0 ? "Full Name" : idx === 1 ? "Contact/Email" : `Link/Location ${idx - 1}`}
-                            </label>
-                            <div className="flex items-center gap-1">
+
+                    {/* Personal Details fields — clean, one row per field */}
+                    <div className="divide-y divide-zinc-100 dark:divide-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
+                      {resumeDocument.nameLines.map((lineDoc, idx) => {
+                        const fieldMeta = [
+                          { label: "Full Name",       icon: <User    className="h-4 w-4" />, color: "text-blue-500",    bg: "bg-blue-50 dark:bg-blue-900/20",    placeholder: "Your full name (e.g. Jane Smith)" },
+                          { label: "Email Address",   icon: <Mail    className="h-4 w-4" />, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20", placeholder: "your.email@example.com" },
+                          { label: "Phone Number",    icon: <Phone   className="h-4 w-4" />, color: "text-violet-500",  bg: "bg-violet-50 dark:bg-violet-900/20",  placeholder: "+1 (555) 123-4567" },
+                          { label: "Location / City", icon: <MapPin  className="h-4 w-4" />, color: "text-orange-500",  bg: "bg-orange-50 dark:bg-orange-900/20",  placeholder: "City, State" },
+                        ];
+                        const meta = fieldMeta[idx] ?? {
+                          label: `LinkedIn / Link ${idx - 3}`,
+                          icon: <Link2 className="h-4 w-4" />,
+                          color: "text-sky-500",
+                          bg: "bg-sky-50 dark:bg-sky-900/20",
+                          placeholder: "linkedin.com/in/your-profile",
+                        };
+
+                        return (
+                          <div key={idx} className="flex items-start gap-0">
+                            {/* Icon column */}
+                            <div className={`flex-shrink-0 w-12 flex items-center justify-center pt-3.5 pb-3 self-stretch ${meta.bg} border-r border-zinc-100 dark:border-zinc-800`}>
+                              <span className={meta.color}>{meta.icon}</span>
+                            </div>
+
+                            {/* Label + editor column */}
+                            <div className="flex-1 min-w-0 px-4 py-3">
+                              <p className={`text-[10px] font-bold uppercase tracking-widest mb-1.5 ${meta.color}`}>
+                                {meta.label}
+                              </p>
+                              <ResumeTipTapInlineEditor
+                                content={lineDoc}
+                                onChange={(content) => handlePersonalDocUpdate(idx, content)}
+                                placeholder={meta.placeholder}
+                                maxHeight="120px"
+                              />
+                            </div>
+
+                            {/* Actions column */}
+                            <div className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-2 py-3 self-stretch">
                               <button
                                 type="button"
                                 onClick={() => handleAddPersonalField(idx)}
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-600 transition hover:border-blue-200 hover:text-blue-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300"
-                                title="Add field"
+                                className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-500 transition hover:border-blue-200 hover:text-blue-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
+                                title="Add field below"
                               >
-                                <Plus className="h-3.5 w-3.5" />
+                                <Plus className="h-3 w-3" />
                               </button>
                               {resumeDocument.nameLines.length > 1 && (
                                 <button
                                   type="button"
                                   onClick={() => handleRemovePersonalField(idx)}
-                                  className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-500 transition hover:border-red-200 hover:text-red-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
+                                  className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-zinc-200 bg-white text-zinc-500 transition hover:border-red-200 hover:text-red-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400"
                                   title="Remove field"
                                 >
-                                  <Trash2 className="h-3.5 w-3.5" />
+                                  <Trash2 className="h-3 w-3" />
                                 </button>
                               )}
                             </div>
                           </div>
-                          <ResumeTipTapInlineEditor
-                            content={lineDoc}
-                            onChange={(content) => handlePersonalDocUpdate(idx, content)}
-                            placeholder={idx === 0 ? "Your full name" : "Contact detail"}
-                            maxHeight="120px"
-                          />
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </section>
 

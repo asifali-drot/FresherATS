@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 
-export type Tier = "free" | "starter" | "pro";
+export type Tier = "free" | "starter" | "pro" | "admin";
 
 export interface Usage {
   pdf_downloads: number;

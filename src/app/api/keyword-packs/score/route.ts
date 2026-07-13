@@ -54,6 +54,18 @@ export async function POST(req: Request) {
     const entitlement = user ? await getEntitlement(user.id) : null;
     let isPro = entitlement?.isPro || false;
 
+    // Admin tier always gets full access regardless of subscription state
+    if (!isPro && entitlement) {
+      const { data: userSubCheck } = await supabase
+        .from("user_subscriptions")
+        .select("tier")
+        .eq("user_id", user.id)
+        .single();
+      if (userSubCheck?.tier === "admin") {
+        isPro = true;
+      }
+    }
+
     // Check if they are not Pro, but have credits, we can consume one.
     if (!isPro && entitlement && entitlement.credits > 0) {
        const consumed = await consumeCredit(user.id, "single_resume_pack");

@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { parsePdf } from "@/lib/resume/parsePdf";
 import { parseDocx } from "@/lib/resume/parseDocx";
 import { createClient } from "@/lib/supabase/server";
-import { textToResumeDocument } from "@/lib/resume/resumeDocument";
+import { textToResumeDocument, sanitizeResumeDocument } from "@/lib/resume/resumeDocument";
 import { getEffectiveTier, getModelForTier } from "@/lib/adminUtils";
 
 
@@ -74,8 +74,8 @@ export async function POST(req: NextRequest) {
     const model = getModelForTier(tier);
     console.log(`[AI] Using model: ${model} (tier: ${tier})`);
 
-    // --- AI Stage 1: Resume Analysis ---
-    console.log("Stage 1: Analyzing Resume...");
+    // --- AI Stage 1 & 2 (Parallel Execution) ---
+    console.log("[AI] Starting Stage 1 (Analysis) and Stage 2 (Optimization & Formatting) in parallel...");
 
     const STAGE1_SYSTEM_PROMPT = `You are an expert ATS (Applicant Tracking System) resume reviewer specializing in early-career and fresh graduate job seekers. Your job is to analyze a resume against a target job description and return specific, actionable feedback that helps the candidate pass automated screening and impress human recruiters.
 
@@ -121,7 +121,42 @@ Return ONLY valid JSON matching this schema. Do not include any text, explanatio
   "top_3_priorities": ["string", "string", "string"]
 }`;
 
-    const stage1Response = await fetch(
+    const STAGE2_SYSTEM_PROMPT = `You are a professional resume editor and career coach.
+Your task is to take the candidate's original resume, optimize its content against the provided job description, and output the final, polished, ATS-friendly resume.
+
+CRITICAL — Personal Header Rules (MUST follow):
+1. ALWAYS start the output with the candidate's personal details in this exact order, one per line:
+   Line 1: Candidate's full name (copy exactly from original resume)
+   Line 2: Email address (copy exactly from original resume)
+   Line 3: Phone number (copy exactly from original resume, if present)
+   Line 4: City, State / Location (copy exactly from original resume, if present)
+   Line 5: LinkedIn URL or portfolio link (copy exactly from original resume, if present)
+2. Leave a blank line after the personal details block before the first section heading.
+3. Do NOT put personal details under any section heading. Do NOT add a "CONTACT" heading.
+4. Do NOT omit or replace any of the candidate's personal details.
+
+Optimization Rules:
+1. Rewrite weak bullet points using strong action verbs.
+2. Include relevant keywords from the job description naturally.
+3. Keep bullet points concise and impactful.
+4. Do not invent experience, skills, or metrics the candidate didn't provide. If a bullet lacks a quantifiable result, suggest what kind of metric to add rather than fabricating a number.
+5. Use ATS-friendly language.
+
+Formatting Rules:
+1. Use clear section headings in ALL CAPS.
+2. Use bullet points for experience and projects.
+3. Avoid tables, graphics, columns, or complex formatting.
+4. Keep formatting simple for ATS systems.
+5. After the personal header, structure the resume with the following sections in order:
+SUMMARY
+SKILLS (comma separated or simple list)
+PROJECTS
+EXPERIENCE
+EDUCATION
+
+Output the optimized and formatted resume text only. Do NOT include any intro, outro, explanations, notes, or markdown code fences. Start directly with the candidate's full name on the first line.`;
+
+    const stage1Promise = fetch(
       "https://openrouter.ai/api/v1/chat/completions",
       {
         method: "POST",
@@ -147,11 +182,40 @@ Return ONLY valid JSON matching this schema. Do not include any text, explanatio
       }
     );
 
+    const stage2Promise = fetch(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: "system",
+              content: STAGE2_SYSTEM_PROMPT,
+            },
+            {
+              role: "user",
+              content: `Original Resume:\n${resumeText.slice(0, 12000)}\n\nJob Description:\n${jobDescription || "(Not provided)"}`,
+            },
+          ],
+        }),
+      }
+    );
+
+    const [stage1Response, stage2Response] = await Promise.all([
+      stage1Promise,
+      stage2Promise,
+    ]);
+
     if (!stage1Response.ok) {
       const errText = await stage1Response.text().catch(() => "");
-      console.error("[Stage 1] AI Error:", stage1Response.status, errText);
+      console.error("[Stage 1] System Error:", stage1Response.status, errText);
       return NextResponse.json(
-        { error: "AI Error: Try again shortly." },
+        { error: "System Error: Try again shortly." },
         { status: 502 }
       );
     }
@@ -202,102 +266,41 @@ Return ONLY valid JSON matching this schema. Do not include any text, explanatio
       return NextResponse.json({ error: "Failed to parse resume analysis." }, { status: 500 });
     }
 
-    // --- AI Stage 2: Content Optimization ---
-    console.log("Stage 2: Optimizing Content...");
-    const stage2Response = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: authHeader,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            {
-              role: "system",
-              content: `You are a professional resume editor. Improve the following resume using the analysis results and job description.
-Rules:
-1. Rewrite weak bullet points using strong action verbs.
-2. Include relevant keywords from the job description naturally.
-3. Keep bullet points concise and impactful.
-4. Do not invent experience or lie.
-5. Use ATS-friendly language.
-Output the optimized content text only, maintaining a logical structure.`
-            },
-            {
-              role: "user",
-              content: `Original Resume:\n${resumeText.slice(0, 8000)}\n\nJob Description:\n${jobDescription || "(Not provided)"}\n\nAnalysis Suggestions:\n${analysis.suggestions?.join("\n")}\n\nMissing Keywords:\n${analysis.missingKeywords?.join(", ")}`
-            }
-          ]
-        })
-      }
-    );
-
-    let optimizedText = resumeText;
+    let finalOptimizedResume = resumeText;
     if (stage2Response.ok) {
       try {
         const stage2Data = await stage2Response.json();
-        optimizedText = stage2Data?.choices?.[0]?.message?.content?.trim() || resumeText;
+        finalOptimizedResume = stage2Data?.choices?.[0]?.message?.content?.trim() || resumeText;
       } catch (e) {
         console.error("Failed to parse Stage 2 JSON:", e);
       }
     } else {
-      console.error("Stage 2 AI Error:", stage2Response.statusText);
+      console.error("Stage 2 System Error:", stage2Response.statusText);
     }
 
-    // --- AI Stage 3: Final Resume Generation ---
-    console.log("Stage 3: Final Formatting...");
-    const stage3Response = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: authHeader,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            {
-              role: "system",
-              content: `Generate a final ATS-friendly resume using the optimized content provided.
-Rules:
-1. Use clear section headings in ALL CAPS.
-2. Use bullet points for experience and projects.
-3. Avoid tables, graphics, or complex formatting.
-4. Keep formatting simple for ATS systems.
-5. Structure:
-SUMMARY
-SKILLS (comma separated or simple list)
-PROJECTS
-EXPERIENCE
-EDUCATION`
-            },
-            {
-              role: "user",
-              content: `Optimized Content:\n${optimizedText}`
-            }
-          ]
-        })
+    // --- Safety net: preserve personal details (nameLines) from the original resume ---
+    const { parseResumeText: parseForNameLines } = await import("@/lib/resume/resumeUtils");
+    const originalParsed = parseForNameLines(resumeText);
+    const optimizedParsed = parseForNameLines(finalOptimizedResume);
+    if (originalParsed.nameLines.length > 0) {
+      if (optimizedParsed.nameLines.length === 0) {
+        console.log("[AI] Stage 2 dropped personal details — re-injecting from original resume.");
+        finalOptimizedResume = originalParsed.nameLines.join("\n") + "\n\n" + finalOptimizedResume;
+      } else {
+        const missingLines = originalParsed.nameLines.filter(
+          (line) =>
+            !optimizedParsed.nameLines.some(
+              (existing) => existing.toLowerCase() === line.toLowerCase()
+            )
+        );
+        if (missingLines.length > 0) {
+          console.log("[AI] Stage 2 dropped some personal details — merging from original resume.");
+          finalOptimizedResume = missingLines.join("\n") + "\n" + finalOptimizedResume;
+        }
       }
-    );
-
-    let finalOptimizedResume = optimizedText;
-    if (stage3Response.ok) {
-      try {
-        const stage3Data = await stage3Response.json();
-        finalOptimizedResume = stage3Data?.choices?.[0]?.message?.content?.trim() || optimizedText;
-      } catch (e) {
-        console.error("Failed to parse Stage 3 JSON:", e);
-      }
-    } else {
-      console.error("Stage 3 AI Error:", stage3Response.statusText);
     }
-    
-    console.log("Final optimizedResume length:", finalOptimizedResume?.length || 0);
-    
+    // --- End safety net ---
+
     // Rename variable to match downstream usage if needed, or update usage
     const suggestions = analysis;
 
@@ -312,14 +315,14 @@ EDUCATION`
       console.log(`[DB] getUser result — user: ${authData?.user?.id ?? "null"} | authError: ${authError?.message ?? "none"}`);
 
       console.log("[DB] Inserting analysis...");
-      
+
       // Merge missing keywords into suggestions for storage since column is missing
       const suggestionsToSave = [...(suggestions.suggestions ?? [])];
       if (suggestions.missingKeywords && suggestions.missingKeywords.length > 0) {
         suggestionsToSave.push(`Missing Keywords: ${suggestions.missingKeywords.join(", ")}`);
       }
 
-      const resumeDocument = textToResumeDocument(finalOptimizedResume);
+      const resumeDocument = sanitizeResumeDocument(textToResumeDocument(finalOptimizedResume));
 
       const { data: insertedRow, error: dbError } = await supabase
         .from("analyses")

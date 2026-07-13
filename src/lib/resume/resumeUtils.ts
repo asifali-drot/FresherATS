@@ -33,6 +33,16 @@ export const SECTION_PATTERNS: { pattern: RegExp; title: string | null }[] = [
   { pattern: /^[A-Z][A-Z\s&\/\-]{1,38}[A-Z]$/, title: null },
 ];
 
+export function detectKnownSection(line: string): string | null {
+  for (const { pattern, title } of SECTION_PATTERNS) {
+    if (title === null) continue;
+    if (pattern.test(line.trim())) {
+      return title;
+    }
+  }
+  return null;
+}
+
 export function detectSection(line: string): string | null {
   for (const { pattern, title } of SECTION_PATTERNS) {
     if (pattern.test(line.trim())) {
@@ -41,6 +51,98 @@ export function detectSection(line: string): string | null {
     }
   }
   return null;
+}
+
+export function isContactLine(line: string): boolean {
+  const t = line.trim();
+  if (!t) return false;
+  if (/@/.test(t) && /\.[a-z]{2,}/i.test(t)) return true;
+  if (/(\+?\d[\d\s().\-]{7,}\d)/.test(t)) return true;
+  if (/linkedin\.com|github\.com|portfolio|https?:\/\//i.test(t)) return true;
+  if (/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(t)) return true;
+  return false;
+}
+
+export function looksLikePersonName(line: string): boolean {
+  const t = line.trim().replace(/^#+\s*/, "");
+  if (!t || t.length > 60) return false;
+  if (isContactLine(t)) return false;
+  if (detectKnownSection(t)) return false;
+  const words = t.split(/\s+/);
+  if (words.length < 1 || words.length > 5) return false;
+  return words.every((w) => /^[A-Za-z.'\-]+$/.test(w));
+}
+
+const PERSONAL_SECTION_TITLES = new Set([
+  "CONTACT",
+  "CONTACT INFORMATION",
+  "CONTACT INFO",
+  "PERSONAL INFORMATION",
+  "PERSONAL DETAILS",
+  "PERSONAL INFO",
+  "PERSONAL",
+  "HEADER",
+]);
+
+function absorbPersonalSectionIntoNameLines(
+  nameLines: string[],
+  sections: ParsedSection[]
+): void {
+  const earlyPersonalIdx = sections.findIndex(
+    (s, i) => i <= 1 && PERSONAL_SECTION_TITLES.has(s.title.toUpperCase())
+  );
+
+  if (earlyPersonalIdx !== -1) {
+    const personalSection = sections[earlyPersonalIdx];
+    const contactLines = personalSection.content
+      .map((line) => line.replace(/^[•\-\*]\s*/, "").trim())
+      .filter(Boolean);
+
+    for (const line of contactLines) {
+      if (!nameLines.includes(line)) {
+        nameLines.push(line);
+      }
+    }
+
+    sections.splice(earlyPersonalIdx, 1);
+  }
+}
+
+/** When the parser mis-classifies a name as a section heading, fold it back into nameLines. */
+function absorbNameHeaderSectionIntoNameLines(
+  nameLines: string[],
+  sections: ParsedSection[]
+): void {
+  if (sections.length === 0) return;
+
+  const first = sections[0];
+  const titleIsName = looksLikePersonName(first.title);
+  const titleIsUnknownCaps =
+    !detectKnownSection(first.title) &&
+    /^[A-Z][A-Z\s.'\-]{1,58}[A-Za-z.]$/.test(first.title.trim());
+
+  if (!titleIsName && !titleIsUnknownCaps) return;
+
+  const contentLines = first.content
+    .map((line) => line.replace(/^[•\-\*]\s*/, "").trim())
+    .filter(Boolean);
+
+  const contentLooksLikeContact =
+    contentLines.length === 0 ||
+    contentLines.every(
+      (line) => isContactLine(line) || (line.length < 80 && !detectKnownSection(line))
+    );
+
+  if (!titleIsName && !(titleIsUnknownCaps && contentLooksLikeContact)) return;
+
+  const merged = [first.title.trim(), ...contentLines];
+  for (const line of merged) {
+    if (line && !nameLines.includes(line)) {
+      nameLines.push(line);
+    }
+  }
+
+  sections.shift();
 }
 
 export function parseResumeText(text: string): {
@@ -55,14 +157,15 @@ export function parseResumeText(text: string): {
   const nameLines: string[] = [];
   let startIdx = 0;
 
-  for (let i = 0; i < Math.min(lines.length, 5); i++) {
+  for (let i = 0; i < Math.min(lines.length, 8); i++) {
     const trimmed = lines[i].trim();
-    const section = detectSection(trimmed);
+    // Only stop at explicit section headings — not ALL-CAPS names like "JANE SMITH"
+    const section = detectKnownSection(trimmed);
     if (section) break;
 
     if (
       trimmed.length > 0 &&
-      trimmed.length < 100 &&
+      trimmed.length < 150 &&
       !trimmed.startsWith("•") &&
       !trimmed.startsWith("-")
     ) {
@@ -128,6 +231,10 @@ export function parseResumeText(text: string): {
   if (currentSection) {
     sections.push(currentSection);
   }
+
+  // Post-process: fold CONTACT/PERSONAL sections and mis-parsed name headers into nameLines
+  absorbPersonalSectionIntoNameLines(nameLines, sections);
+  absorbNameHeaderSectionIntoNameLines(nameLines, sections);
 
   return { nameLines, sections };
 }

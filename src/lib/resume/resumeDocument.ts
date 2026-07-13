@@ -1,6 +1,6 @@
 import type { JSONContent } from "@tiptap/core";
 import { generateHTML, generateJSON } from "@tiptap/html";
-import { parseResumeText, type ParsedSection } from "./resumeUtils";
+import { parseResumeText, type ParsedSection, looksLikePersonName, isContactLine, detectKnownSection } from "./resumeUtils";
 import { getResumeTipTapExtensions } from "./tiptapExtensions";
 
 export const RESUME_DOCUMENT_VERSION = 1 as const;
@@ -154,6 +154,94 @@ export function isResumeDocumentJson(value: unknown): value is ResumeDocumentJso
   if (!value || typeof value !== "object") return false;
   const v = value as ResumeDocumentJson;
   return v.version === RESUME_DOCUMENT_VERSION && Array.isArray(v.nameLines) && Array.isArray(v.sections);
+}
+
+/**
+ * Sanitizes a stored ResumeDocumentJson by absorbing any leading CONTACT /
+ * PERSONAL INFORMATION section into nameLines.  This fixes documents that were
+ * created before the parser was updated — the AI used to put personal details
+ * under a "CONTACT" heading, which ended up as a regular section.
+ */
+export function sanitizeResumeDocument(doc: ResumeDocumentJson): ResumeDocumentJson {
+  const PERSONAL_SECTION_TITLES = new Set([
+    "CONTACT",
+    "CONTACT INFORMATION",
+    "CONTACT INFO",
+    "PERSONAL INFORMATION",
+    "PERSONAL DETAILS",
+    "PERSONAL INFO",
+    "PERSONAL",
+    "HEADER",
+  ]);
+
+  let workingDoc = doc;
+
+  // Find a personal/contact section among the first two sections
+  const earlyPersonalIdx = workingDoc.sections.findIndex(
+    (s, i) => i <= 1 && PERSONAL_SECTION_TITLES.has(s.title.trim().toUpperCase())
+  );
+
+  if (earlyPersonalIdx !== -1) {
+    const personalSection = workingDoc.sections[earlyPersonalIdx];
+    const contactLines = tiptapDocToPlainLines(personalSection.content)
+      .map((line) => line.replace(/^[•\-\*]\s*/, "").trim())
+      .filter(Boolean);
+
+    const existingNameText = workingDoc.nameLines.map(tiptapDocToPlainText).filter(Boolean);
+    const mergedTextLines = [...existingNameText];
+    for (const line of contactLines) {
+      if (!mergedTextLines.includes(line)) {
+        mergedTextLines.push(line);
+      }
+    }
+
+    const newSections = [...workingDoc.sections];
+    newSections.splice(earlyPersonalIdx, 1);
+    workingDoc = {
+      ...workingDoc,
+      nameLines: mergedTextLines.length > 0 ? mergedTextLines.map(plainLineToDoc) : workingDoc.nameLines,
+      sections: newSections,
+    };
+  }
+
+  // Absorb mis-parsed name header sections (e.g. title "JOHN DOE" with contact lines as content)
+  if (workingDoc.sections.length > 0) {
+    const first = workingDoc.sections[0];
+    const titleIsName = looksLikePersonName(first.title);
+    const titleIsUnknownCaps =
+      !detectKnownSection(first.title) &&
+      /^[A-Z][A-Z\s.'\-]{1,58}[A-Za-z.]$/.test(first.title.trim());
+
+    const contentLines = tiptapDocToPlainLines(first.content)
+      .map((line) => line.replace(/^[•\-\*]\s*/, "").trim())
+      .filter(Boolean);
+
+    const contentLooksLikeContact =
+      contentLines.length === 0 ||
+      contentLines.every(
+        (line) => isContactLine(line) || (line.length < 80 && !detectKnownSection(line))
+      );
+
+    if (titleIsName || (titleIsUnknownCaps && contentLooksLikeContact)) {
+      const existingNameText = workingDoc.nameLines.map(tiptapDocToPlainText).filter(Boolean);
+      const mergedTextLines = [...existingNameText];
+      for (const line of [first.title.trim(), ...contentLines]) {
+        if (line && !mergedTextLines.includes(line)) {
+          mergedTextLines.push(line);
+        }
+      }
+
+      const newSections = [...workingDoc.sections];
+      newSections.shift();
+      workingDoc = {
+        ...workingDoc,
+        nameLines: mergedTextLines.map(plainLineToDoc),
+        sections: newSections,
+      };
+    }
+  }
+
+  return workingDoc;
 }
 
 /** HTML preview helper for debugging — not used in PDF path */
