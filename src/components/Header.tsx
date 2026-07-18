@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { useState, useEffect, useRef, useTransition } from "react";
-import { Menu, X, Zap, LayoutDashboard, User as UserIcon, LogOut, Loader2, ChevronDown, Sparkles, Layout, Linkedin, Briefcase } from "lucide-react";
+import { Menu, X, Zap, LayoutDashboard, User as UserIcon, LogOut, Loader2, ChevronDown, Sparkles, Layout, Linkedin, Briefcase, Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { logoutAction } from "@/app/(website)/(auth)/actions";
 
@@ -150,6 +150,16 @@ export default function Header() {
                   <div>
                     <div className="text-xs font-extrabold text-zinc-900">LinkedIn Checker</div>
                     <div className="text-[10px] text-zinc-500 mt-0.5 leading-relaxed font-medium">Analyze and improve your LinkedIn profile for recruiters.</div>
+                  </div>
+                </Link>
+                <Link
+                  href="/keyword-packs"
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-blue-50/50 hover:text-blue-600 transition-colors mt-1"
+                >
+                  <Building2 className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <div className="text-xs font-extrabold text-zinc-900">Company Match</div>
+                    <div className="text-[10px] text-zinc-500 mt-0.5 leading-relaxed font-medium">Score your resume against specific employer hiring patterns.</div>
                   </div>
                 </Link>
                 <Link
@@ -336,6 +346,7 @@ export default function Header() {
               <div className="flex flex-col gap-1 pl-4">
                 <MobileNavLink href="/resume-templates" label="Templates" onClick={closeMenu} />
                 <MobileNavLink href="/linkedin-checker" label="LinkedIn Checker" onClick={closeMenu} />
+                <MobileNavLink href="/keyword-packs" label="Company Match" onClick={closeMenu} />
                 <MobileNavLink href="/job-tracker" label="Job Tracker" onClick={closeMenu} />
               </div>
             )}

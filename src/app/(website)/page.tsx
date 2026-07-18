@@ -4,6 +4,8 @@ import HomeMarketing from "@/components/home/HomeMarketing";
 import LatestReviews from "@/components/reviews/LatestReviews";
 import ResumeUpload from "@/components/ResumeUpload";
 import { generateFAQSchema, generateOrganizationSchema, generateSoftwareApplicationSchema } from "@/lib/seo";
+import { client } from "@/lib/sanity.client";
+import { HOMEPAGE_FAQS_QUERY } from "@/lib/sanity/queries/faq";
 
 export const metadata: Metadata = {
   title: {
@@ -27,7 +29,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
+export default async function Home() {
+  // Fetch from Sanity; fall back to hardcoded list if nothing is seeded yet
+  let faqs: { question: string; answer: string }[] = [];
+  try {
+    const sanityFaqs = await client.fetch(HOMEPAGE_FAQS_QUERY);
+    faqs = sanityFaqs?.length ? sanityFaqs : HOME_FAQS;
+  } catch {
+    faqs = HOME_FAQS;
+  }
+
   return (
     <main className="relative overflow-hidden">
       {/* Single unified hero + tool section — one seamless background */}
@@ -86,7 +97,7 @@ export default function Home() {
 
       <section className="px-6 pb-24">
         <FAQSection
-          faqs={HOME_FAQS}
+          faqs={faqs}
           title="Got Questions? We Have Answers"
           description="Everything you need to know about our ATS analyzer and how it helps you land your dream job."
         />
@@ -94,7 +105,7 @@ export default function Home() {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(generateFAQSchema(HOME_FAQS)),
+            __html: JSON.stringify(generateFAQSchema(faqs)),
           }}
         />
         <script

@@ -97,7 +97,12 @@ export function generateItemListSchema(items: { name: string; url: string; descr
         "@type": "Product",
         "name": item.name,
         "url": item.url,
-        "description": item.description
+        "description": item.description,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
       }
     }))
   };

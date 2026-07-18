@@ -158,6 +158,15 @@ function ResumeCard({ analysis, onViewResults, onDownload, onEdit, onDelete, dow
               {status.label}
             </span>
             <span className="text-[11px] font-semibold text-zinc-400">{date}</span>
+            <Link
+              href={`/keyword-packs?analysis_id=${analysis.id}`}
+              className="inline-flex items-center gap-1 rounded-full bg-blue-50 hover:bg-blue-100 border border-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 transition-colors shadow-2xs cursor-pointer"
+            >
+              <svg className="h-3 w-3 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+              </svg>
+              Company Match
+            </Link>
           </div>
 
           {/* Job description snippet */}

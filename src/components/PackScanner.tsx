@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { PackSummary, PackScanResult } from "@/lib/keyword-packs/types";
 import ATSScore from "@/components/ATSScore";
 import UpgradeOverlay from "@/components/UpgradeOverlay";
@@ -19,6 +20,8 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
   const [resumeText, setResumeText] = useState<string>(initialResumeText || "");
   const [analysisId, setAnalysisId] = useState<string | undefined>(initialAnalysisId);
   const [useSavedResume, setUseSavedResume] = useState<boolean>(!!initialAnalysisId);
+  const [savedResumes, setSavedResumes] = useState<any[]>([]);
+  const [resumesLoading, setResumesLoading] = useState<boolean>(false);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<(Partial<PackScanResult> & { gated?: boolean }) | null>(null);
@@ -27,12 +30,41 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
   const { tier, user } = useSubscription();
 
   useEffect(() => {
-    // If not using saved resume, but we have text, we are ready.
-    // If using saved resume, we need analysisId.
-    if (!analysisId && useSavedResume) {
+    if (!analysisId && useSavedResume && !resumesLoading && savedResumes.length === 0) {
       setUseSavedResume(false);
     }
-  }, [analysisId, useSavedResume]);
+  }, [analysisId, useSavedResume, resumesLoading, savedResumes]);
+
+  useEffect(() => {
+    if (!user) {
+      setSavedResumes([]);
+      return;
+    }
+
+    const fetchResumes = async () => {
+      setResumesLoading(true);
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("analyses")
+        .select("id, created_at, score, job_description")
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        setSavedResumes(data);
+        if (initialAnalysisId) {
+          setAnalysisId(initialAnalysisId);
+          setUseSavedResume(true);
+        } else if (data.length > 0) {
+          setAnalysisId(data[0].id);
+          setUseSavedResume(true);
+        }
+      }
+      setResumesLoading(false);
+    };
+
+    fetchResumes();
+  }, [user, initialAnalysisId]);
 
   const handleScore = async () => {
     if (!selectedPackId) {
@@ -117,22 +149,75 @@ export default function PackScanner({ packs, initialAnalysisId, initialResumeTex
           </div>
 
           <div className="flex flex-col gap-3">
-            <label className="text-sm font-semibold text-zinc-700 flex justify-between">
-              <span>Resume Source</span>
-              {analysisId && (
-                <button
-                  onClick={() => setUseSavedResume(!useSavedResume)}
-                  className="text-blue-600 hover:text-blue-700 text-xs font-semibold"
-                >
-                  {useSavedResume ? "Switch to Paste Text" : "Use Saved Resume"}
-                </button>
-              )}
-            </label>
+            <label className="text-sm font-semibold text-zinc-700">Resume Source</label>
 
-            {useSavedResume && analysisId ? (
-              <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-800">
-                <FileText className="h-5 w-5 text-blue-500" />
-                <span className="font-medium">Using latest uploaded resume</span>
+            {user && savedResumes.length > 0 ? (
+              <div className="flex bg-zinc-100 p-1 rounded-xl mb-1">
+                <button
+                  type="button"
+                  onClick={() => setUseSavedResume(false)}
+                  className={`flex-1 text-center py-2 text-xs font-bold rounded-lg transition-all ${
+                    !useSavedResume
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-zinc-500 hover:text-zinc-900 cursor-pointer"
+                  }`}
+                >
+                  Paste Text
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUseSavedResume(true)}
+                  className={`flex-1 text-center py-2 text-xs font-bold rounded-lg transition-all ${
+                    useSavedResume
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-zinc-500 hover:text-zinc-900 cursor-pointer"
+                  }`}
+                >
+                  Saved Resumes ({savedResumes.length})
+                </button>
+              </div>
+            ) : user && savedResumes.length === 0 && !resumesLoading ? (
+              <p className="text-xs text-zinc-500 mb-1">
+                No saved resumes found. Paste your resume text below, or{" "}
+                <Link href="/dashboard" className="text-blue-600 hover:underline font-semibold">
+                  go to Dashboard
+                </Link>{" "}
+                to analyze one.
+              </p>
+            ) : null}
+
+            {useSavedResume && savedResumes.length > 0 ? (
+              <div className="flex flex-col gap-2">
+                <div className="relative">
+                  <select
+                    value={analysisId || ""}
+                    onChange={(e) => setAnalysisId(e.target.value)}
+                    className="w-full appearance-none bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors cursor-pointer"
+                  >
+                    {savedResumes.map((a) => {
+                      const dateStr = new Date(a.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      });
+                      const label = a.job_description
+                        ? `${a.job_description.slice(0, 40)}${a.job_description.length > 40 ? "..." : ""} (Score: ${a.score || 0})`
+                        : `General Resume (Score: ${a.score || 0})`;
+                      return (
+                        <option key={a.id} value={a.id}>
+                          {label} • {dateStr}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                </div>
+                {analysisId && (
+                  <div className="flex items-center gap-2 text-xs text-emerald-600 font-medium mt-1">
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    <span>Resume selected for Company Match scan.</span>
+                  </div>
+                )}
               </div>
             ) : (
               <textarea

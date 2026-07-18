@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface FAQItem {
+  _id?: string;
   question: string;
   answer: string;
 }
@@ -38,7 +39,7 @@ export default function FAQSection({ faqs, title = "Frequently Asked Questions",
         <div className="space-y-4">
           {faqs.map((faq, index) => (
             <div
-              key={index}
+              key={faq._id ?? index}
               className={cn(
                 "group border rounded-2xl transition-all duration-300 overflow-hidden",
                 openIndex === index 
