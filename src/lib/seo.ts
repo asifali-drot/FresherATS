@@ -81,7 +81,8 @@ export function generateSoftwareApplicationSchema(props: { name: string; url: st
     "offers": {
       "@type": "Offer",
       "price": "0",
-      "priceCurrency": "USD"
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
     }
   };
 }
@@ -101,7 +102,8 @@ export function generateItemListSchema(items: { name: string; url: string; descr
         "offers": {
           "@type": "Offer",
           "price": "0",
-          "priceCurrency": "USD"
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
         }
       }
     }))

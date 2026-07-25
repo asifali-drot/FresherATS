@@ -23,6 +23,10 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
     const [oauthLoading, setOauthLoading] = useState(false)
     const supabase = createClient()
 
+    useEffect(() => {
+        router.prefetch(redirectPath || '/')
+    }, [router, redirectPath])
+
     const handleGoogleCredentialResponse = async (response: any) => {
         try {
             setOauthLoading(true)
@@ -38,9 +42,6 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                 setOauthLoading(false)
                 return
             }
-
-            // Successfully authenticated client-side
-            router.refresh()
 
             if (claimId) {
                 const { data: { user } } = await supabase.auth.getUser()
@@ -59,7 +60,7 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                 target = `${target}${separator}download=auto`
             }
 
-            router.push(target)
+            router.replace(target)
         } catch (err: any) {
             setError(err.message || 'An error occurred during Google sign in')
             setOauthLoading(false)
@@ -110,6 +111,19 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                     }}
                 />
             )}
+            {oauthLoading ? (
+                <div className="flex flex-col items-center justify-center gap-6 py-16 animate-in fade-in duration-300">
+                    <div className="relative h-16 w-16 mx-auto">
+                        <div className="absolute inset-0 h-16 w-16 rounded-full border-4 border-zinc-100 dark:border-zinc-800" />
+                        <div className="absolute inset-0 h-16 w-16 animate-spin rounded-full border-4 border-transparent border-t-zinc-900 dark:border-t-zinc-50" />
+                    </div>
+                    <div className="space-y-1.5 text-center">
+                        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Signing you in…</p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Please wait a moment</p>
+                    </div>
+                </div>
+            ) : (
+            <>
             <div className="space-y-2 text-center">
                 <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
                     {type === 'login' ? 'Welcome Back' :
@@ -307,6 +321,8 @@ export default function AuthForm({ type, onSubmit }: AuthFormProps) {
                         </div>
                     )}
                 </>
+            )}
+            </>
             )}
         </div>
     )

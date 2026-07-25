@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { useState, useEffect, useRef, useTransition } from "react";
-import { Menu, X, Zap, LayoutDashboard, User as UserIcon, LogOut, Loader2, ChevronDown, Sparkles, Layout, Linkedin, Briefcase, Building2 } from "lucide-react";
+import { Menu, X, LayoutDashboard, User as UserIcon, LogOut, Loader2, ChevronDown, Sparkles, Layout, Linkedin, Briefcase, Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { logoutAction } from "@/app/(website)/(auth)/actions";
 
@@ -22,7 +23,7 @@ export default function Header() {
   // Fetch user client-side to avoid blocking server render (FCP optimization)
   useEffect(() => {
     const supabase = createClient();
-    
+
     // Initial fetch
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
@@ -102,14 +103,28 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-1001 border-b border-zinc-100 bg-white/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2 group z-120 relative">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-200 group-hover:scale-105 transition-transform">
-              <Zap className="h-5 w-5 text-white fill-white" />
-            </div>
-            <span className="text-xl font-extrabold tracking-tight text-[#1a2b4b]">
-              FresherATS
-            </span>
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-0 lg:py-2">
+          {/* Mobile logo — clean, no clipping */}
+          <Link href="/" className="flex items-center group z-120 relative lg:hidden">
+            <Image
+              src="/logo.svg"
+              alt="FresherATS Logo"
+              width={200}
+              height={67}
+              className="h-22 w-auto object-contain group-hover:scale-105 transition-transform"
+              priority
+            />
+          </Link>
+          {/* Desktop logo — clipped to reduce header height */}
+          <Link href="/" className="hidden lg:flex items-center group z-120 relative overflow-hidden" style={{ height: '60px' }}>
+            <Image
+              src="/logo.svg"
+              alt="FresherATS Logo"
+              width={450}
+              height={150}
+              className="h-36.25 w-auto object-contain group-hover:scale-105 transition-transform -my-10"
+              priority
+            />
           </Link>
 
           <nav className="hidden items-center gap-9 lg:flex">
@@ -330,14 +345,14 @@ export default function Header() {
 
       {/* Mobile Navigation Drawer */}
       < div
-        className={`fixed left-0 top-18.25 max-h-[80vh] z-999 w-[75vw] sm:w-96 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-r border-zinc-100 overflow-y-auto ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed left-0 top-16 max-h-[80vh] z-999 w-[75vw] sm:w-96 bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden border-r border-zinc-100 overflow-y-auto ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex flex-col bg-white">
           <div className="flex flex-col gap-1 p-6">
             <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-2">Main Menu</p>
             <MobileNavLink href="/" label="Home" onClick={closeMenu} />
             <MobileNavLink href="/blog" label="Blog" onClick={closeMenu} />
-            
+
             <button onClick={() => toggleMobileDropdown("tools")} className="flex items-center justify-between px-4 py-4 rounded-2xl text-base font-bold text-zinc-700 hover:bg-blue-50 hover:text-blue-600 transition-all border border-transparent hover:border-blue-100 w-full">
               Tools
               <ChevronDown className={`h-4 w-4 transition-transform ${isMobileToolsOpen ? 'rotate-180' : ''}`} />
