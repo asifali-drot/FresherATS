@@ -87,7 +87,7 @@ export function generateSoftwareApplicationSchema(props: { name: string; url: st
   };
 }
 
-export function generateItemListSchema(items: { name: string; url: string; description: string }[]) {
+export function generateItemListSchema(items: { name: string; url: string; description: string; image: string; returnPolicyCategory?: string }[]) {
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -99,16 +99,54 @@ export function generateItemListSchema(items: { name: string; url: string; descr
         "name": item.name,
         "url": item.url,
         "description": item.description,
+        "image": item.image,
+        "brand": {
+          "@type": "Brand",
+          "name": "FresherATS"
+        },
         "offers": {
           "@type": "Offer",
           "price": "0",
           "priceCurrency": "USD",
-          "availability": "https://schema.org/InStock"
+          "availability": "https://schema.org/InStock",
+          "shippingDetails": {
+            "@type": "OfferShippingDetails",
+            "shippingRate": {
+              "@type": "MonetaryAmount",
+              "value": "0",
+              "currency": "USD"
+            },
+            "shippingDestination": {
+              "@type": "DefinedRegion",
+              "addressCountry": "US"
+            },
+            "deliveryTime": {
+              "@type": "ShippingDeliveryTime",
+              "handlingTime": {
+                "@type": "QuantitativeValue",
+                "minValue": 0,
+                "maxValue": 0,
+                "unitCode": "DAY"
+              },
+              "transitTime": {
+                "@type": "QuantitativeValue",
+                "minValue": 0,
+                "maxValue": 0,
+                "unitCode": "DAY"
+              }
+            }
+          },
+          "hasMerchantReturnPolicy": {
+            "@type": "MerchantReturnPolicy",
+            "applicableCountry": "US",
+            "returnPolicyCategory": item.returnPolicyCategory ?? "https://schema.org/MerchantReturnNotPermitted"
+          }
         }
       }
     }))
   };
 }
+
 
 export function generateReviewAggregateSchema(props: { 
   name: string; 

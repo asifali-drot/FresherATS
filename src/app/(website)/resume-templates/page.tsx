@@ -38,7 +38,7 @@ export default function TemplatesPage() {
                 <div className="rounded-xl border border-zinc-200 overflow-hidden bg-zinc-50 shadow-inner">
                   <iframe
                     title={`Template preview: ${t.label}`}
-                    className="w-full h-[480px] border-none bg-white"
+                    className="w-full h-120 border-none bg-white"
                     srcDoc={previewHtml}
                   />
                 </div>
@@ -64,7 +64,8 @@ export default function TemplatesPage() {
             RESUME_TEMPLATES.map(t => ({
               name: t.label,
               url: `https://fresherats.com/resume-templates/${t.slug}`,
-              description: t.description
+              description: t.description,
+              image: "https://fresherats.com/og-image.png"
             }))
           ))
         }}

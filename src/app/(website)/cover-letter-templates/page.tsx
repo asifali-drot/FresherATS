@@ -108,7 +108,8 @@ export default function CoverLetterTemplatesPage() {
             COVER_LETTER_TEMPLATES.map(t => ({
               name: t.label,
               url: `https://fresherats.com/ai-cover-letter-generator?template=${t.id}`,
-              description: t.description
+              description: t.description,
+              image: "https://fresherats.com/og-image.png"
             }))
           ))
         }}
